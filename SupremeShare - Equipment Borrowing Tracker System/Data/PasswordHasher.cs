@@ -1,5 +1,5 @@
 using System;
-using System.Security.Cryptography;
+using BCrypt.Net;
 
 namespace SupremeShare___Equipment_Borrowing_Tracker_System.Data
 {
@@ -11,12 +11,9 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Data
 
     public class PasswordHasher : IPasswordHasher
     {
-        private const int SaltSize = 16; // 128 bits
-        private const int KeySize = 32; // 256 bits
-        private const int Iterations = 100000; // OWASP recommended minimum
-        private static readonly HashAlgorithmName Algorithm = HashAlgorithmName.SHA256;
-
-        private const char Delimiter = ':';
+        // Work factor of 12 is recommended (2^12 = 4096 iterations)
+        // Higher = more secure but slower
+        private const int WorkFactor = 12;
 
         public string HashPassword(string password)
         {
@@ -26,14 +23,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Data
             if (password.Length < 8)
                 throw new ArgumentException("Password must be at least 8 characters long.");
 
-            var salt = RandomNumberGenerator.GetBytes(SaltSize);
-            var hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, Algorithm, KeySize);
-
-            return string.Join(Delimiter, 
-                Convert.ToBase64String(salt), 
-                Convert.ToBase64String(hash),
-                Iterations,
-                Algorithm.Name);
+            return BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
         }
 
         public bool VerifyPassword(string password, string hashedPassword)
@@ -43,18 +33,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Data
 
             try
             {
-                var parts = hashedPassword.Split(Delimiter);
-                if (parts.Length != 4)
-                    return false;
-
-                var salt = Convert.FromBase64String(parts[0]);
-                var hash = Convert.FromBase64String(parts[1]);
-                var iterations = int.Parse(parts[2]);
-                var algorithm = new HashAlgorithmName(parts[3]);
-
-                var inputHash = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, algorithm, hash.Length);
-
-                return CryptographicOperations.FixedTimeEquals(inputHash, hash);
+                return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
             }
             catch
             {
