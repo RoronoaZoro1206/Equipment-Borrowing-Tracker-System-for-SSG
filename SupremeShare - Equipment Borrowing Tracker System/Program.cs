@@ -8,7 +8,29 @@ DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// ===========================================
+// Database Connection Configuration
+// ===========================================
+var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Build connection string from individual env variables
+    var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+    var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+    var database = Environment.GetEnvironmentVariable("DB_NAME") ?? "supremeshare_db";
+    var username = Environment.GetEnvironmentVariable("DB_USER") ?? "postgres";
+    var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
+    
+    connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password}";
+}
+
+// Add connection string to configuration
+builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
+
+// ===========================================
+// Services Configuration
+// ===========================================
 builder.Services.AddControllersWithViews();
 
 // Configure session with security settings
@@ -20,6 +42,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.Name = ".SupremeShare.Session";
 });
 
 // Configure anti-forgery
@@ -30,14 +53,16 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
 
-// Register DatabaseHelper
+// ===========================================
+// Register Database & Services
+// ===========================================
 builder.Services.AddSingleton<DatabaseHelper>();
-
-// Register Security Services
 builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 
+// ===========================================
 // Register Repositories
+// ===========================================
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
@@ -46,14 +71,18 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IBorrowRecordRepository, BorrowRecordRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
-// Configure logging
+// ===========================================
+// Logging Configuration
+// ===========================================
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ===========================================
+// Middleware Pipeline
+// ===========================================
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -76,5 +105,16 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// ===========================================
+// Startup Message
+// ===========================================
+app.Logger.LogInformation("===========================================");
+app.Logger.LogInformation("SupremeShare - Equipment Borrowing Tracker");
+app.Logger.LogInformation("Database: {Database}", 
+    Environment.GetEnvironmentVariable("DB_NAME") ?? "supremeshare_db");
+app.Logger.LogInformation("Environment: {Environment}", 
+    app.Environment.EnvironmentName);
+app.Logger.LogInformation("===========================================");
 
 app.Run();
