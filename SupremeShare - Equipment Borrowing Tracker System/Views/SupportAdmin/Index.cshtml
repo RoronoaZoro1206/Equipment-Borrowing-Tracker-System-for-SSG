@@ -1,0 +1,166 @@
+@{
+    ViewData["Title"] = "Support Admin Panel";
+}
+
+<div class="container-fluid py-4 px-4" style="background: var(--off-white); min-height: calc(100vh - 76px);">
+    <!-- Support Admin Header -->
+    <div class="dashboard-header mb-4">
+        <div class="row align-items-center position-relative" style="z-index: 2;">
+            <div class="col-md-8">
+                <p class="mb-1 opacity-75" style="font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;">
+                    <i class="bi bi-headset me-2"></i>Support Admin Panel
+                </p>
+                <h2 class="mb-0" style="font-family: 'Playfair Display', serif; font-size: 2rem;">
+                    Welcome, @ViewBag.FullName
+                </h2>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <span class="badge px-4 py-2" style="background: rgba(59, 130, 246, 0.2); color: #3B82F6; font-size: 0.85rem; border-radius: 50px;">
+                    <i class="bi bi-person-gear me-2"></i>@ViewBag.Role
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authorization Verification Card -->
+    <div class="row g-4 mb-4">
+        <div class="col-12">
+            <div class="stat-card">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="stat-icon me-3" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1" style="font-family: 'Playfair Display', serif; color: var(--primary-red);">
+                            Authorization Verified
+                        </h5>
+                        <p class="text-muted mb-0">You have successfully accessed the Support Admin area</p>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Access Granted!</strong> This page is accessible to both <strong>Admin</strong> and <strong>Support Admin</strong> users.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Session Info -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="stat-card h-100">
+                <h5 class="mb-4" style="font-family: 'Playfair Display', serif; color: var(--primary-red);">
+                    <i class="bi bi-person-badge me-2"></i>Session Information
+                </h5>
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted" style="width: 40%;">User ID</td>
+                            <td><strong>@ViewBag.UserId</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Username</td>
+                            <td><strong>@ViewBag.Username</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Full Name</td>
+                            <td><strong>@ViewBag.FullName</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Role</td>
+                            <td>
+                                @if (ViewBag.Role == "admin")
+                                {
+                                    <span class="badge bg-danger px-3 py-2">@ViewBag.Role</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-primary px-3 py-2">@ViewBag.Role</span>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="stat-card h-100">
+                <h5 class="mb-4" style="font-family: 'Playfair Display', serif; color: var(--primary-red);">
+                    <i class="bi bi-key me-2"></i>Access Rights
+                </h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        Admin Panel
+                        @if (ViewBag.Role == "admin")
+                        {
+                            <span class="badge bg-success"><i class="bi bi-check"></i> Allowed</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger"><i class="bi bi-x"></i> Denied</span>
+                        }
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        Support Admin Panel
+                        <span class="badge bg-success"><i class="bi bi-check"></i> Allowed</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        Dashboard
+                        <span class="badge bg-success"><i class="bi bi-check"></i> Allowed</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                        User Management
+                        @if (ViewBag.Role == "admin")
+                        {
+                            <span class="badge bg-success"><i class="bi bi-check"></i> Allowed</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger"><i class="bi bi-x"></i> Denied</span>
+                        }
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="stat-card">
+                <h5 class="mb-4" style="font-family: 'Playfair Display', serif; color: var(--primary-red);">
+                    <i class="bi bi-signpost-2 me-2"></i>Quick Navigation
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="@Url.Action("Index", "Dashboard")" class="btn btn-luxury-outline w-100 py-3" style="border-radius: 16px;">
+                            <i class="bi bi-speedometer2 me-2"></i>Dashboard
+                        </a>
+                    </div>
+                    @if (ViewBag.Role == "admin")
+                    {
+                        <div class="col-md-4">
+                            <a href="@Url.Action("Index", "Admin")" class="btn btn-luxury-outline w-100 py-3" style="border-radius: 16px;">
+                                <i class="bi bi-shield-lock me-2"></i>Admin Panel
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-md-4">
+                            <a href="@Url.Action("Index", "Admin")" class="btn btn-outline-secondary w-100 py-3 disabled" style="border-radius: 16px;">
+                                <i class="bi bi-shield-lock me-2"></i>Admin Panel (No Access)
+                            </a>
+                        </div>
+                    }
+                    <div class="col-md-4">
+                        <a href="@Url.Action("Logout", "Auth")" class="btn btn-outline-danger w-100 py-3" style="border-radius: 16px;">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
