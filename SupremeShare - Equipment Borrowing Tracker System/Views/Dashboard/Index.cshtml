@@ -1,0 +1,129 @@
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid py-4 px-4" style="background: var(--off-white); min-height: calc(100vh - 76px);">
+    <!-- Welcome Header -->
+    <div class="dashboard-header mb-4">
+        <div class="row align-items-center position-relative" style="z-index: 2;">
+            <div class="col-md-8">
+                <p class="mb-1 opacity-75" style="font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;">
+                    Welcome back
+                </p>
+                <h2 class="mb-0" style="font-family: 'Playfair Display', serif; font-size: 2rem;">
+                    @ViewBag.FullName
+                </h2>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <span class="badge px-4 py-2" style="background: rgba(212, 175, 55, 0.2); color: #F4D03F; font-size: 0.85rem; border-radius: 50px;">
+                    <i class="bi bi-calendar3 me-2"></i>
+                    @DateTime.Now.ToString("dddd, MMMM dd")
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1 small text-uppercase" style="letter-spacing: 1px;">Total Equipment</p>
+                        <h3 class="mb-0" style="font-family: 'Playfair Display', serif; color: var(--primary-red);">--</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3">
+                        <i class="bi bi-arrow-left-right"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1 small text-uppercase" style="letter-spacing: 1px;">Active Transactions</p>
+                        <h3 class="mb-0" style="font-family: 'Playfair Display', serif; color: var(--primary-red);">--</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3" style="background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1 small text-uppercase" style="letter-spacing: 1px;">Needs Attention</p>
+                        <h3 class="mb-0" style="font-family: 'Playfair Display', serif; color: var(--primary-red);">--</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon me-3" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-1 small text-uppercase" style="letter-spacing: 1px;">Registered</p>
+                        <h3 class="mb-0" style="font-family: 'Playfair Display', serif; color: var(--primary-red);">--</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Activity -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0" style="font-family: 'Playfair Display', serif; color: var(--primary-red);">
+                        <i class="bi bi-lightning-charge me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a href="#" class="btn btn-luxury-outline w-100 py-3" style="border-radius: 16px;">
+                            <i class="bi bi-plus-circle me-2"></i>New Transaction
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="#" class="btn btn-luxury-outline w-100 py-3" style="border-radius: 16px;">
+                            <i class="bi bi-arrow-return-left me-2"></i>Process Return
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="#" class="btn btn-luxury-outline w-100 py-3" style="border-radius: 16px;">
+                            <i class="bi bi-person-plus me-2"></i>Add Record
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="#" class="btn btn-luxury-outline w-100 py-3" style="border-radius: 16px;">
+                            <i class="bi bi-box me-2"></i>View Inventory
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="stat-card h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0" style="font-family: 'Playfair Display', serif; color: var(--primary-red);">
+                        <i class="bi bi-clock-history me-2"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox" style="font-size: 3rem; color: var(--light-gray);"></i>
+                    <p class="text-muted mt-3 mb-0">No recent activity</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

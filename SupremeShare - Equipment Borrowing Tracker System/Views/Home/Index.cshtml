@@ -1,8 +1,184 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- Hero Section with Full Background Image -->
+<section class="hero-luxury hero-fullbg" style="background-image: url('/images/admin-MAIN.png');">
+    <div class="hero-overlay"></div>
+    <div class="floating-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-8">
+                <div class="hero-content text-center">
+                    <div class="hero-badge mx-auto">
+                        <i class="bi bi-shield-check"></i>
+                        CTU SSG Office Official System
+                    </div>
+                    <h1 class="hero-title">
+                        SupremeShare<br />
+                        <span>Equipment Tracker</span>
+                    </h1>
+                    <p class="hero-subtitle mx-auto">
+                        Equipment Borrowing Tracker System for the Supreme Student Government Office 
+                        of Cebu Technological University - Main Campus. Efficiently manage and track 
+                        university equipment borrowing transactions.
+                    </p>
+                    <div class="hero-cta justify-content-center">
+                        <a asp-controller="Auth" asp-action="Login" class="btn btn-gold">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Login to System
+                        </a>
+                        <a href="#features" class="btn btn-luxury-outline" style="color: white; border-color: rgba(255,255,255,0.3);">
+                            Learn More
+                        </a>
+                    </div>
+                    <div class="hero-stats justify-content-center">
+                        <div class="stat-item">
+                            <div class="stat-number">99%</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">24/7</div>
+                            <div class="stat-label">Available</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">Secure</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section-premium" id="features">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Why Choose Us</div>
+            <h2 class="section-title">Powerful Features</h2>
+            <p class="section-subtitle">
+                Everything you need to manage equipment efficiently in one elegant platform.
+            </p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card-premium">
+                    <div class="feature-icon-premium">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <h5 class="feature-title-premium">Real-Time Tracking</h5>
+                    <p class="feature-text-premium">
+                        Monitor all activities instantly with live updates and notifications.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card-premium">
+                    <div class="feature-icon-premium">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <h5 class="feature-title-premium">Enterprise Security</h5>
+                    <p class="feature-text-premium">
+                        Bank-grade encryption and security protocols protect your data.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card-premium">
+                    <div class="feature-icon-premium">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <h5 class="feature-title-premium">Smart Analytics</h5>
+                    <p class="feature-text-premium">
+                        Gain insights with comprehensive reports and activity logs.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="feature-card-premium">
+                    <div class="feature-icon-premium">
+                        <i class="bi bi-phone"></i>
+                    </div>
+                    <h5 class="feature-title-premium">Easy Access</h5>
+                    <p class="feature-text-premium">
+                        Access your dashboard anytime, anywhere with responsive design.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits Section -->
+<section class="section-premium section-cream">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <div class="section-badge">Benefits</div>
+                <h2 class="section-title">Streamline Your Operations</h2>
+                <p class="text-muted mb-4" style="font-size: 1.1rem; line-height: 1.8;">
+                    Say goodbye to manual tracking and paperwork. Our platform automates 
+                    the entire process, saving you time and reducing errors.
+                </p>
+                <div class="d-flex flex-column gap-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="feature-icon-premium" style="width: 50px; height: 50px; min-width: 50px; font-size: 1.2rem; border-radius: 12px;">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 fw-bold">Reduce Manual Work</h6>
+                            <p class="text-muted mb-0 small">Automate repetitive tasks and focus on what matters.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="feature-icon-premium" style="width: 50px; height: 50px; min-width: 50px; font-size: 1.2rem; border-radius: 12px;">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 fw-bold">Improve Accountability</h6>
+                            <p class="text-muted mb-0 small">Complete audit trails for every transaction.</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="feature-icon-premium" style="width: 50px; height: 50px; min-width: 50px; font-size: 1.2rem; border-radius: 12px;">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1 fw-bold">Prevent Loss</h6>
+                            <p class="text-muted mb-0 small">Track everything and never lose sight of your assets.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="position-relative">
+                    <div style="background: linear-gradient(135deg, var(--primary-red) 0%, #5C0000 100%); border-radius: 32px; padding: 60px; text-align: center;">
+                        <i class="bi bi-clipboard-data" style="font-size: 6rem; color: rgba(255,255,255,0.9);"></i>
+                        <h4 class="text-white mt-4 mb-2">Complete Visibility</h4>
+                        <p class="text-white-50 mb-0">All your data in one place</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2 class="cta-title">Ready to Get Started?</h2>
+            <p class="cta-text">
+                Join organizations that trust SupremeShare for their equipment management needs.
+            </p>
+            <a asp-controller="Auth" asp-action="Login" class="btn btn-gold btn-lg">
+                <i class="bi bi-arrow-right me-2"></i>Access Platform
+            </a>
+        </div>
+    </div>
+</section>

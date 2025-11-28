@@ -15,11 +15,11 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers
 
         public IActionResult Index()
         {
-            return View();
-        }
-
-        public IActionResult Privacy()
-        {
+            // If user is already logged in, redirect to dashboard
+            if (HttpContext.Session.GetInt32("UserId") != null)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
             return View();
         }
 

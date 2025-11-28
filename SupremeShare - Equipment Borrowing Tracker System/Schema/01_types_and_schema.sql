@@ -5,5 +5,4 @@
 -- User role enumeration
 CREATE TYPE user_role_enum AS ENUM ('admin', 'support_admin');
 
--- Audit schema
-CREATE SCHEMA audit;
+

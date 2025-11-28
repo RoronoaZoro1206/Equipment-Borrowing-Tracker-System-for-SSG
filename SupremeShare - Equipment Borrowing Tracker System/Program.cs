@@ -33,6 +33,9 @@ builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
 // ===========================================
 builder.Services.AddControllersWithViews();
 
+// Determine if we're in development
+var isDevelopment = builder.Environment.IsDevelopment();
+
 // Configure session with security settings
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -40,17 +43,17 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = isDevelopment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.Name = ".SupremeShare.Session";
 });
 
 // Configure anti-forgery
 builder.Services.AddAntiforgery(options =>
 {
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SecurePolicy = isDevelopment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 });
 
 // ===========================================
@@ -83,16 +86,20 @@ var app = builder.Build();
 // ===========================================
 // Middleware Pipeline
 // ===========================================
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
+    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 }
 
 // Security middleware (order matters!)
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<RateLimitingMiddleware>();
-app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

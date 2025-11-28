@@ -12,7 +12,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<RateLimitingMiddleware> _logger;
         private static readonly ConcurrentDictionary<string, RateLimitInfo> _clients = new();
-        
+
         private const int MaxRequestsPerMinute = 100;
         private const int MaxRequestsPerSecond = 10;
 
@@ -58,7 +58,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Middleware
                 {
                     _logger.LogWarning("Rate limit exceeded for IP: {ClientIp}", clientIp);
                     context.Response.StatusCode = (int)HttpStatusCode.TooManyRequests;
-                    context.Response.Headers.Add("Retry-After", "60");
+                    context.Response.Headers["Retry-After"] = "60";
                     return;
                 }
 

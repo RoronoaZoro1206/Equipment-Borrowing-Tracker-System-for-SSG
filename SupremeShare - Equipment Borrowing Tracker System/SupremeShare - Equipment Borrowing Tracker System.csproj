@@ -16,6 +16,22 @@
 
   <ItemGroup>
     <Folder Include="Attributes\" />
+    <Folder Include="Controllers\Admin\" />
+    <Folder Include="Controllers\Auth\" />
+    <Folder Include="Controllers\Error\" />
+    <Folder Include="Controllers\Support Admin\" />
+    <Folder Include="Data\" />
+    <Folder Include="Middlleware\" />
+    <Folder Include="Exceptions\" />
+    <Folder Include="md_files\" />
+    <Folder Include="File_Images\" />
+    <Folder Include="Schema\" />
+    <Folder Include="Repositories\Implementations\" />
+    <Folder Include="Repositories\Interfaces\" />
+    <Folder Include="Views\Admin\" />
+    <Folder Include="Views\Auth\" />
+    <Folder Include="Views\Error\" />
+    <Folder Include="Views\Support Admin\" />
   </ItemGroup>
 
 </Project>
