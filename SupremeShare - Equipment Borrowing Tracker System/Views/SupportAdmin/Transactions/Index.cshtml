@@ -1,0 +1,192 @@
+@{
+    ViewData["Title"] = "Transactions";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-arrow-left-right me-2"></i>Transactions</h2>
+        <div>
+            <a href="/SupportAdmin/Transactions/Borrow" class="btn btn-success me-2">
+                <i class="bi bi-box-arrow-up me-1"></i>New Borrow
+            </a>
+            <a href="/SupportAdmin/Transactions/Return" class="btn btn-warning">
+                <i class="bi bi-box-arrow-in-down me-1"></i>Process Return
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 id="statActiveBorrows">-</h3>
+                    <small>Active Borrows</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h3 id="statOverdue">-</h3>
+                    <small>Overdue</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 id="statReturnedToday">-</h3>
+                    <small>Returned Today</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 id="statBorrowedToday">-</h3>
+                    <small>Borrowed Today</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-table me-2"></i>Recent Transactions</span>
+            <button class="btn btn-sm btn-light" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="transactionsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Transaction Code</th>
+                            <th>Student</th>
+                            <th>Items</th>
+                            <th>Date Borrowed</th>
+                            <th>Status</th>
+                            <th>Processed By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Transaction Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                Loading...
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    loadStats();
+    loadTransactions();
+
+    function loadStats() {
+        $.get('/SupportAdmin/Transactions/Stats', function(res) {
+            if (res.success) {
+                $('#statActiveBorrows').text(res.data.activeBorrows);
+                $('#statOverdue').text(res.data.overdueCount);
+                $('#statReturnedToday').text(res.data.returnedToday);
+                $('#statBorrowedToday').text(res.data.borrowedToday);
+            }
+        });
+    }
+
+    function loadTransactions() {
+        $.get('/SupportAdmin/Transactions/GetAll', function(res) {
+            if (res.success) {
+                let html = '';
+                res.data.forEach(t => {
+                    const statusBadges = t.statuses ? t.statuses.split(', ').map(s => {
+                        let cls = 'bg-secondary';
+                        if (s === 'borrowed') cls = 'bg-info';
+                        else if (s === 'returned') cls = 'bg-success';
+                        else if (s === 'overdue') cls = 'bg-danger';
+                        else if (s === 'lost') cls = 'bg-dark';
+                        return `<span class="badge ${cls}">${s}</span>`;
+                    }).join(' ') : '-';
+
+                    html += `<tr>
+                        <td><strong>${t.transactionCode}</strong></td>
+                        <td>${t.studentIdNumber}<br><small class="text-muted">${t.studentName}</small></td>
+                        <td>${t.itemCount} item(s)</td>
+                        <td>${t.dateBorrowed}</td>
+                        <td>${statusBadges}</td>
+                        <td>${t.processedBy}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary btn-view" data-id="${t.transactionId}">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                $('#transactionsTable tbody').html(html || '<tr><td colspan="7" class="text-center text-muted">No transactions found</td></tr>');
+            }
+        });
+    }
+
+    $('#btnRefresh').click(function() {
+        loadStats();
+        loadTransactions();
+    });
+
+    // View details
+    $(document).on('click', '.btn-view', function() {
+        const id = $(this).data('id');
+        $.get(`/SupportAdmin/Transactions/GetDetails/${id}`, function(res) {
+            if (res.success) {
+                const d = res.data;
+                let itemsHtml = '';
+                d.items.forEach(i => {
+                    const statusCls = i.borrowStatus === 'returned' ? 'bg-success' : 
+                                      i.borrowStatus === 'overdue' ? 'bg-danger' : 'bg-info';
+                    itemsHtml += `<tr>
+                        <td>${i.equipmentName}</td>
+                        <td>${i.serialNo}</td>
+                        <td><span class="badge ${statusCls}">${i.borrowStatus}</span></td>
+                        <td>${new Date(i.borrowDueDate).toLocaleDateString()}</td>
+                        <td>${i.borrowDateReturned ? new Date(i.borrowDateReturned).toLocaleDateString() : '-'}</td>
+                    </tr>`;
+                });
+
+                $('#detailsContent').html(`
+                    <div class="mb-3">
+                        <strong>Transaction Code:</strong> ${d.transactionCode}<br>
+                        <strong>Date Borrowed:</strong> ${new Date(d.transactionDateBorrowed).toLocaleString()}<br>
+                        <strong>Student:</strong> ${d.student.studentIdNumber} - ${d.student.fullName}<br>
+                        <strong>College:</strong> ${d.student.studentCollege}
+                    </div>
+                    <h6>Items:</h6>
+                    <table class="table table-sm">
+                        <thead><tr><th>Equipment</th><th>Serial No</th><th>Status</th><th>Due Date</th><th>Returned</th></tr></thead>
+                        <tbody>${itemsHtml}</tbody>
+                    </table>
+                `);
+                new bootstrap.Modal('#detailsModal').show();
+            }
+        });
+    });
+});
+</script>
+}

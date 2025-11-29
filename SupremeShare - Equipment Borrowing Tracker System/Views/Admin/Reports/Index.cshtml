@@ -1,0 +1,206 @@
+@{
+    ViewData["Title"] = "Reports Dashboard";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-graph-up me-2"></i>Reports & Analytics</h2>
+        <span class="badge bg-success" id="connectionStatus">
+            <i class="bi bi-wifi"></i> Real-time Connected
+        </span>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam fs-1"></i>
+                    <h3 id="statTotalUnits">-</h3>
+                    <small>Total Equipment Units</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle fs-1"></i>
+                    <h3 id="statAvailable">-</h3>
+                    <small>Available</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-arrow-left-right fs-1"></i>
+                    <h3 id="statBorrowed">-</h3>
+                    <small>Currently Borrowed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-triangle fs-1"></i>
+                    <h3 id="statOverdue">-</h3>
+                    <small>Overdue Items</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Links -->
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <a href="/Admin/Reports/Overdue" class="text-decoration-none">
+                <div class="card h-100 report-card">
+                    <div class="card-body text-center">
+                        <div class="report-icon bg-danger text-white">
+                            <i class="bi bi-clock-history"></i>
+                        </div>
+                        <h5 class="mt-3">Overdue Items Report</h5>
+                        <p class="text-muted small">View all overdue borrows with student contact info</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a href="/Admin/Reports/Equipment" class="text-decoration-none">
+                <div class="card h-100 report-card">
+                    <div class="card-body text-center">
+                        <div class="report-icon bg-info text-white">
+                            <i class="bi bi-bar-chart"></i>
+                        </div>
+                        <h5 class="mt-3">Equipment Utilization</h5>
+                        <p class="text-muted small">Most/least borrowed equipment analysis</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a href="/Admin/Reports/StudentHistory" class="text-decoration-none">
+                <div class="card h-100 report-card">
+                    <div class="card-body text-center">
+                        <div class="report-icon bg-primary text-white">
+                            <i class="bi bi-person-lines-fill"></i>
+                        </div>
+                        <h5 class="mt-3">Student History</h5>
+                        <p class="text-muted small">Per-student borrowing transaction history</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <a href="/Admin/Reports/AuditLog" class="text-decoration-none">
+                <div class="card h-100 report-card">
+                    <div class="card-body text-center">
+                        <div class="report-icon bg-dark text-white">
+                            <i class="bi bi-journal-text"></i>
+                        </div>
+                        <h5 class="mt-3">Audit Log</h5>
+                        <p class="text-muted small">System activity and change history</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Today's Summary -->
+    <div class="row g-4 mt-2">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <i class="bi bi-calendar-day me-2"></i>Today's Activity
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h2 class="text-success" id="statTodayBorrowed">-</h2>
+                            <small class="text-muted">Borrowed Today</small>
+                        </div>
+                        <div class="col-6">
+                            <h2 class="text-primary" id="statTodayReturned">-</h2>
+                            <small class="text-muted">Returned Today</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <i class="bi bi-people me-2"></i>System Overview
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h2 class="text-info" id="statActiveStudents">-</h2>
+                            <small class="text-muted">Active Students</small>
+                        </div>
+                        <div class="col-6">
+                            <h2 class="text-secondary" id="statEquipmentTypes">-</h2>
+                            <small class="text-muted">Equipment Types</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.report-card { transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
+.report-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+.report-icon { width: 60px; height: 60px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+</style>
+
+@section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script>
+$(document).ready(function() {
+    loadStats();
+
+    // SignalR Connection
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/dashboard")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("StatsUpdated", function() {
+        loadStats();
+    });
+
+    connection.on("NewTransaction", function(data) {
+        console.log("New transaction:", data);
+        loadStats();
+    });
+
+    connection.onclose(() => {
+        $('#connectionStatus').removeClass('bg-success').addClass('bg-danger').html('<i class="bi bi-wifi-off"></i> Disconnected');
+    });
+
+    connection.onreconnected(() => {
+        $('#connectionStatus').removeClass('bg-danger').addClass('bg-success').html('<i class="bi bi-wifi"></i> Real-time Connected');
+    });
+
+    connection.start().catch(err => console.error(err));
+});
+
+function loadStats() {
+    $.get('/Admin/Reports/GetDashboardStats', function(res) {
+        if (res.success) {
+            $('#statTotalUnits').text(res.data.totalUnits);
+            $('#statAvailable').text(res.data.availableCount);
+            $('#statBorrowed').text(res.data.borrowedCount);
+            $('#statOverdue').text(res.data.overdueCount);
+            $('#statTodayBorrowed').text(res.data.todayBorrowed);
+            $('#statTodayReturned').text(res.data.todayReturned);
+            $('#statActiveStudents').text(res.data.activeStudents);
+            $('#statEquipmentTypes').text(res.data.totalEquipmentTypes);
+        }
+    });
+}
+</script>
+}

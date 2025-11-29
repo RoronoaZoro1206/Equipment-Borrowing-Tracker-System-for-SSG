@@ -1,6 +1,5 @@
 @{
-    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var currentPath = Context.Request.Path.ToString().ToLower();
 }
 
 <aside class="admin-sidebar" id="adminSidebar">
@@ -11,46 +10,54 @@
     <nav class="sidebar-nav">
         <ul class="sidebar-menu">
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "Dashboard" ? "active" : "")" 
-                   asp-controller="Dashboard" asp-action="Index">
+                <a class="sidebar-link @(currentPath == "/supportadmin" || currentPath == "/supportadmin/index" ? "active" : "")" 
+                   href="/SupportAdmin">
                     <i class="bi bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
             
-            <li class="sidebar-section">Operations</li>
+            <li class="sidebar-section">Daily Operations</li>
             
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "Equipment" ? "active" : "")" 
-                   asp-controller="Equipment" asp-action="Index">
-                    <i class="bi bi-box-seam"></i>
-                    <span>Equipment</span>
+                <a class="sidebar-link @(currentPath.Contains("/supportadmin/transactions/borrow") ? "active" : "")" 
+                   href="/SupportAdmin/Transactions/Borrow">
+                    <i class="bi bi-box-arrow-up"></i>
+                    <span>Process Borrow</span>
                 </a>
             </li>
             
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "Transaction" ? "active" : "")" 
-                   asp-controller="Transaction" asp-action="Index">
-                    <i class="bi bi-arrow-left-right"></i>
-                    <span>Transactions</span>
+                <a class="sidebar-link @(currentPath.Contains("/supportadmin/transactions/return") ? "active" : "")" 
+                   href="/SupportAdmin/Transactions/Return">
+                    <i class="bi bi-box-arrow-in-down"></i>
+                    <span>Process Return</span>
                 </a>
             </li>
             
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "Student" ? "active" : "")" 
-                   asp-controller="Student" asp-action="Index">
-                    <i class="bi bi-people"></i>
+                <a class="sidebar-link @(currentPath == "/supportadmin/transactions" ? "active" : "")" 
+                   href="/SupportAdmin/Transactions">
+                    <i class="bi bi-list-ul"></i>
+                    <span>View Transactions</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-section">Reference Data (View Only)</li>
+            
+            <li class="sidebar-item">
+                <a class="sidebar-link @(currentPath.Contains("/supportadmin/students") ? "active" : "")" 
+                   href="/SupportAdmin/Students">
+                    <i class="bi bi-mortarboard"></i>
                     <span>Students</span>
                 </a>
             </li>
             
-            <li class="sidebar-section">Tools</li>
-            
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "Reports" ? "active" : "")" 
-                   asp-controller="Reports" asp-action="Index">
-                    <i class="bi bi-graph-up"></i>
-                    <span>Reports</span>
+                <a class="sidebar-link @(currentPath.Contains("/supportadmin/equipment") ? "active" : "")" 
+                   href="/SupportAdmin/Equipment">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Equipment</span>
                 </a>
             </li>
         </ul>

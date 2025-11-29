@@ -1,0 +1,221 @@
+@{
+    ViewData["Title"] = "Equipment (View Only)";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-box-seam me-2"></i>Equipment Inventory</h2>
+        <span class="badge bg-secondary fs-6"><i class="bi bi-eye me-1"></i>View Only</span>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 id="statTotalTypes">-</h3>
+                    <small>Equipment Types</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 id="statAvailable">-</h3>
+                    <small>Available Units</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 id="statBorrowed">-</h3>
+                    <small>Borrowed Units</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h3 id="statMaintenance">-</h3>
+                    <small>In Maintenance</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-table me-2"></i>Equipment List</span>
+            <button class="btn btn-sm btn-light" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="equipmentTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Equipment Name</th>
+                            <th>Category</th>
+                            <th>Total Units</th>
+                            <th>Available</th>
+                            <th>Date Added</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Units Modal -->
+<div class="modal fade" id="unitsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-list-ul me-2"></i>Equipment Units - <span id="modalEquipmentName"></span></h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm" id="unitsTable">
+                        <thead>
+                            <tr>
+                                <th>Serial No</th>
+                                <th>Condition</th>
+                                <th>Status</th>
+                                <th>Date Added</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    loadStats();
+    loadEquipment();
+
+    function loadStats() {
+        $.get('/SupportAdmin/Equipment/Stats', function(res) {
+            if (res.success) {
+                $('#statTotalTypes').text(res.data.totalEquipmentTypes);
+                $('#statAvailable').text(res.data.availableUnits);
+                $('#statBorrowed').text(res.data.borrowedUnits);
+                $('#statMaintenance').text(res.data.maintenanceUnits);
+            }
+        });
+    }
+
+    function loadEquipment() {
+        $.get('/SupportAdmin/Equipment/GetAll', function(res) {
+            if (res.success) {
+                let html = '';
+                res.data.forEach(e => {
+                    const availableCls = e.availableStock > 0 ? 'text-success' : 'text-danger';
+                    html += `<tr>
+                        <td><strong>${e.equipmentName}</strong></td>
+                        <td>${e.equipmentCategory}</td>
+                        <td>${e.equipmentQuantity}</td>
+                        <td class="${availableCls}"><strong>${e.availableStock}</strong></td>
+                        <td>${e.equipmentDateAdded}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary btn-view-units" 
+                                    data-id="${e.equipmentId}" data-name="${e.equipmentName}">
+                                <i class="bi bi-eye"></i> View Units
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                $('#equipmentTable tbody').html(html || '<tr><td colspan="6" class="text-center text-muted">No equipment found</td></tr>');
+            }
+        });
+    }
+
+    $('#btnRefresh').click(function() {
+        loadStats();
+        loadEquipment();
+    });
+
+    // View units
+    $(document).on('click', '.btn-view-units', function() {
+        const equipmentId = $(this).data('id');
+        const equipmentName = $(this).data('name');
+        $('#modalEquipmentName').text(equipmentName);
+
+        $.get(`/SupportAdmin/Equipment/Units/${equipmentId}`, function(res) {
+            if (res.success) {
+                let html = '';
+                res.data.forEach(u => {
+                    const conditionCls = u.conditionBool ? 'text-success' : 'text-danger';
+                    const conditionIcon = u.conditionBool ? 'bi-check-circle-fill' : 'bi-x-circle-fill';
+                    
+                    let statusCls = 'bg-secondary';
+                    if (u.eunitStatus === 'available') statusCls = 'bg-success';
+                    else if (u.eunitStatus === 'borrowed') statusCls = 'bg-info';
+                    else if (u.eunitStatus === 'maintenance') statusCls = 'bg-warning';
+                    else if (u.eunitStatus === 'lost') statusCls = 'bg-dark';
+
+                    // Support Admin can only change to available/maintenance for non-borrowed/lost items
+                    let actionHtml = '-';
+                    if (u.eunitStatus !== 'borrowed' && u.eunitStatus !== 'lost') {
+                        actionHtml = `
+                            <select class="form-select form-select-sm status-select" data-id="${u.eunitId}" style="width: auto;">
+                                <option value="available" ${u.eunitStatus === 'available' ? 'selected' : ''}>Available</option>
+                                <option value="maintenance" ${u.eunitStatus === 'maintenance' ? 'selected' : ''}>Maintenance</option>
+                            </select>`;
+                    }
+
+                    html += `<tr>
+                        <td><strong>${u.eunitSerialNo}</strong></td>
+                        <td class="${conditionCls}"><i class="bi ${conditionIcon}"></i> ${u.condition}</td>
+                        <td><span class="badge ${statusCls}">${u.eunitStatus}</span></td>
+                        <td>${u.eunitDateAdded}</td>
+                        <td>${actionHtml}</td>
+                    </tr>`;
+                });
+                $('#unitsTable tbody').html(html || '<tr><td colspan="5" class="text-center text-muted">No units found</td></tr>');
+                new bootstrap.Modal('#unitsModal').show();
+            }
+        });
+    });
+
+    // Update unit status (limited)
+    $(document).on('change', '.status-select', function() {
+        const unitId = $(this).data('id');
+        const status = $(this).val();
+        const $select = $(this);
+
+        $.post('/SupportAdmin/Equipment/UpdateUnitStatus', {
+            unitId: unitId,
+            status: status,
+            __RequestVerificationToken: $('#tokenForm input[name="__RequestVerificationToken"]').val()
+        }, function(res) {
+            if (res.success) {
+                // Update badge
+                const $badge = $select.closest('tr').find('.badge');
+                $badge.removeClass('bg-success bg-warning bg-secondary').addClass(status === 'available' ? 'bg-success' : 'bg-warning');
+                $badge.text(status);
+                loadStats();
+            } else {
+                alert('Error: ' + res.message);
+                // Revert selection
+                location.reload();
+            }
+        });
+    });
+});
+</script>
+<form id="tokenForm">@Html.AntiForgeryToken()</form>
+}

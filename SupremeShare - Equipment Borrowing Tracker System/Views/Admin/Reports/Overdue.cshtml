@@ -1,0 +1,164 @@
+@{
+    ViewData["Title"] = "Overdue Items Report";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-clock-history me-2 text-danger"></i>Overdue Items Report</h2>
+        <div>
+            <button class="btn btn-outline-success me-2" onclick="exportToExcel()">
+                <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+            </button>
+            <a href="/Admin/Reports" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body text-center">
+                    <h2 id="totalOverdue">-</h2>
+                    <small>Total Overdue Items</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-dark">
+                <div class="card-body text-center">
+                    <h2 id="criticalOverdue">-</h2>
+                    <small>Critical (7+ days)</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h2 id="studentsAffected">-</h2>
+                    <small>Students Affected</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overdue Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-table me-2"></i>Overdue Items List</span>
+            <button class="btn btn-sm btn-light" onclick="loadOverdueItems()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="overdueTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Days Overdue</th>
+                            <th>Student</th>
+                            <th>Contact</th>
+                            <th>Equipment</th>
+                            <th>Serial No</th>
+                            <th>Due Date</th>
+                            <th>Transaction</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script>
+let overdueData = [];
+let dataTable = null;
+
+$(document).ready(function() {
+    // Initialize DataTable with sorting
+    dataTable = $('#overdueTable').DataTable({
+        order: [[0, 'desc']], // Sort by days overdue descending
+        pageLength: 25,
+        language: {
+            emptyTable: '<i class="bi bi-check-circle me-2 text-success"></i>No overdue items!'
+        },
+        columnDefs: [
+            { orderable: true, targets: '_all' },
+            { type: 'num', targets: 0 } // Days overdue column
+        ]
+    });
+
+    loadOverdueItems();
+
+    // SignalR for real-time updates
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/dashboard")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("StatsUpdated", loadOverdueItems);
+    connection.start().catch(err => console.error(err));
+});
+
+function loadOverdueItems() {
+    $.get('/Admin/Reports/GetOverdueItems', function(res) {
+        if (res.success) {
+            overdueData = res.data;
+            renderTable(res.data);
+            updateSummary(res.data);
+        }
+    });
+}
+
+function renderTable(data) {
+    dataTable.clear();
+    data.forEach(item => {
+        const badgeClass = item.daysOverdue >= 7 ? 'bg-danger' : item.daysOverdue >= 3 ? 'bg-warning text-dark' : 'bg-info';
+        dataTable.row.add([
+            `<span class="badge ${badgeClass} fs-6">${item.daysOverdue}</span>`,
+            `<strong>${item.studentIdNumber}</strong><br><small>${item.studentName}</small><br><small class="text-muted">${item.studentCollege}</small>`,
+            `${item.studentEmail ? `<a href="mailto:${item.studentEmail}"><i class="bi bi-envelope"></i></a>` : ''}${item.studentContact ? `<a href="tel:${item.studentContact}"><i class="bi bi-telephone ms-2"></i></a>` : ''}<br><small class="text-muted">${item.studentContact || item.studentEmail || 'No contact'}</small>`,
+            `${item.equipmentName}<br><small class="text-muted">${item.category}</small>`,
+            `<strong>${item.serialNo}</strong>`,
+            item.dueDate,
+            `<code>${item.transactionCode}</code>`,
+            `<a href="/Admin/Transactions/Return" class="btn btn-sm btn-success" title="Process Return"><i class="bi bi-arrow-return-left"></i></a>`
+        ]);
+    });
+    dataTable.draw();
+}
+
+function updateSummary(data) {
+    $('#totalOverdue').text(data.length);
+    $('#criticalOverdue').text(data.filter(d => d.daysOverdue >= 7).length);
+    const uniqueStudents = [...new Set(data.map(d => d.studentIdNumber))];
+    $('#studentsAffected').text(uniqueStudents.length);
+}
+
+function exportToExcel() {
+    if (overdueData.length === 0) {
+        alert('No data to export');
+        return;
+    }
+    let csv = 'Days Overdue,Student ID,Student Name,College,Email,Contact,Equipment,Serial No,Due Date,Transaction Code\n';
+    overdueData.forEach(d => {
+        csv += `${d.daysOverdue},"${d.studentIdNumber}","${d.studentName}","${d.studentCollege}","${d.studentEmail || ''}","${d.studentContact || ''}","${d.equipmentName}","${d.serialNo}","${d.dueDate}","${d.transactionCode}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `overdue_report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+}
+</script>
+}

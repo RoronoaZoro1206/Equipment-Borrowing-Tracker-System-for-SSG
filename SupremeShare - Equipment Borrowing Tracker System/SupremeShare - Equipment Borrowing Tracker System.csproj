@@ -37,7 +37,6 @@
     <Folder Include="Data\" />
     <Folder Include="Middlleware\" />
     <Folder Include="Exceptions\" />
-    <Folder Include="md_files\" />
     <Folder Include="File_Images\" />
     <Folder Include="Schema\" />
     <Folder Include="Repositories\Implementations\" />
@@ -46,6 +45,10 @@
     <Folder Include="Views\Auth\" />
     <Folder Include="Views\Error\" />
     <Folder Include="Views\Support Admin\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
 </Project>

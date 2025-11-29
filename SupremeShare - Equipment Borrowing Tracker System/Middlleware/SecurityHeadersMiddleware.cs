@@ -26,14 +26,14 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Middleware
             // Referrer policy
             context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
 
-            // Content Security Policy - updated to allow CDNs
+            // Content Security Policy - updated to allow CDNs and WebSockets
             context.Response.Headers["Content-Security-Policy"] =
                 "default-src 'self'; " +
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; " +
                 "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; " +
-                "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com; " +
-                "img-src 'self' data:; " +
-                "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;";
+                "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com data:; " +
+                "img-src 'self' data: https:; " +
+                "connect-src 'self' ws: wss: https://fonts.googleapis.com https://fonts.gstatic.com;";
 
             // Permissions Policy
             context.Response.Headers["Permissions-Policy"] =

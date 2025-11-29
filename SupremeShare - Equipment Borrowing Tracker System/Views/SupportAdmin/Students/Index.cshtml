@@ -1,0 +1,158 @@
+@{
+    ViewData["Title"] = "Students (View Only)";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-people me-2"></i>Student Records</h2>
+        <span class="badge bg-secondary fs-6"><i class="bi bi-eye me-1"></i>View Only</span>
+    </div>
+
+    <!-- Search -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by Student ID or Name...">
+                <button class="btn btn-primary" id="btnSearch">Search</button>
+                <button class="btn btn-outline-secondary" id="btnClear">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-table me-2"></i>Student List</span>
+            <button class="btn btn-sm btn-light" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="studentsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Full Name</th>
+                            <th>College</th>
+                            <th>Course</th>
+                            <th>Contact</th>
+                            <th>Status</th>
+                            <th>Date Added</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Note -->
+    <div class="alert alert-info mt-3">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Note:</strong> To add, edit, or manage student records, please contact an Administrator.
+    </div>
+</div>
+
+<!-- Student Details Modal -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-person me-2"></i>Student Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsContent">
+                Loading...
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    loadStudents();
+
+    function loadStudents() {
+        $.get('/SupportAdmin/Students/GetAll', function(res) {
+            if (res.success) {
+                renderStudents(res.data);
+            }
+        });
+    }
+
+    function renderStudents(students) {
+        let html = '';
+        students.forEach(s => {
+            const statusCls = s.studentStatus ? 'bg-success' : 'bg-danger';
+            const statusText = s.studentStatus ? 'Active' : 'Blocked';
+            
+            html += `<tr class="student-row" data-id="${s.studentId}" style="cursor: pointer;">
+                <td><strong>${s.studentIdNumber}</strong></td>
+                <td>${s.fullName}</td>
+                <td>${s.studentCollege}</td>
+                <td>${s.studentCourse || '-'}</td>
+                <td>${s.studentContactNo || s.studentEmail || '-'}</td>
+                <td><span class="badge ${statusCls}">${statusText}</span></td>
+                <td>${s.studentDateAdded}</td>
+            </tr>`;
+        });
+        $('#studentsTable tbody').html(html || '<tr><td colspan="7" class="text-center text-muted">No students found</td></tr>');
+    }
+
+    $('#btnRefresh').click(loadStudents);
+
+    // Search
+    $('#btnSearch').click(doSearch);
+    $('#searchInput').keypress(function(e) { if (e.which === 13) doSearch(); });
+
+    function doSearch() {
+        const q = $('#searchInput').val().trim();
+        if (!q) {
+            loadStudents();
+            return;
+        }
+
+        $.get(`/SupportAdmin/Students/Search?q=${encodeURIComponent(q)}`, function(res) {
+            if (res.success) {
+                renderStudents(res.data);
+            }
+        });
+    }
+
+    $('#btnClear').click(function() {
+        $('#searchInput').val('');
+        loadStudents();
+    });
+
+    // View details
+    $(document).on('click', '.student-row', function() {
+        const id = $(this).data('id');
+        $.get(`/SupportAdmin/Students/Get/${id}`, function(res) {
+            if (res.success) {
+                const s = res.data;
+                const statusCls = s.studentStatus ? 'text-success' : 'text-danger';
+                const statusText = s.studentStatus ? 'Active' : 'Blocked';
+                
+                $('#detailsContent').html(`
+                    <table class="table table-sm">
+                        <tr><td><strong>Student ID:</strong></td><td>${s.studentIdNumber}</td></tr>
+                        <tr><td><strong>Full Name:</strong></td><td>${s.studentFirstName} ${s.studentMiddleName || ''} ${s.studentLastName} ${s.studentSuffix || ''}</td></tr>
+                        <tr><td><strong>College:</strong></td><td>${s.studentCollege}</td></tr>
+                        <tr><td><strong>Course:</strong></td><td>${s.studentCourse || '-'}</td></tr>
+                        <tr><td><strong>Email:</strong></td><td>${s.studentEmail || '-'}</td></tr>
+                        <tr><td><strong>Contact No:</strong></td><td>${s.studentContactNo || '-'}</td></tr>
+                        <tr><td><strong>Status:</strong></td><td class="${statusCls}"><strong>${statusText}</strong></td></tr>
+                        <tr><td><strong>Date Added:</strong></td><td>${new Date(s.studentDateAdded).toLocaleDateString()}</td></tr>
+                    </table>
+                `);
+                new bootstrap.Modal('#detailsModal').show();
+            }
+        });
+    });
+});
+</script>
+}

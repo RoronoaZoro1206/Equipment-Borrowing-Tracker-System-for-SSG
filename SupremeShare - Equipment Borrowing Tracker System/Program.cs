@@ -2,6 +2,8 @@ using SupremeShare___Equipment_Borrowing_Tracker_System.Data;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Middleware;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfaces;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Implementations;
+using SupremeShare___Equipment_Borrowing_Tracker_System.Hubs;
+using SupremeShare___Equipment_Borrowing_Tracker_System.Services;
 
 // Load environment variables from .env file
 DotNetEnv.Env.Load();
@@ -17,10 +19,10 @@ if (string.IsNullOrEmpty(connectionString))
 {
     // Build connection string from individual env variables
     var host = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
-    var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5432";
+    var port = Environment.GetEnvironmentVariable("DB_PORT") ?? "5433";
     var database = Environment.GetEnvironmentVariable("DB_NAME") ?? "supremeshare_db";
     var username = Environment.GetEnvironmentVariable("DB_USER") ?? "postgres";
-    var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "";
+    var password = Environment.GetEnvironmentVariable("DB_PASSWORD") ?? "!*Lawrence1206";
     
     connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password}";
 }
@@ -32,6 +34,9 @@ builder.Configuration["ConnectionStrings:DefaultConnection"] = connectionString;
 // Services Configuration
 // ===========================================
 builder.Services.AddControllersWithViews();
+
+// Add SignalR for real-time updates
+builder.Services.AddSignalR();
 
 // Determine if we're in development
 var isDevelopment = builder.Environment.IsDevelopment();
@@ -73,6 +78,18 @@ builder.Services.AddScoped<IEquipmentUnitRepository, EquipmentUnitRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IBorrowRecordRepository, BorrowRecordRepository>();
 builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+
+// ===========================================
+// Register SignalR Services
+// ===========================================
+builder.Services.AddScoped<IDashboardNotificationService, DashboardNotificationService>();
+
+// ===========================================
+// Register Initializers & Migration Services
+// ===========================================
+builder.Services.AddScoped<AdminInitializer>();
+builder.Services.AddScoped<SupportAdminInitializer>();
+builder.Services.AddScoped<PasswordMigrationService>();
 
 // ===========================================
 // Logging Configuration
@@ -120,6 +137,36 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+// Map SignalR Hub
+app.MapHub<DashboardHub>("/hubs/dashboard");
+
+// ===========================================
+// Initialize Admin Accounts & Migrate Passwords
+// ===========================================
+try
+{
+    using var scope = app.Services.CreateScope();
+    
+    // Step 1: Migrate any existing plaintext passwords to BCrypt
+    var passwordMigration = scope.ServiceProvider.GetRequiredService<PasswordMigrationService>();
+    if (await passwordMigration.HasPlaintextPasswordsAsync())
+    {
+        app.Logger.LogWarning("Plaintext passwords detected! Running migration to BCrypt...");
+        await passwordMigration.MigratePasswordsAsync();
+    }
+
+    // Step 2: Initialize admin accounts (will use BCrypt for new accounts)
+    var adminInitializer = scope.ServiceProvider.GetRequiredService<AdminInitializer>();
+    await adminInitializer.InitializeAsync();
+
+    var supportAdminInitializer = scope.ServiceProvider.GetRequiredService<SupportAdminInitializer>();
+    await supportAdminInitializer.InitializeAsync();
+}
+catch (Exception ex)
+{
+    app.Logger.LogError(ex, "Error during admin initialization. App will continue without seeding admin accounts.");
+}
 
 // ===========================================
 // Startup Message

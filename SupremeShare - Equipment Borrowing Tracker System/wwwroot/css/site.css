@@ -129,24 +129,26 @@ h1, h2, h3, h4, h5 {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     box-shadow: 0 2px 30px rgba(0, 0, 0, 0.08);
-    padding: 15px 0;
+    padding: 8px 0;
     transition: all 0.3s ease;
 }
 
 .navbar-premium.scrolled {
-    padding: 10px 0;
+    padding: 5px 0;
     background: var(--white);
 }
 
 .navbar-logo {
-    height: 40px;
+    height: 26px;
     width: auto;
     object-fit: contain;
     transition: transform 0.3s ease;
+    transform: scale(2.2);
+    transform-origin: center;
 }
 
 .navbar-logo:hover {
-    transform: scale(1.05);
+    transform: scale(2.3);
 }
 
 .navbar-premium .navbar-brand {
@@ -155,6 +157,7 @@ h1, h2, h3, h4, h5 {
     font-size: 1.6rem;
     color: var(--primary-red) !important;
     letter-spacing: 0.5px;
+    overflow: visible;
 }
 
 .navbar-premium .navbar-brand span {

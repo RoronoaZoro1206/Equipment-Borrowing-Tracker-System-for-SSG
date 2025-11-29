@@ -1,0 +1,238 @@
+@{
+    ViewData["Title"] = "Audit Log";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-journal-text me-2"></i>Audit Log</h2>
+        <a href="/Admin/Reports" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Reports
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Filter by Action</label>
+                    <select id="actionFilter" class="form-select">
+                        <option value="">All Actions</option>
+                        <option value="BORROW">Borrow Transactions</option>
+                        <option value="RETURN">Return Transactions</option>
+                        <option value="Status Changed">Status Changes</option>
+                        <option value="USER">User Actions</option>
+                        <option value="STUDENT">Student Actions</option>
+                        <option value="EQUIPMENT">Equipment Actions</option>
+                        <option value="lost">Lost Items</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Page Size</label>
+                    <select id="pageSize" class="form-select">
+                        <option value="25">25 per page</option>
+                        <option value="50" selected>50 per page</option>
+                        <option value="100">100 per page</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" onclick="loadAuditLogs(1)">
+                        <i class="bi bi-funnel me-1"></i>Apply Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time indicator -->
+    <div class="alert alert-info d-flex align-items-center mb-4" id="realtimeAlert">
+        <i class="bi bi-broadcast me-2"></i>
+        <span>Real-time updates enabled. New audit entries will appear automatically.</span>
+        <span class="badge bg-success ms-auto" id="connectionBadge">Connected</span>
+    </div>
+
+    <!-- Audit Log Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-table me-2"></i>Audit Trail</span>
+            <div>
+                <span class="badge bg-secondary me-2" id="totalCount">0 records</span>
+                <button class="btn btn-sm btn-light" onclick="loadAuditLogs(currentPage)">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-sm mb-0" id="auditTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 150px;">Timestamp</th>
+                            <th style="width: 120px;">User</th>
+                            <th>Action</th>
+                            <th style="width: 150px;">Old Value</th>
+                            <th style="width: 150px;">New Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer">
+            <nav>
+                <ul class="pagination pagination-sm mb-0 justify-content-center" id="pagination"></ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Audit Entry Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailContent"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script>
+let currentPage = 1;
+
+$(document).ready(function() {
+    loadAuditLogs(1);
+
+    // SignalR for real-time audit updates
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/dashboard")
+        .withAutomaticReconnect()
+        .build();
+
+    connection.on("StatsUpdated", function() {
+        // Refresh if on first page
+        if (currentPage === 1) {
+            loadAuditLogs(1);
+        }
+    });
+
+    connection.onclose(() => {
+        $('#connectionBadge').removeClass('bg-success').addClass('bg-danger').text('Disconnected');
+    });
+
+    connection.onreconnected(() => {
+        $('#connectionBadge').removeClass('bg-danger').addClass('bg-success').text('Connected');
+    });
+
+    connection.start().catch(err => console.error(err));
+});
+
+function loadAuditLogs(page) {
+    currentPage = page;
+    const action = $('#actionFilter').val();
+    const pageSize = $('#pageSize').val();
+
+    $.get(`/Admin/Reports/GetAuditLogs?page=${page}&pageSize=${pageSize}&action=${encodeURIComponent(action)}`, function(res) {
+        if (res.success) {
+            renderTable(res.data);
+            renderPagination(res.pagination);
+            $('#totalCount').text(`${res.pagination.totalCount} records`);
+        }
+    });
+}
+
+function renderTable(data) {
+    let html = '';
+    data.forEach(item => {
+        const actionClass = getActionClass(item.action);
+        html += `<tr class="audit-row" data-id="${item.auditId}" style="cursor: pointer;">
+            <td><small>${item.loggedAt}</small></td>
+            <td>
+                <strong>${item.username || 'System'}</strong>
+                <br><small class="text-muted">${item.userFullName || ''}</small>
+            </td>
+            <td><span class="badge ${actionClass}">${truncate(item.action, 50)}</span></td>
+            <td><small class="text-muted">${truncate(item.oldData || '-', 30)}</small></td>
+            <td><small class="text-success">${truncate(item.newData || '-', 30)}</small></td>
+        </tr>`;
+    });
+    $('#auditTable tbody').html(html || '<tr><td colspan="5" class="text-center text-muted">No audit logs found</td></tr>');
+}
+
+function getActionClass(action) {
+    if (!action) return 'bg-secondary';
+    action = action.toLowerCase();
+    if (action.includes('borrow')) return 'bg-info';
+    if (action.includes('return')) return 'bg-success';
+    if (action.includes('lost')) return 'bg-danger';
+    if (action.includes('status')) return 'bg-warning text-dark';
+    if (action.includes('user')) return 'bg-primary';
+    return 'bg-secondary';
+}
+
+function truncate(str, len) {
+    if (!str) return '-';
+    return str.length > len ? str.substring(0, len) + '...' : str;
+}
+
+function renderPagination(pagination) {
+    let html = '';
+    const { page, totalPages } = pagination;
+
+    // Previous
+    html += `<li class="page-item ${page === 1 ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="loadAuditLogs(${page - 1}); return false;">Previous</a>
+    </li>`;
+
+    // Page numbers
+    const startPage = Math.max(1, page - 2);
+    const endPage = Math.min(totalPages, page + 2);
+
+    if (startPage > 1) {
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadAuditLogs(1); return false;">1</a></li>`;
+        if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+        html += `<li class="page-item ${i === page ? 'active' : ''}">
+            <a class="page-link" href="#" onclick="loadAuditLogs(${i}); return false;">${i}</a>
+        </li>`;
+    }
+
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadAuditLogs(${totalPages}); return false;">${totalPages}</a></li>`;
+    }
+
+    // Next
+    html += `<li class="page-item ${page === totalPages ? 'disabled' : ''}">
+        <a class="page-link" href="#" onclick="loadAuditLogs(${page + 1}); return false;">Next</a>
+    </li>`;
+
+    $('#pagination').html(html);
+}
+
+// Click row to see details
+$(document).on('click', '.audit-row', function() {
+    const row = $(this);
+    const cells = row.find('td');
+    $('#detailContent').html(`
+        <table class="table table-sm">
+            <tr><td><strong>Timestamp:</strong></td><td>${cells.eq(0).text()}</td></tr>
+            <tr><td><strong>User:</strong></td><td>${cells.eq(1).html()}</td></tr>
+            <tr><td><strong>Action:</strong></td><td>${cells.eq(2).html()}</td></tr>
+            <tr><td><strong>Old Value:</strong></td><td><pre class="mb-0">${cells.eq(3).text()}</pre></td></tr>
+            <tr><td><strong>New Value:</strong></td><td><pre class="mb-0">${cells.eq(4).text()}</pre></td></tr>
+        </table>
+    `);
+    new bootstrap.Modal('#detailModal').show();
+});
+</script>
+}

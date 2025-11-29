@@ -1,6 +1,5 @@
 @{
-    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var currentPath = Context.Request.Path.ToString().ToLower();
 }
 
 <aside class="admin-sidebar" id="adminSidebar">
@@ -11,8 +10,8 @@
     <nav class="sidebar-nav">
         <ul class="sidebar-menu">
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "Dashboard" ? "active" : "")" 
-                   asp-controller="Dashboard" asp-action="Index">
+                <a class="sidebar-link @(currentPath == "/admin" || currentPath == "/admin/index" ? "active" : "")" 
+                   href="/Admin">
                     <i class="bi bi-speedometer2"></i>
                     <span>Dashboard</span>
                 </a>
@@ -21,25 +20,25 @@
             <li class="sidebar-section">Management</li>
             
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "Equipment" ? "active" : "")" 
-                   asp-controller="Equipment" asp-action="Index">
+                <a class="sidebar-link @(currentPath.StartsWith("/admin/equipment") ? "active" : "")" 
+                   href="/Admin/Equipment">
                     <i class="bi bi-box-seam"></i>
                     <span>Equipment</span>
                 </a>
             </li>
             
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "Transaction" ? "active" : "")" 
-                   asp-controller="Transaction" asp-action="Index">
+                <a class="sidebar-link @(currentPath.StartsWith("/admin/transactions") ? "active" : "")" 
+                   href="/Admin/Transactions">
                     <i class="bi bi-arrow-left-right"></i>
                     <span>Transactions</span>
                 </a>
             </li>
             
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "Student" ? "active" : "")" 
-                   asp-controller="Student" asp-action="Index">
-                    <i class="bi bi-people"></i>
+                <a class="sidebar-link @(currentPath.StartsWith("/admin/students") ? "active" : "")" 
+                   href="/Admin/Students">
+                    <i class="bi bi-mortarboard"></i>
                     <span>Students</span>
                 </a>
             </li>
@@ -47,24 +46,24 @@
             <li class="sidebar-section">Administration</li>
             
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "User" ? "active" : "")" 
-                   asp-controller="User" asp-action="Index">
+                <a class="sidebar-link @(currentPath.StartsWith("/admin/users") ? "active" : "")" 
+                   href="/Admin/Users">
                     <i class="bi bi-person-gear"></i>
                     <span>User Management</span>
                 </a>
             </li>
             
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "AuditLog" ? "active" : "")" 
-                   asp-controller="AuditLog" asp-action="Index">
+                <a class="sidebar-link @(currentPath.StartsWith("/admin/auditlog") ? "active" : "")" 
+                   href="/Admin/AuditLog">
                     <i class="bi bi-journal-text"></i>
                     <span>Audit Logs</span>
                 </a>
             </li>
             
             <li class="sidebar-item">
-                <a class="sidebar-link @(currentController == "Reports" ? "active" : "")" 
-                   asp-controller="Reports" asp-action="Index">
+                <a class="sidebar-link @(currentPath.StartsWith("/admin/reports") ? "active" : "")" 
+                   href="/Admin/Reports">
                     <i class="bi bi-graph-up"></i>
                     <span>Reports</span>
                 </a>

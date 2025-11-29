@@ -187,28 +187,77 @@
 </div>
 
 @section Scripts {
-    <script>
-        function searchTransaction() {
-            const code = document.getElementById('transactionCode').value.trim();
-            if (code) {
-                // Show the transaction details card (demo)
-                document.getElementById('transactionDetails').style.display = 'block';
-                document.getElementById('txnCode').textContent = code;
-                
-                // In production, you would fetch data from API
-                // fetch(`/api/transaction/${code}`)...
-            }
+<script>
+$(document).ready(function() {
+    loadDashboardStats();
+});
+
+function loadDashboardStats() {
+    $.get('/SupportAdmin/Transactions/Stats', function(res) {
+        if (res.success) {
+            // Update the status cards with actual data
+            $('.status-card.borrowed .status-value').text(res.data.activeBorrows);
+            $('.status-card.available .status-value').text(res.data.returnedToday);
+            $('.status-card.review .status-value').text(res.data.overdueCount);
+            $('.status-card.lost .status-value').text(res.data.lostCount);
         }
-        
-        function closeTransactionDetails() {
-            document.getElementById('transactionDetails').style.display = 'none';
+    });
+}
+
+function searchTransaction() {
+    const code = document.getElementById('transactionCode').value.trim();
+    if (!code) return;
+
+    $.get(`/SupportAdmin/Transactions/SearchByCode?code=${encodeURIComponent(code)}`, function(res) {
+        if (res.success && res.data) {
+            const d = res.data;
+            document.getElementById('transactionDetails').style.display = 'block';
+            document.getElementById('txnCode').textContent = d.transactionCode;
+            document.getElementById('studentId').textContent = d.student.studentIdNumber;
+            document.getElementById('studentName').textContent = d.student.fullName;
+            document.getElementById('studentCollege').textContent = d.student.studentCollege || '-';
+            document.getElementById('studentCourse').textContent = '-';
+            document.getElementById('studentEmail').textContent = '-';
+            document.getElementById('studentContact').textContent = '-';
+            document.getElementById('studentStatus').textContent = 'Active';
+            document.getElementById('txnRemarks').textContent = d.transactionRemarks || 'No remarks';
+            document.getElementById('recordedBy').textContent = '-';
+            document.getElementById('dateBorrowed').textContent = new Date(d.transactionDateBorrowed).toLocaleString();
+            document.getElementById('lastUpdated').textContent = '-';
+
+            // Populate borrowing table
+            let itemsHtml = '';
+            d.items.forEach(i => {
+                const statusCls = i.borrowStatus === 'returned' ? 'text-success' : 
+                                  i.borrowStatus === 'overdue' ? 'text-danger' : 'text-info';
+                itemsHtml += `<tr>
+                    <td>-</td>
+                    <td>${i.equipmentName || '-'}</td>
+                    <td>${i.serialNo || '-'}</td>
+                    <td class="${statusCls}">${i.borrowStatus}</td>
+                    <td>${new Date(d.transactionDateBorrowed).toLocaleDateString()}</td>
+                    <td>${new Date(i.borrowDueDate).toLocaleDateString()}</td>
+                    <td>${i.borrowDateReturned ? new Date(i.borrowDateReturned).toLocaleDateString() : '-'}</td>
+                    <td>${i.borrowReturnCondition !== null ? (i.borrowReturnCondition ? 'Good' : 'Damaged') : '-'}</td>
+                    <td>-</td>
+                </tr>`;
+            });
+            document.getElementById('borrowingTableBody').innerHTML = itemsHtml || '<tr><td colspan="9" class="text-center text-muted">No items found</td></tr>';
+        } else {
+            alert(res.message || 'Transaction not found');
         }
-        
-        // Allow Enter key to search
-        document.getElementById('transactionCode').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchTransaction();
-            }
-        });
-    </script>
+    });
+}
+
+function closeTransactionDetails() {
+    document.getElementById('transactionDetails').style.display = 'none';
+}
+
+// Allow Enter key to search
+document.getElementById('transactionCode').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchTransaction();
+    }
+});
+</script>
 }

@@ -1,0 +1,272 @@
+@{
+    ViewData["Title"] = "Process Return";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-box-arrow-in-down me-2"></i>Process Return</h2>
+        <a href="/SupportAdmin/Transactions" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Transactions
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Search & Active Borrows -->
+        <div class="col-md-8">
+            <!-- Search by Transaction Code -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <i class="bi bi-search me-2"></i>Find Transaction
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
+                        <input type="text" id="searchCode" class="form-control" placeholder="Enter Transaction Code (e.g., TR-20251130-...)">
+                        <button class="btn btn-warning" id="btnSearch">Search</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Borrows List -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-clock-history me-2"></i>Active Borrows (Pending Return)</span>
+                    <button class="btn btn-sm btn-light" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i></button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="activeBorrowsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Equipment</th>
+                                    <th>Serial No</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Return Form Panel -->
+        <div class="col-md-4">
+            <div class="card shadow-sm" id="returnPanel" style="display: none;">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-check-circle me-2"></i>Process Return
+                </div>
+                <div class="card-body">
+                    <form id="returnForm">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="BorrowId" id="returnBorrowId">
+
+                        <div class="mb-3">
+                            <label class="form-label">Transaction Code</label>
+                            <input type="text" id="returnCode" class="form-control" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Student</label>
+                            <input type="text" id="returnStudent" class="form-control" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Equipment</label>
+                            <input type="text" id="returnEquipment" class="form-control" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Serial Number</label>
+                            <input type="text" id="returnSerial" class="form-control" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Due Date</label>
+                            <input type="text" id="returnDueDate" class="form-control" readonly>
+                        </div>
+
+                        <div class="mb-3" id="overdueAlert" style="display: none;">
+                            <div class="alert alert-danger mb-0">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                <strong>OVERDUE!</strong> <span id="overdueDays"></span> days late
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Return Condition *</label>
+                            <div class="d-grid gap-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="Condition" id="conditionGood" value="true" checked>
+                                    <label class="form-check-label text-success" for="conditionGood">
+                                        <i class="bi bi-check-circle-fill me-1"></i>Good Condition
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="Condition" id="conditionDamaged" value="false">
+                                    <label class="form-check-label text-danger" for="conditionDamaged">
+                                        <i class="bi bi-x-circle-fill me-1"></i>Damaged
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check2-all me-2"></i>Confirm Return
+                            </button>
+                        </div>
+                        
+                        <!-- Note: Support Admin cannot mark items as lost -->
+                        <div class="alert alert-secondary mt-3 mb-0">
+                            <small><i class="bi bi-info-circle me-1"></i>To mark an item as lost, please contact an Administrator.</small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-secondary text-white">
+                    <i class="bi bi-info-circle me-2"></i>Instructions
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0 small">
+                        <li>Search by transaction code OR select from active borrows list</li>
+                        <li>Verify the equipment being returned</li>
+                        <li>Inspect and select the return condition</li>
+                        <li>Click "Confirm Return" to complete</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    loadActiveBorrows();
+
+    function loadActiveBorrows() {
+        $.get('/SupportAdmin/Transactions/GetActiveBorrows', function(res) {
+            if (res.success) {
+                let html = '';
+                res.data.forEach(b => {
+                    const statusCls = b.status === 'overdue' ? 'bg-danger' : 'bg-info';
+                    const overdueText = b.daysOverdue > 0 ? `<br><small class="text-danger">${b.daysOverdue} days overdue</small>` : '';
+                    
+                    html += `<tr>
+                        <td>${b.studentIdNumber}<br><small class="text-muted">${b.studentName}</small></td>
+                        <td>${b.equipmentName}</td>
+                        <td><strong>${b.serialNo}</strong></td>
+                        <td>${b.dueDate}${overdueText}</td>
+                        <td><span class="badge ${statusCls}">${b.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-success btn-select-return" 
+                                    data-id="${b.borrowId}"
+                                    data-code="${b.transactionCode}"
+                                    data-student="${b.studentIdNumber} - ${b.studentName}"
+                                    data-equipment="${b.equipmentName}"
+                                    data-serial="${b.serialNo}"
+                                    data-due="${b.dueDate}"
+                                    data-overdue="${b.daysOverdue}">
+                                <i class="bi bi-arrow-return-left"></i> Return
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+                $('#activeBorrowsTable tbody').html(html || '<tr><td colspan="6" class="text-center text-muted">No active borrows</td></tr>');
+            }
+        });
+    }
+
+    // Refresh
+    $('#btnRefresh').click(loadActiveBorrows);
+
+    // Select item for return
+    $(document).on('click', '.btn-select-return', function() {
+        const data = $(this).data();
+        $('#returnBorrowId').val(data.id);
+        $('#returnCode').val(data.code);
+        $('#returnStudent').val(data.student);
+        $('#returnEquipment').val(data.equipment);
+        $('#returnSerial').val(data.serial);
+        $('#returnDueDate').val(data.due);
+
+        if (data.overdue > 0) {
+            $('#overdueAlert').show();
+            $('#overdueDays').text(data.overdue);
+        } else {
+            $('#overdueAlert').hide();
+        }
+
+        $('#returnPanel').slideDown();
+        $('html, body').animate({ scrollTop: $('#returnPanel').offset().top - 100 }, 300);
+    });
+
+    // Search by code
+    $('#btnSearch').click(searchByCode);
+    $('#searchCode').keypress(function(e) { if (e.which === 13) { e.preventDefault(); searchByCode(); }});
+
+    function searchByCode() {
+        const code = $('#searchCode').val().trim();
+        if (!code) return;
+
+        $.get(`/SupportAdmin/Transactions/SearchByCode?code=${encodeURIComponent(code)}`, function(res) {
+            if (res.success && res.data.items) {
+                // Find first unreturned item
+                const unreturned = res.data.items.find(i => i.borrowStatus === 'borrowed' || i.borrowStatus === 'overdue');
+                if (unreturned) {
+                    $('#returnBorrowId').val(unreturned.borrowId);
+                    $('#returnCode').val(res.data.transactionCode);
+                    $('#returnStudent').val(`${res.data.student.studentIdNumber} - ${res.data.student.fullName}`);
+                    $('#returnEquipment').val(unreturned.equipmentName);
+                    $('#returnSerial').val(unreturned.serialNo);
+                    $('#returnDueDate').val(new Date(unreturned.borrowDueDate).toLocaleDateString());
+
+                    if (unreturned.daysOverdue > 0) {
+                        $('#overdueAlert').show();
+                        $('#overdueDays').text(unreturned.daysOverdue);
+                    } else {
+                        $('#overdueAlert').hide();
+                    }
+
+                    $('#returnPanel').slideDown();
+                } else {
+                    alert('All items in this transaction have been returned.');
+                }
+            } else {
+                alert(res.message || 'Transaction not found');
+            }
+        });
+    }
+
+    // Submit return
+    $('#returnForm').submit(function(e) {
+        e.preventDefault();
+        const condition = $('input[name="Condition"]:checked').val() === 'true';
+        const conditionText = condition ? 'Good' : 'Damaged';
+
+        if (!confirm(`Confirm return with condition: ${conditionText}?`)) return;
+
+        $.post('/SupportAdmin/Transactions/ProcessReturn', $(this).serialize(), function(res) {
+            if (res.success) {
+                alert(res.message);
+                window.location.reload();
+            } else {
+                alert('Error: ' + res.message);
+            }
+        });
+    });
+});
+</script>
+}

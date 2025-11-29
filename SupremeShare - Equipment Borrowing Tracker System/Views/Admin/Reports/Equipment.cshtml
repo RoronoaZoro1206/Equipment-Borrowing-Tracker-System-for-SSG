@@ -1,0 +1,178 @@
+@{
+    ViewData["Title"] = "Equipment Utilization Report";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-bar-chart me-2 text-info"></i>Equipment Utilization Report</h2>
+        <a href="/Admin/Reports" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Reports
+        </a>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-pie-chart me-2"></i>Borrows by Equipment
+                </div>
+                <div class="card-body">
+                    <canvas id="utilizationChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-bar-chart me-2"></i>Top Borrowed Equipment
+                </div>
+                <div class="card-body">
+                    <canvas id="topBorrowedChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Utilization Table -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-table me-2"></i>Equipment Utilization Details</span>
+            <button class="btn btn-sm btn-light" onclick="loadData()">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="utilizationTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Equipment</th>
+                            <th>Category</th>
+                            <th>Total Units</th>
+                            <th>Available</th>
+                            <th>Borrowed</th>
+                            <th>Total Borrows</th>
+                            <th>Returns</th>
+                            <th>Utilization Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let utilizationChart, topBorrowedChart;
+
+$(document).ready(function() {
+    loadData();
+});
+
+function loadData() {
+    $.get('/Admin/Reports/GetEquipmentUtilization', function(res) {
+        if (res.success) {
+            renderTable(res.data);
+            renderCharts(res.data);
+        }
+    });
+}
+
+let utilizationDataTable = null;
+
+function initDataTable() {
+    if (utilizationDataTable) return;
+    utilizationDataTable = $('#utilizationTable').DataTable({
+        order: [[5, 'desc']], // Sort by total borrows descending
+        pageLength: 25,
+        columnDefs: [
+            { orderable: true, targets: '_all' },
+            { type: 'num', targets: [2, 3, 4, 5, 6] }
+        ]
+    });
+}
+
+function renderTable(data) {
+    initDataTable();
+    utilizationDataTable.clear();
+    data.forEach(item => {
+        const utilizationPct = item.totalUnits > 0 ? Math.round((item.borrowedUnits / item.totalUnits) * 100) : 0;
+        const utilizationClass = utilizationPct >= 80 ? 'bg-danger' : utilizationPct >= 50 ? 'bg-warning' : 'bg-success';
+        
+        utilizationDataTable.row.add([
+            `<strong>${item.equipmentName}</strong>`,
+            `<span class="badge bg-secondary">${item.category}</span>`,
+            item.totalUnits,
+            `<span class="text-success">${item.availableUnits}</span>`,
+            `<span class="text-info">${item.borrowedUnits}</span>`,
+            `<strong>${item.totalBorrows}</strong>`,
+            item.totalReturns,
+            `<div class="progress" style="height: 20px;"><div class="progress-bar ${utilizationClass}" style="width: ${utilizationPct}%">${utilizationPct}%</div></div>`
+        ]);
+    });
+    utilizationDataTable.draw();
+}
+
+function renderCharts(data) {
+    const labels = data.map(d => d.equipmentName);
+    const borrowCounts = data.map(d => d.totalBorrows);
+    const colors = ['#8B0000', '#D4AF37', '#059669', '#3B82F6', '#F59E0B', '#8B5CF6', '#14B8A6', '#DC2626'];
+
+    // Destroy existing charts
+    if (utilizationChart) utilizationChart.destroy();
+    if (topBorrowedChart) topBorrowedChart.destroy();
+
+    // Pie Chart
+    utilizationChart = new Chart(document.getElementById('utilizationChart'), {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: borrowCounts,
+                backgroundColor: colors.slice(0, labels.length),
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { font: { size: 11 } } }
+            }
+        }
+    });
+
+    // Bar Chart - Top 5
+    const sortedData = [...data].sort((a, b) => b.totalBorrows - a.totalBorrows).slice(0, 5);
+    topBorrowedChart = new Chart(document.getElementById('topBorrowedChart'), {
+        type: 'bar',
+        data: {
+            labels: sortedData.map(d => d.equipmentName),
+            datasets: [{
+                label: 'Total Borrows',
+                data: sortedData.map(d => d.totalBorrows),
+                backgroundColor: '#8B0000',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, grid: { display: false } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+}
+</script>
+}

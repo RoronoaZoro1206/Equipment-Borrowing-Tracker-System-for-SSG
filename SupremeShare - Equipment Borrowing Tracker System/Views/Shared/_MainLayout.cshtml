@@ -1,5 +1,11 @@
 @{
-    var userRole = Context.Session.GetString("UserRole") ?? "";
+    var userRole = (Context.Session.GetString("UserRole") ?? "").ToLower();
+    var isAuthenticated = Context.Session.GetInt32("UserId") != null;
+    var currentPath = Context.Request.Path.ToString().ToLower();
+    
+    // Determine which sidebar to show based on role or path
+    var showAdminSidebar = userRole == "admin" || currentPath.StartsWith("/admin");
+    var showSupportSidebar = userRole == "support_admin" && !currentPath.StartsWith("/admin");
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -12,13 +18,22 @@
     
     <div class="admin-wrapper">
         <!-- Sidebar based on role -->
-        @if (userRole == "admin")
+        @if (isAuthenticated && showAdminSidebar)
         {
             <partial name="_AdminSidebarPartial" />
         }
-        else if (userRole == "support_admin")
+        else if (isAuthenticated && showSupportSidebar)
         {
             <partial name="_SupportAdminSidebarPartial" />
+        }
+        else if (isAuthenticated && userRole == "support_admin")
+        {
+            <partial name="_SupportAdminSidebarPartial" />
+        }
+        else if (isAuthenticated)
+        {
+            <!-- Fallback: show admin sidebar for authenticated users -->
+            <partial name="_AdminSidebarPartial" />
         }
         
         <!-- Main Content -->

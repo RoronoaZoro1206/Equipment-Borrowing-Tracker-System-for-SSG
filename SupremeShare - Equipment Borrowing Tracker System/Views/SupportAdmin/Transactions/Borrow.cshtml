@@ -1,0 +1,261 @@
+@{
+    ViewData["Title"] = "New Borrow Transaction";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-box-arrow-up me-2"></i>New Borrow Transaction</h2>
+        <a href="/SupportAdmin/Transactions" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Transactions
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Borrow Form -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <i class="bi bi-clipboard-check me-2"></i>Borrow Form
+                </div>
+                <div class="card-body">
+                    <form id="borrowForm">
+                        @Html.AntiForgeryToken()
+                        
+                        <!-- Step 1: Select Student -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">1. Select Student (Borrower)</h5>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" id="studentSearch" class="form-control" placeholder="Search by Student ID Number or Name...">
+                                <button type="button" class="btn btn-outline-primary" id="btnSearchStudent">Search</button>
+                            </div>
+                            <div id="studentResults" class="list-group mb-2" style="max-height: 200px; overflow-y: auto;"></div>
+                            <div id="selectedStudent" class="alert alert-info d-none">
+                                <strong>Selected:</strong> <span id="studentInfo"></span>
+                                <input type="hidden" name="StudentId" id="studentId">
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Select Equipment -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">2. Select Equipment</h5>
+                            <div class="row mb-2">
+                                <div class="col-md-6">
+                                    <label class="form-label">Equipment Type</label>
+                                    <select id="equipmentSelect" class="form-select">
+                                        <option value="">-- Select Equipment --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Available Unit</label>
+                                    <select id="unitSelect" class="form-select" name="UnitId" disabled>
+                                        <option value="">-- Select Unit --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="selectedUnit" class="alert alert-success d-none">
+                                <strong>Selected Unit:</strong> <span id="unitInfo"></span>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Set Due Date -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">3. Set Due Date</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Due Date</label>
+                                    <input type="datetime-local" name="DueDate" id="dueDate" class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Quick Select</label>
+                                    <div class="btn-group w-100">
+                                        <button type="button" class="btn btn-outline-secondary btn-due" data-days="1">1 Day</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-due" data-days="3">3 Days</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-due" data-days="7">1 Week</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success btn-lg" id="btnSubmit" disabled>
+                                <i class="bi bi-check-circle me-2"></i>Process Borrow Transaction
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Panel -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <i class="bi bi-receipt me-2"></i>Transaction Summary
+                </div>
+                <div class="card-body">
+                    <table class="table table-sm">
+                        <tr><td>Student:</td><td id="summaryStudent">-</td></tr>
+                        <tr><td>Equipment:</td><td id="summaryEquipment">-</td></tr>
+                        <tr><td>Serial No:</td><td id="summarySerial">-</td></tr>
+                        <tr><td>Due Date:</td><td id="summaryDue">-</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-info text-white">
+                    <i class="bi bi-info-circle me-2"></i>Instructions
+                </div>
+                <div class="card-body">
+                    <ol class="mb-0">
+                        <li>Search and select the student borrower</li>
+                        <li>Choose equipment type and available unit</li>
+                        <li>Set the due date for return</li>
+                        <li>Click "Process Borrow Transaction"</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+$(document).ready(function() {
+    // Set default due date to 7 days from now
+    const defaultDue = new Date();
+    defaultDue.setDate(defaultDue.getDate() + 7);
+    $('#dueDate').val(defaultDue.toISOString().slice(0, 16));
+
+    // Load equipment types
+    $.get('/SupportAdmin/Equipment/GetAll', function(res) {
+        if (res.success) {
+            res.data.forEach(e => {
+                if (e.availableStock > 0) {
+                    $('#equipmentSelect').append(`<option value="${e.equipmentId}" data-name="${e.equipmentName}">${e.equipmentName} (${e.availableStock} available)</option>`);
+                }
+            });
+        }
+    });
+
+    // Search student
+    $('#btnSearchStudent').click(searchStudent);
+    $('#studentSearch').keypress(function(e) { if (e.which === 13) { e.preventDefault(); searchStudent(); }});
+
+    function searchStudent() {
+        const q = $('#studentSearch').val().trim();
+        if (q.length < 2) return;
+        $.get(`/SupportAdmin/Students/Search?q=${encodeURIComponent(q)}`, function(res) {
+            if (res.success) {
+                let html = '';
+                res.data.forEach(s => {
+                    if (s.studentStatus) {
+                        html += `<a href="#" class="list-group-item list-group-item-action student-item" 
+                                    data-id="${s.studentId}" data-number="${s.studentIdNumber}" data-name="${s.fullName}">
+                                    <strong>${s.studentIdNumber}</strong> - ${s.fullName}
+                                    <small class="text-muted d-block">${s.studentCollege} - ${s.studentCourse || ''}</small>
+                                </a>`;
+                    } else {
+                        html += `<div class="list-group-item list-group-item-danger">
+                                    <strong>${s.studentIdNumber}</strong> - ${s.fullName}
+                                    <small class="text-danger d-block">BLOCKED - Cannot borrow</small>
+                                </div>`;
+                    }
+                });
+                $('#studentResults').html(html || '<div class="list-group-item text-muted">No students found</div>');
+            }
+        });
+    }
+
+    // Select student
+    $(document).on('click', '.student-item', function(e) {
+        e.preventDefault();
+        const id = $(this).data('id');
+        const number = $(this).data('number');
+        const name = $(this).data('name');
+        $('#studentId').val(id);
+        $('#studentInfo').text(`${number} - ${name}`);
+        $('#selectedStudent').removeClass('d-none');
+        $('#studentResults').empty();
+        $('#summaryStudent').text(`${number} - ${name}`);
+        checkFormComplete();
+    });
+
+    // Equipment type change - load available units
+    $('#equipmentSelect').change(function() {
+        const equipmentId = $(this).val();
+        const equipmentName = $(this).find(':selected').data('name');
+        $('#unitSelect').empty().append('<option value="">-- Select Unit --</option>').prop('disabled', true);
+        $('#selectedUnit').addClass('d-none');
+        $('#summaryEquipment').text(equipmentName || '-');
+        $('#summarySerial').text('-');
+
+        if (equipmentId) {
+            $.get(`/SupportAdmin/Equipment/AvailableUnits/${equipmentId}`, function(res) {
+                if (res.success && res.data.length > 0) {
+                    res.data.forEach(u => {
+                        $('#unitSelect').append(`<option value="${u.eunitId}" data-serial="${u.eunitSerialNo}">${u.eunitSerialNo} (${u.condition})</option>`);
+                    });
+                    $('#unitSelect').prop('disabled', false);
+                } else {
+                    $('#unitSelect').append('<option value="">No available units</option>');
+                }
+            });
+        }
+        checkFormComplete();
+    });
+
+    // Unit selection
+    $('#unitSelect').change(function() {
+        const serial = $(this).find(':selected').data('serial');
+        if ($(this).val()) {
+            $('#unitInfo').text(serial);
+            $('#selectedUnit').removeClass('d-none');
+            $('#summarySerial').text(serial);
+        } else {
+            $('#selectedUnit').addClass('d-none');
+            $('#summarySerial').text('-');
+        }
+        checkFormComplete();
+    });
+
+    // Due date quick select
+    $('.btn-due').click(function() {
+        const days = $(this).data('days');
+        const due = new Date();
+        due.setDate(due.getDate() + days);
+        $('#dueDate').val(due.toISOString().slice(0, 16));
+        $('#summaryDue').text(due.toLocaleDateString());
+    });
+
+    $('#dueDate').change(function() {
+        $('#summaryDue').text(new Date($(this).val()).toLocaleDateString());
+    });
+
+    function checkFormComplete() {
+        const studentId = $('#studentId').val();
+        const unitId = $('#unitSelect').val();
+        const dueDate = $('#dueDate').val();
+        $('#btnSubmit').prop('disabled', !(studentId && unitId && dueDate));
+    }
+
+    // Submit form
+    $('#borrowForm').submit(function(e) {
+        e.preventDefault();
+        if (!confirm('Confirm borrow transaction?')) return;
+
+        $.post('/SupportAdmin/Transactions/ProcessBorrow', $(this).serialize(), function(res) {
+            if (res.success) {
+                alert(`Success! Transaction Code: ${res.transactionCode}`);
+                window.location.href = '/SupportAdmin/Transactions';
+            } else {
+                alert('Error: ' + res.message);
+            }
+        });
+    });
+});
+</script>
+}
