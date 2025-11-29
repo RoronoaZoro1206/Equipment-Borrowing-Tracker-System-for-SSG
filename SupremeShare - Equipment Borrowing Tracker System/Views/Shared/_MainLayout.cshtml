@@ -1,0 +1,50 @@
+@{
+    var userRole = Context.Session.GetString("UserRole") ?? "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <partial name="_HeadPartial" />
+</head>
+<body class="admin-body">
+    <!-- Top Navbar -->
+    <partial name="_MainNavbarPartial" />
+    
+    <div class="admin-wrapper">
+        <!-- Sidebar based on role -->
+        @if (userRole == "admin")
+        {
+            <partial name="_AdminSidebarPartial" />
+        }
+        else if (userRole == "support_admin")
+        {
+            <partial name="_SupportAdminSidebarPartial" />
+        }
+        
+        <!-- Main Content -->
+        <main class="admin-content">
+            @RenderBody()
+        </main>
+    </div>
+    
+    <!-- Sidebar Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <partial name="_CommonScripts" />
+    
+    <script>
+        // Sidebar toggle for mobile
+        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+            document.getElementById('adminSidebar')?.classList.toggle('show');
+            document.getElementById('sidebarOverlay')?.classList.toggle('show');
+        });
+        
+        document.getElementById('sidebarOverlay')?.addEventListener('click', function() {
+            document.getElementById('adminSidebar')?.classList.remove('show');
+            this.classList.remove('show');
+        });
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

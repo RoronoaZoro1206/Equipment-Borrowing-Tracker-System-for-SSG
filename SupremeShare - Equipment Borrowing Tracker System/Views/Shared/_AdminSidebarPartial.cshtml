@@ -1,0 +1,74 @@
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+
+<aside class="admin-sidebar" id="adminSidebar">
+    <div class="sidebar-header">
+        <span class="sidebar-title">Admin Panel</span>
+    </div>
+    
+    <nav class="sidebar-nav">
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">
+                <a class="sidebar-link @(currentController == "Dashboard" ? "active" : "")" 
+                   asp-controller="Dashboard" asp-action="Index">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-section">Management</li>
+            
+            <li class="sidebar-item">
+                <a class="sidebar-link @(currentController == "Equipment" ? "active" : "")" 
+                   asp-controller="Equipment" asp-action="Index">
+                    <i class="bi bi-box-seam"></i>
+                    <span>Equipment</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a class="sidebar-link @(currentController == "Transaction" ? "active" : "")" 
+                   asp-controller="Transaction" asp-action="Index">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <span>Transactions</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a class="sidebar-link @(currentController == "Student" ? "active" : "")" 
+                   asp-controller="Student" asp-action="Index">
+                    <i class="bi bi-people"></i>
+                    <span>Students</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-section">Administration</li>
+            
+            <li class="sidebar-item">
+                <a class="sidebar-link @(currentController == "User" ? "active" : "")" 
+                   asp-controller="User" asp-action="Index">
+                    <i class="bi bi-person-gear"></i>
+                    <span>User Management</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a class="sidebar-link @(currentController == "AuditLog" ? "active" : "")" 
+                   asp-controller="AuditLog" asp-action="Index">
+                    <i class="bi bi-journal-text"></i>
+                    <span>Audit Logs</span>
+                </a>
+            </li>
+            
+            <li class="sidebar-item">
+                <a class="sidebar-link @(currentController == "Reports" ? "active" : "")" 
+                   asp-controller="Reports" asp-action="Index">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</aside>

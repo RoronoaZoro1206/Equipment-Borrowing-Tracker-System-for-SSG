@@ -104,6 +104,14 @@ app.UseMiddleware<RateLimitingMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// Serve files from File_Images folder
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "File_Images")),
+    RequestPath = "/File_Images"
+});
+
 app.UseRouting();
 
 app.UseSession();
