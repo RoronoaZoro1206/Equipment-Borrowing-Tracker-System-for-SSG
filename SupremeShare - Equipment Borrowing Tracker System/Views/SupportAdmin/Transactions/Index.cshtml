@@ -98,57 +98,65 @@
 
 @section Scripts {
 <script>
+let transactionsTable;
+
 $(document).ready(function() {
     loadStats();
-    loadTransactions();
+    
+    // Initialize DataTable with DataTableConfig helper
+    transactionsTable = DataTableConfig.init('#transactionsTable', {
+        ajax: {
+            url: '/SupportAdmin/Transactions/GetAll',
+            dataSrc: json => json.success ? json.data : []
+        },
+        columns: [
+            { data: 'transactionCode', render: data => `<strong class="text-primary">${data}</strong>` },
+            { 
+                data: null,
+                render: row => `<strong>${row.studentIdNumber}</strong><br><small class="text-muted">${row.studentName}</small>`
+            },
+            { data: 'itemCount', className: 'text-center', render: data => `${data} item(s)` },
+            { data: 'dateBorrowed' },
+            { 
+                data: 'statuses',
+                render: data => {
+                    if (!data) return '-';
+                    return data.split(', ').map(s => {
+                        const cls = s === 'borrowed' ? 'borrowed' : s === 'returned' ? 'available' : s === 'overdue' ? 'overdue' : 'maintenance';
+                        return `<span class="status-badge ${cls}">${s}</span>`;
+                    }).join(' ');
+                }
+            },
+            { data: 'processedBy' },
+            {
+                data: 'transactionId',
+                orderable: false,
+                render: data => `<button class="btn btn-sm btn-outline-primary btn-action btn-view" data-id="${data}">
+                                    <i class="bi bi-eye"></i>
+                                </button>`
+            }
+        ],
+        order: [[3, 'desc']]
+    });
 
-    function loadStats() {
-        $.get('/SupportAdmin/Transactions/Stats', function(res) {
+    async function loadStats() {
+        try {
+            const res = await Api.get('/SupportAdmin/Transactions/Stats');
             if (res.success) {
                 $('#statActiveBorrows').text(res.data.activeBorrows);
                 $('#statOverdue').text(res.data.overdueCount);
                 $('#statReturnedToday').text(res.data.returnedToday);
                 $('#statBorrowedToday').text(res.data.borrowedToday);
             }
-        });
-    }
-
-    function loadTransactions() {
-        $.get('/SupportAdmin/Transactions/GetAll', function(res) {
-            if (res.success) {
-                let html = '';
-                res.data.forEach(t => {
-                    const statusBadges = t.statuses ? t.statuses.split(', ').map(s => {
-                        let cls = 'bg-secondary';
-                        if (s === 'borrowed') cls = 'bg-info';
-                        else if (s === 'returned') cls = 'bg-success';
-                        else if (s === 'overdue') cls = 'bg-danger';
-                        else if (s === 'lost') cls = 'bg-dark';
-                        return `<span class="badge ${cls}">${s}</span>`;
-                    }).join(' ') : '-';
-
-                    html += `<tr>
-                        <td><strong>${t.transactionCode}</strong></td>
-                        <td>${t.studentIdNumber}<br><small class="text-muted">${t.studentName}</small></td>
-                        <td>${t.itemCount} item(s)</td>
-                        <td>${t.dateBorrowed}</td>
-                        <td>${statusBadges}</td>
-                        <td>${t.processedBy}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary btn-view" data-id="${t.transactionId}">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                        </td>
-                    </tr>`;
-                });
-                $('#transactionsTable tbody').html(html || '<tr><td colspan="7" class="text-center text-muted">No transactions found</td></tr>');
-            }
-        });
+        } catch (error) {
+            console.error('Failed to load stats');
+        }
     }
 
     $('#btnRefresh').click(function() {
+        Toast.info('Refreshing...');
         loadStats();
-        loadTransactions();
+        transactionsTable.ajax.reload();
     });
 
     // View details

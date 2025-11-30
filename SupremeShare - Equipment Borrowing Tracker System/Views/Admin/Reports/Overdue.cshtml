@@ -83,13 +83,10 @@ let overdueData = [];
 let dataTable = null;
 
 $(document).ready(function() {
-    // Initialize DataTable with sorting
-    dataTable = $('#overdueTable').DataTable({
+    // Initialize DataTable with DataTableConfig helper
+    dataTable = DataTableConfig.init('#overdueTable', {
         order: [[0, 'desc']], // Sort by days overdue descending
         pageLength: 25,
-        language: {
-            emptyTable: '<i class="bi bi-check-circle me-2 text-success"></i>No overdue items!'
-        },
         columnDefs: [
             { orderable: true, targets: '_all' },
             { type: 'num', targets: 0 } // Days overdue column

@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Attributes;
+using SupremeShare___Equipment_Borrowing_Tracker_System.Data;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Models;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfaces;
+using SupremeShare___Equipment_Borrowing_Tracker_System.Services;
 
 namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
 {
@@ -11,15 +13,21 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
     {
         private readonly IEquipmentRepository _equipmentRepo;
         private readonly IEquipmentUnitRepository _unitRepo;
+        private readonly IAuditService _auditService;
+        private readonly IDashboardNotificationService _notificationService;
         private readonly ILogger<AdminEquipmentController> _logger;
 
         public AdminEquipmentController(
             IEquipmentRepository equipmentRepo,
             IEquipmentUnitRepository unitRepo,
+            IAuditService auditService,
+            IDashboardNotificationService notificationService,
             ILogger<AdminEquipmentController> logger)
         {
             _equipmentRepo = equipmentRepo;
             _unitRepo = unitRepo;
+            _auditService = auditService;
+            _notificationService = notificationService;
             _logger = logger;
         }
 
@@ -108,8 +116,12 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 var result = await _equipmentRepo.AddAsync(equipment);
                 if (result)
                 {
-                    _logger.LogInformation("Equipment created: {Name} by user {UserId}",
-                        request.Name, HttpContext.Session.GetInt32("UserId"));
+                    var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    _logger.LogInformation("Equipment created: {Name} by user {UserId}", request.Name, userId);
+                    
+                    await _auditService.LogActionAsync(userId, "EQUIPMENT_CREATED", null, new { request.Name, request.Category });
+                    await _notificationService.NotifyEquipmentUpdated(request.Name, "CREATED");
+                    
                     return Json(new { success = true, message = "Equipment created successfully" });
                 }
 
@@ -136,11 +148,18 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 if (equipment == null)
                     return Json(new { success = false, message = "Equipment not found" });
 
+                var oldName = equipment.EquipmentName;
                 equipment.EquipmentName = request.Name ?? equipment.EquipmentName;
                 equipment.EquipmentCategory = request.Category ?? equipment.EquipmentCategory;
                 equipment.EquipmentQuantity = request.Quantity;
 
                 var result = await _equipmentRepo.UpdateAsync(equipment);
+                if (result)
+                {
+                    var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    await _auditService.LogActionAsync(userId, "EQUIPMENT_UPDATED", new { Name = oldName }, new { Name = equipment.EquipmentName });
+                    await _notificationService.NotifyEquipmentUpdated(equipment.EquipmentName, "UPDATED");
+                }
                 return Json(new { success = result, message = result ? "Equipment updated" : "Update failed" });
             }
             catch (Exception ex)
@@ -157,7 +176,14 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
         {
             try
             {
+                var equipment = await _equipmentRepo.GetByIdAsync(equipmentId);
                 var result = await _equipmentRepo.DeleteAsync(equipmentId);
+                if (result && equipment != null)
+                {
+                    var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    await _auditService.LogActionAsync(userId, "EQUIPMENT_DELETED", new { equipment.EquipmentName }, null);
+                    await _notificationService.NotifyEquipmentUpdated(equipment.EquipmentName, "DELETED");
+                }
                 return Json(new { success = result, message = result ? "Equipment deleted" : "Delete failed" });
             }
             catch (Exception ex)
@@ -266,8 +292,12 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 var result = await _unitRepo.AddAsync(unit);
                 if (result)
                 {
-                    _logger.LogInformation("Equipment unit created: {SerialNo} by user {UserId}",
-                        request.SerialNo, HttpContext.Session.GetInt32("UserId"));
+                    var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    _logger.LogInformation("Equipment unit created: {SerialNo} by user {UserId}", request.SerialNo, userId);
+                    
+                    await _auditService.LogActionAsync(userId, "UNIT_CREATED", null, new { request.SerialNo, request.EquipmentId });
+                    await _notificationService.NotifyStatsUpdated();
+                    
                     return Json(new { success = true, message = "Unit created successfully" });
                 }
 
@@ -302,11 +332,18 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                         return Json(new { success = false, message = "Serial number already in use" });
                 }
 
+                var oldSerial = unit.EunitSerialNo;
                 unit.EunitSerialNo = request.SerialNo ?? unit.EunitSerialNo;
                 unit.EunitCondition = request.Condition;
                 unit.EunitStatus = request.Status ?? unit.EunitStatus;
 
                 var result = await _unitRepo.UpdateAsync(unit);
+                if (result)
+                {
+                    var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    await _auditService.LogActionAsync(userId, "UNIT_UPDATED", new { SerialNo = oldSerial }, new { SerialNo = unit.EunitSerialNo });
+                    await _notificationService.NotifyStatsUpdated();
+                }
                 return Json(new { success = result, message = result ? "Unit updated" : "Update failed" });
             }
             catch (Exception ex)
@@ -327,12 +364,21 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 if (unit == null)
                     return Json(new { success = false, message = "Unit not found" });
 
+                var oldCondition = unit.EunitCondition;
                 unit.EunitCondition = condition;
                 var result = await _unitRepo.UpdateAsync(unit);
 
                 var conditionText = condition ? "Good" : "Damaged";
-                _logger.LogInformation("Unit {UnitId} condition updated to {Condition} by user {UserId}",
-                    unitId, conditionText, HttpContext.Session.GetInt32("UserId"));
+                var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                _logger.LogInformation("Unit {UnitId} condition updated to {Condition} by user {UserId}", unitId, conditionText, userId);
+
+                if (result)
+                {
+                    await _auditService.LogActionAsync(userId, "UNIT_CONDITION_CHANGED", 
+                        new { Condition = oldCondition ? "Good" : "Damaged" }, 
+                        new { Condition = conditionText });
+                    await _notificationService.NotifyEquipmentStatusChange(unit.EunitSerialNo, unit.EunitSerialNo, conditionText);
+                }
 
                 return Json(new { success = result, message = $"Condition updated to {conditionText}" });
             }
@@ -358,11 +404,20 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 if (unit == null)
                     return Json(new { success = false, message = "Unit not found" });
 
+                var oldStatus = unit.EunitStatus;
                 unit.EunitStatus = status.ToLower();
                 var result = await _unitRepo.UpdateAsync(unit);
 
-                _logger.LogInformation("Unit {UnitId} status updated to {Status} by user {UserId}",
-                    unitId, status, HttpContext.Session.GetInt32("UserId"));
+                var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                _logger.LogInformation("Unit {UnitId} status updated to {Status} by user {UserId}", unitId, status, userId);
+
+                if (result)
+                {
+                    await _auditService.LogActionAsync(userId, "UNIT_STATUS_CHANGED", 
+                        new { Status = oldStatus }, 
+                        new { Status = status });
+                    await _notificationService.NotifyEquipmentStatusChange(unit.EunitSerialNo, unit.EunitSerialNo, status);
+                }
 
                 return Json(new { success = result, message = $"Status updated to {status}" });
             }
@@ -380,7 +435,14 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
         {
             try
             {
+                var unit = await _unitRepo.GetByIdAsync(unitId);
                 var result = await _unitRepo.DeleteAsync(unitId);
+                if (result && unit != null)
+                {
+                    var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    await _auditService.LogActionAsync(userId, "UNIT_DELETED", new { unit.EunitSerialNo }, null);
+                    await _notificationService.NotifyStatsUpdated();
+                }
                 return Json(new { success = result, message = result ? "Unit deleted" : "Delete failed" });
             }
             catch (Exception ex)

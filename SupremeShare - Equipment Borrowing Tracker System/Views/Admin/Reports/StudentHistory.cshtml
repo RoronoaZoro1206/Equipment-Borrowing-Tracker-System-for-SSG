@@ -188,7 +188,7 @@ let historyDataTable = null;
 function renderHistory(data) {
     // Initialize DataTable if not already
     if (!historyDataTable) {
-        historyDataTable = $('#historyTable').DataTable({
+        historyDataTable = DataTableConfig.init('#historyTable', {
             order: [[3, 'desc']], // Sort by date borrowed descending
             pageLength: 25,
             columnDefs: [

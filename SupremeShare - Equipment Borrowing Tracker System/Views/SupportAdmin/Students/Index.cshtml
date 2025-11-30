@@ -9,18 +9,6 @@
         <span class="badge bg-secondary fs-6"><i class="bi bi-eye me-1"></i>View Only</span>
     </div>
 
-    <!-- Search -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" id="searchInput" class="form-control" placeholder="Search by Student ID or Name...">
-                <button class="btn btn-primary" id="btnSearch">Search</button>
-                <button class="btn btn-outline-secondary" id="btnClear">Clear</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Students Table -->
     <div class="card shadow-sm">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
@@ -73,65 +61,43 @@
 
 @section Scripts {
 <script>
+let studentsTable;
+
 $(document).ready(function() {
-    loadStudents();
-
-    function loadStudents() {
-        $.get('/SupportAdmin/Students/GetAll', function(res) {
-            if (res.success) {
-                renderStudents(res.data);
-            }
-        });
-    }
-
-    function renderStudents(students) {
-        let html = '';
-        students.forEach(s => {
-            const statusCls = s.studentStatus ? 'bg-success' : 'bg-danger';
-            const statusText = s.studentStatus ? 'Active' : 'Blocked';
-            
-            html += `<tr class="student-row" data-id="${s.studentId}" style="cursor: pointer;">
-                <td><strong>${s.studentIdNumber}</strong></td>
-                <td>${s.fullName}</td>
-                <td>${s.studentCollege}</td>
-                <td>${s.studentCourse || '-'}</td>
-                <td>${s.studentContactNo || s.studentEmail || '-'}</td>
-                <td><span class="badge ${statusCls}">${statusText}</span></td>
-                <td>${s.studentDateAdded}</td>
-            </tr>`;
-        });
-        $('#studentsTable tbody').html(html || '<tr><td colspan="7" class="text-center text-muted">No students found</td></tr>');
-    }
-
-    $('#btnRefresh').click(loadStudents);
-
-    // Search
-    $('#btnSearch').click(doSearch);
-    $('#searchInput').keypress(function(e) { if (e.which === 13) doSearch(); });
-
-    function doSearch() {
-        const q = $('#searchInput').val().trim();
-        if (!q) {
-            loadStudents();
-            return;
-        }
-
-        $.get(`/SupportAdmin/Students/Search?q=${encodeURIComponent(q)}`, function(res) {
-            if (res.success) {
-                renderStudents(res.data);
-            }
-        });
-    }
-
-    $('#btnClear').click(function() {
-        $('#searchInput').val('');
-        loadStudents();
+    // Initialize DataTable with DataTableConfig helper
+    studentsTable = DataTableConfig.init('#studentsTable', {
+        ajax: {
+            url: '/SupportAdmin/Students/GetAll',
+            dataSrc: json => json.success ? json.data : []
+        },
+        columns: [
+            { data: 'studentIdNumber', render: data => `<strong class="text-primary">${data}</strong>` },
+            { data: 'fullName' },
+            { data: 'studentCollege' },
+            { data: 'studentCourse', defaultContent: '<span class="text-muted">-</span>' },
+            { data: null, render: row => row.studentContactNo || row.studentEmail || '<span class="text-muted">-</span>' },
+            { 
+                data: 'studentStatus',
+                render: data => `<span class="status-badge ${data ? 'available' : 'overdue'}">${data ? 'Active' : 'Blocked'}</span>`
+            },
+            { data: 'studentDateAdded' }
+        ],
+        order: [[0, 'asc']]
     });
 
-    // View details
-    $(document).on('click', '.student-row', function() {
-        const id = $(this).data('id');
-        $.get(`/SupportAdmin/Students/Get/${id}`, function(res) {
+    $('#btnRefresh').click(() => studentsTable.ajax.reload());
+
+    // View details - click on row
+    $('#studentsTable tbody').on('click', 'tr', async function() {
+        const data = studentsTable.row(this).data();
+        if (!data) return;
+        
+        Loading.show('Loading student details...');
+        
+        try {
+            const res = await Api.get(`/SupportAdmin/Students/Get/${data.studentId}`);
+            Loading.hide();
+            
             if (res.success) {
                 const s = res.data;
                 const statusCls = s.studentStatus ? 'text-success' : 'text-danger';
@@ -150,8 +116,13 @@ $(document).ready(function() {
                     </table>
                 `);
                 new bootstrap.Modal('#detailsModal').show();
+            } else {
+                Toast.error(res.message);
             }
-        });
+        } catch (error) {
+            Loading.hide();
+            Toast.error('Failed to load student details');
+        }
     });
 });
 </script>

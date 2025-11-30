@@ -26,6 +26,9 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Hubs
                 _logger.LogInformation("User {UserId} ({Role}) connected to dashboard hub", userId, userRole);
             }
 
+            // Add all authenticated users to 'all' group
+            await Groups.AddToGroupAsync(Context.ConnectionId, "all");
+
             await base.OnConnectedAsync();
         }
 
@@ -36,6 +39,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Hubs
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, userRole);
             }
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "all");
 
             await base.OnDisconnectedAsync(exception);
         }
@@ -54,6 +58,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Hubs
         public async Task JoinReportRoom(string reportType)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, $"report_{reportType}");
+            _logger.LogDebug("Client joined room: report_{ReportType}", reportType);
         }
 
         /// <summary>
@@ -62,6 +67,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Hubs
         public async Task LeaveReportRoom(string reportType)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"report_{reportType}");
+            _logger.LogDebug("Client left room: report_{ReportType}", reportType);
         }
     }
 }

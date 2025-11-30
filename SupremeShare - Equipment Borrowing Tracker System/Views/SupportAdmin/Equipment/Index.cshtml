@@ -103,49 +103,58 @@
 
 @section Scripts {
 <script>
+let equipmentTable;
+
 $(document).ready(function() {
     loadStats();
-    loadEquipment();
+    
+    // Initialize DataTable with DataTableConfig helper
+    equipmentTable = DataTableConfig.init('#equipmentTable', {
+        ajax: {
+            url: '/SupportAdmin/Equipment/GetAll',
+            dataSrc: json => json.success ? json.data : []
+        },
+        columns: [
+            { data: 'equipmentName', render: data => `<strong>${data}</strong>` },
+            { data: 'equipmentCategory', render: data => `<span class="badge bg-secondary">${data}</span>` },
+            { data: 'equipmentQuantity', className: 'text-center' },
+            { 
+                data: 'availableStock', 
+                className: 'text-center',
+                render: data => `<span class="badge ${data > 0 ? 'bg-success' : 'bg-danger'}">${data}</span>`
+            },
+            { data: 'equipmentDateAdded' },
+            {
+                data: 'equipmentId',
+                orderable: false,
+                render: (data, type, row) => `
+                    <button class="btn btn-sm btn-outline-primary btn-action btn-view-units" 
+                            data-id="${data}" data-name="${row.equipmentName}">
+                        <i class="bi bi-eye"></i> View Units
+                    </button>`
+            }
+        ],
+        order: [[0, 'asc']]
+    });
 
-    function loadStats() {
-        $.get('/SupportAdmin/Equipment/Stats', function(res) {
+    async function loadStats() {
+        try {
+            const res = await Api.get('/SupportAdmin/Equipment/Stats');
             if (res.success) {
                 $('#statTotalTypes').text(res.data.totalEquipmentTypes);
                 $('#statAvailable').text(res.data.availableUnits);
                 $('#statBorrowed').text(res.data.borrowedUnits);
                 $('#statMaintenance').text(res.data.maintenanceUnits);
             }
-        });
-    }
-
-    function loadEquipment() {
-        $.get('/SupportAdmin/Equipment/GetAll', function(res) {
-            if (res.success) {
-                let html = '';
-                res.data.forEach(e => {
-                    const availableCls = e.availableStock > 0 ? 'text-success' : 'text-danger';
-                    html += `<tr>
-                        <td><strong>${e.equipmentName}</strong></td>
-                        <td>${e.equipmentCategory}</td>
-                        <td>${e.equipmentQuantity}</td>
-                        <td class="${availableCls}"><strong>${e.availableStock}</strong></td>
-                        <td>${e.equipmentDateAdded}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary btn-view-units" 
-                                    data-id="${e.equipmentId}" data-name="${e.equipmentName}">
-                                <i class="bi bi-eye"></i> View Units
-                            </button>
-                        </td>
-                    </tr>`;
-                });
-                $('#equipmentTable tbody').html(html || '<tr><td colspan="6" class="text-center text-muted">No equipment found</td></tr>');
-            }
-        });
+        } catch (error) {
+            console.error('Failed to load stats');
+        }
     }
 
     $('#btnRefresh').click(function() {
+        Toast.info('Refreshing...');
         loadStats();
-        loadEquipment();
+        equipmentTable.ajax.reload();
     });
 
     // View units

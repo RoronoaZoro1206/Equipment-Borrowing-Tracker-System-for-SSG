@@ -89,7 +89,7 @@ let utilizationDataTable = null;
 
 function initDataTable() {
     if (utilizationDataTable) return;
-    utilizationDataTable = $('#utilizationTable').DataTable({
+    utilizationDataTable = DataTableConfig.init('#utilizationTable', {
         order: [[5, 'desc']], // Sort by total borrows descending
         pageLength: 25,
         columnDefs: [

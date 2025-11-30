@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Attributes;
+using SupremeShare___Equipment_Borrowing_Tracker_System.Data;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Models;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfaces;
+using SupremeShare___Equipment_Borrowing_Tracker_System.Services;
 
 namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
 {
@@ -10,13 +12,19 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
     public class AdminStudentController : Controller
     {
         private readonly IStudentRepository _studentRepo;
+        private readonly IAuditService _auditService;
+        private readonly IDashboardNotificationService _notificationService;
         private readonly ILogger<AdminStudentController> _logger;
 
         public AdminStudentController(
             IStudentRepository studentRepo,
+            IAuditService auditService,
+            IDashboardNotificationService notificationService,
             ILogger<AdminStudentController> logger)
         {
             _studentRepo = studentRepo;
+            _auditService = auditService;
+            _notificationService = notificationService;
             _logger = logger;
         }
 
@@ -163,8 +171,12 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 var result = await _studentRepo.AddAsync(student);
                 if (result)
                 {
-                    _logger.LogInformation("Student created: {StudentIdNumber} by user {UserId}",
-                        request.StudentIdNumber, HttpContext.Session.GetInt32("UserId"));
+                    var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    _logger.LogInformation("Student created: {StudentIdNumber} by user {UserId}", request.StudentIdNumber, userId);
+                    
+                    await _auditService.LogActionAsync(userId, "STUDENT_CREATED", null, new { request.StudentIdNumber, request.FirstName, request.LastName });
+                    await _notificationService.NotifyStudentUpdated($"{request.FirstName} {request.LastName}", "CREATED");
+                    
                     return Json(new { success = true, message = "Student created successfully" });
                 }
 
@@ -210,6 +222,12 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 student.StudentContactNo = request.ContactNo;
 
                 var result = await _studentRepo.UpdateAsync(student);
+                if (result)
+                {
+                    var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    await _auditService.LogActionAsync(userId, "STUDENT_UPDATED", null, new { student.StudentIdNumber, student.FullName });
+                    await _notificationService.NotifyStudentUpdated(student.FullName, "UPDATED");
+                }
                 return Json(new { success = result, message = result ? "Student updated" : "Update failed" });
             }
             catch (Exception ex)
@@ -230,12 +248,20 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 if (student == null)
                     return Json(new { success = false, message = "Student not found" });
 
+                var oldStatus = student.StudentStatus;
                 student.StudentStatus = !student.StudentStatus;
                 var result = await _studentRepo.UpdateAsync(student);
 
                 var action = student.StudentStatus ? "activated" : "deactivated";
-                _logger.LogInformation("Student {StudentId} {Action} by user {UserId}",
-                    studentId, action, HttpContext.Session.GetInt32("UserId"));
+                var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                _logger.LogInformation("Student {StudentId} {Action} by user {UserId}", studentId, action, userId);
+
+                if (result)
+                {
+                    await _auditService.LogActionAsync(userId, $"STUDENT_{action.ToUpper()}", 
+                        new { Status = oldStatus }, new { Status = student.StudentStatus });
+                    await _notificationService.NotifyStudentUpdated(student.FullName, action.ToUpper());
+                }
 
                 return Json(new { success = result, message = $"Student {action}", status = student.StudentStatus });
             }

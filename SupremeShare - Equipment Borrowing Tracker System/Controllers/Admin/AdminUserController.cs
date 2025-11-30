@@ -3,6 +3,7 @@ using SupremeShare___Equipment_Borrowing_Tracker_System.Attributes;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Data;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Models;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfaces;
+using SupremeShare___Equipment_Borrowing_Tracker_System.Services;
 
 namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
 {
@@ -12,15 +13,21 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
     {
         private readonly IUserRepository _userRepo;
         private readonly IPasswordHasher _passwordHasher;
+        private readonly IAuditService _auditService;
+        private readonly IDashboardNotificationService _notificationService;
         private readonly ILogger<AdminUserController> _logger;
 
         public AdminUserController(
             IUserRepository userRepo,
             IPasswordHasher passwordHasher,
+            IAuditService auditService,
+            IDashboardNotificationService notificationService,
             ILogger<AdminUserController> logger)
         {
             _userRepo = userRepo;
             _passwordHasher = passwordHasher;
+            _auditService = auditService;
+            _notificationService = notificationService;
             _logger = logger;
         }
 
@@ -117,8 +124,12 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 var result = await _userRepo.AddAsync(user);
                 if (result)
                 {
-                    _logger.LogInformation("User created: {Username} by admin {AdminId}", 
-                        request.Username, HttpContext.Session.GetInt32("UserId"));
+                    var adminId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    _logger.LogInformation("User created: {Username} by admin {AdminId}", request.Username, adminId);
+                    
+                    await _auditService.LogActionAsync(adminId, "USER_CREATED", null, new { request.Username, request.Role });
+                    await _notificationService.NotifyUserUpdated(request.Username, "CREATED");
+                    
                     return Json(new { success = true, message = "User created successfully" });
                 }
 
@@ -158,6 +169,12 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 user.UserContactNo = request.ContactNo;
 
                 var result = await _userRepo.UpdateAsync(user);
+                if (result)
+                {
+                    var adminId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    await _auditService.LogActionAsync(adminId, "USER_UPDATED", null, new { user.UserUsername, user.UserRole });
+                    await _notificationService.NotifyUserUpdated(user.UserUsername, "UPDATED");
+                }
                 return Json(new { success = result, message = result ? "User updated" : "Update failed" });
             }
             catch (Exception ex)
@@ -184,8 +201,14 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 user.UserHashedPassword = _passwordHasher.HashPassword(newPassword);
                 var result = await _userRepo.UpdateAsync(user);
 
-                _logger.LogWarning("Password reset for user {UserId} by admin {AdminId}", 
-                    userId, HttpContext.Session.GetInt32("UserId"));
+                var adminId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                _logger.LogWarning("Password reset for user {UserId} by admin {AdminId}", userId, adminId);
+
+                if (result)
+                {
+                    await _auditService.LogActionAsync(adminId, "USER_PASSWORD_RESET", null, new { user.UserUsername });
+                    await _notificationService.NotifyUserUpdated(user.UserUsername, "PASSWORD_RESET");
+                }
 
                 return Json(new { success = result, message = result ? "Password reset" : "Reset failed" });
             }
@@ -216,8 +239,13 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 var result = await _userRepo.UpdateAsync(user);
 
                 var action = user.UserStatus ? "activated" : "deactivated";
-                _logger.LogInformation("User {UserId} {Action} by admin {AdminId}", 
-                    userId, action, currentUserId);
+                _logger.LogInformation("User {UserId} {Action} by admin {AdminId}", userId, action, currentUserId);
+
+                if (result)
+                {
+                    await _auditService.LogActionAsync(currentUserId ?? 0, $"USER_{action.ToUpper()}", null, new { user.UserUsername });
+                    await _notificationService.NotifyUserUpdated(user.UserUsername, action.ToUpper());
+                }
 
                 return Json(new { success = result, message = $"User {action}", status = user.UserStatus });
             }

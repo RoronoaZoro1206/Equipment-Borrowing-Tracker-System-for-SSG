@@ -151,50 +151,40 @@ $(document).ready(function() {
         });
     }
 
-    // Initialize DataTable
-    transactionsTable = $('#transactionsTable').DataTable({
+    // Initialize DataTable with DataTableConfig helper
+    transactionsTable = DataTableConfig.init('#transactionsTable', {
         ajax: {
             url: '/Admin/Transactions/GetAll',
-            dataSrc: function(json) {
-                return json.success ? json.data : [];
-            }
+            dataSrc: json => json.success ? json.data : []
         },
         columns: [
-            { data: 'transactionCode', render: function(data) { return `<strong>${data || '-'}</strong>`; } },
+            { data: 'transactionCode', render: data => `<strong class="text-primary">${data || '-'}</strong>` },
             { 
                 data: null,
-                render: function(data) {
-                    return `${data.studentIdNumber}<br><small class="text-muted">${data.studentName}</small>`;
-                }
+                render: data => `<strong>${data.studentIdNumber}</strong><br><small class="text-muted">${data.studentName}</small>`
             },
             { data: 'dateBorrowed' },
-            { data: 'itemCount' },
+            { data: 'itemCount', className: 'text-center' },
             { 
                 data: 'statuses',
-                render: function(data) {
+                render: data => {
                     if (!data) return '-';
                     return data.split(', ').map(s => {
-                        const cls = s === 'borrowed' ? 'bg-info' : s === 'returned' ? 'bg-success' : s === 'overdue' ? 'bg-warning' : 'bg-danger';
-                        return `<span class="badge ${cls}">${s}</span>`;
+                        const cls = s === 'borrowed' ? 'borrowed' : s === 'returned' ? 'available' : s === 'overdue' ? 'overdue' : 'maintenance';
+                        return `<span class="status-badge ${cls}">${s}</span>`;
                     }).join(' ');
                 }
             },
             { data: 'processedBy' },
             {
                 data: 'transactionId',
-                render: function(data) {
-                    return `<button class="btn btn-sm btn-outline-primary btn-view" data-id="${data}">
-                                <i class="bi bi-eye"></i> View
-                            </button>`;
-                }
+                orderable: false,
+                render: data => `<button class="btn btn-sm btn-outline-primary btn-action btn-view" data-id="${data}">
+                                    <i class="bi bi-eye"></i> View
+                                </button>`
             }
         ],
-        order: [[2, 'desc']],
-        responsive: true,
-        language: {
-            emptyTable: "No transactions found",
-            search: "Search:"
-        }
+        order: [[2, 'desc']]
     });
 
     // View details

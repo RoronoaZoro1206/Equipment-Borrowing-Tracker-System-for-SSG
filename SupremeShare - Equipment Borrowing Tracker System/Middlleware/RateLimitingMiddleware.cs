@@ -13,8 +13,8 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Middleware
         private readonly ILogger<RateLimitingMiddleware> _logger;
         private static readonly ConcurrentDictionary<string, RateLimitInfo> _clients = new();
 
-        private const int MaxRequestsPerMinute = 100;
-        private const int MaxRequestsPerSecond = 10;
+        private const int MaxRequestsPerMinute = 500;
+        private const int MaxRequestsPerSecond = 50;
 
         public RateLimitingMiddleware(RequestDelegate next, ILogger<RateLimitingMiddleware> logger)
         {

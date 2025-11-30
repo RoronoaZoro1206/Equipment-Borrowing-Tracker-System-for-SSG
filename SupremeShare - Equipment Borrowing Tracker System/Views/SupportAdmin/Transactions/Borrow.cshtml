@@ -1,261 +1,1049 @@
 @{
-    ViewData["Title"] = "New Borrow Transaction";
+    ViewData["Title"] = "Borrow an Item";
     Layout = "~/Views/Shared/_MainLayout.cshtml";
 }
 
 <div class="container-fluid py-4">
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-box-arrow-up me-2"></i>New Borrow Transaction</h2>
+        <h2><i class="bi bi-box-arrow-up me-2"></i>Borrow an Item</h2>
         <a href="/SupportAdmin/Transactions" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Back to Transactions
         </a>
     </div>
 
     <div class="row">
-        <!-- Borrow Form -->
-        <div class="col-md-8">
+        <!-- Left Panel: Wizard Steps -->
+        <div class="col-md-3">
             <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <i class="bi bi-clipboard-check me-2"></i>Borrow Form
-                </div>
                 <div class="card-body">
-                    <form id="borrowForm">
-                        @Html.AntiForgeryToken()
-                        
-                        <!-- Step 1: Select Student -->
-                        <div class="mb-4">
-                            <h5 class="border-bottom pb-2">1. Select Student (Borrower)</h5>
-                            <div class="input-group mb-2">
-                                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                <input type="text" id="studentSearch" class="form-control" placeholder="Search by Student ID Number or Name...">
-                                <button type="button" class="btn btn-outline-primary" id="btnSearchStudent">Search</button>
-                            </div>
-                            <div id="studentResults" class="list-group mb-2" style="max-height: 200px; overflow-y: auto;"></div>
-                            <div id="selectedStudent" class="alert alert-info d-none">
-                                <strong>Selected:</strong> <span id="studentInfo"></span>
-                                <input type="hidden" name="StudentId" id="studentId">
-                            </div>
+                    <h6 class="text-uppercase text-muted mb-3">Borrow an Item</h6>
+                    
+                    <!-- Step 1 -->
+                    <div class="wizard-step active" id="step1Indicator">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="step-circle bg-success text-white me-2">
+                                <i class="bi bi-check"></i>
+                            </span>
+                            <span class="fw-bold text-success">Borrower Details</span>
                         </div>
-
-                        <!-- Step 2: Select Equipment -->
-                        <div class="mb-4">
-                            <h5 class="border-bottom pb-2">2. Select Equipment</h5>
-                            <div class="row mb-2">
-                                <div class="col-md-6">
-                                    <label class="form-label">Equipment Type</label>
-                                    <select id="equipmentSelect" class="form-select">
-                                        <option value="">-- Select Equipment --</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Available Unit</label>
-                                    <select id="unitSelect" class="form-select" name="UnitId" disabled>
-                                        <option value="">-- Select Unit --</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div id="selectedUnit" class="alert alert-success d-none">
-                                <strong>Selected Unit:</strong> <span id="unitInfo"></span>
-                            </div>
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div class="wizard-step" id="step2Indicator">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="step-circle bg-warning text-dark me-2">2</span>
+                            <span>Transaction Details</span>
                         </div>
-
-                        <!-- Step 3: Set Due Date -->
-                        <div class="mb-4">
-                            <h5 class="border-bottom pb-2">3. Set Due Date</h5>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <label class="form-label">Due Date</label>
-                                    <input type="datetime-local" name="DueDate" id="dueDate" class="form-control" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Quick Select</label>
-                                    <div class="btn-group w-100">
-                                        <button type="button" class="btn btn-outline-secondary btn-due" data-days="1">1 Day</button>
-                                        <button type="button" class="btn btn-outline-secondary btn-due" data-days="3">3 Days</button>
-                                        <button type="button" class="btn btn-outline-secondary btn-due" data-days="7">1 Week</button>
-                                    </div>
-                                </div>
-                            </div>
+                    </div>
+                    
+                    <!-- Step 3 -->
+                    <div class="wizard-step" id="step3Indicator">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="step-circle bg-secondary text-white me-2">3</span>
+                            <span>Summary</span>
                         </div>
-
-                        <!-- Submit -->
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-success btn-lg" id="btnSubmit" disabled>
-                                <i class="bi bi-check-circle me-2"></i>Process Borrow Transaction
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Summary Panel -->
-        <div class="col-md-4">
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">
-                    <i class="bi bi-receipt me-2"></i>Transaction Summary
-                </div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <tr><td>Student:</td><td id="summaryStudent">-</td></tr>
-                        <tr><td>Equipment:</td><td id="summaryEquipment">-</td></tr>
-                        <tr><td>Serial No:</td><td id="summarySerial">-</td></tr>
-                        <tr><td>Due Date:</td><td id="summaryDue">-</td></tr>
-                    </table>
+        <!-- Right Panel: Content -->
+        <div class="col-md-9">
+            <!-- Step 1: Borrower Details (Students Table) -->
+            <div class="step-content" id="step1Content">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-people me-2"></i>Students</span>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                            <i class="bi bi-plus-circle me-1"></i>Add Student
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Search and Filter -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-filter"></i></span>
+                                    <select id="filterCollege" class="form-select">
+                                        <option value="">All Colleges</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <select id="filterCourse" class="form-select">
+                                    <option value="">All Courses</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input type="text" id="searchStudent" class="form-control" placeholder="Search...">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Students Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="studentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Full Name</th>
+                                        <th>College</th>
+                                        <th>Course</th>
+                                        <th>E-mail</th>
+                                        <th>Contact No.</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card shadow-sm mt-3">
-                <div class="card-header bg-info text-white">
-                    <i class="bi bi-info-circle me-2"></i>Instructions
+            <!-- Step 2: Transaction Details -->
+            <div class="step-content d-none" id="step2Content">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-clipboard-data me-2"></i>Transaction Details
+                    </div>
+                    <div class="card-body">
+                        <form id="borrowForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="StudentId" id="selectedStudentId">
+
+                            <!-- Transaction Info Row -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <label class="form-label">Transaction Code <span class="text-danger">*</span></label>
+                                    <input type="text" id="transactionCode" class="form-control" readonly placeholder="Auto-generated">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Processed by <span class="text-danger">*</span></label>
+                                    <input type="text" id="processedBy" class="form-control" readonly value="@Context.Session.GetString("FullName")">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Date Borrowed <span class="text-danger">*</span></label>
+                                    <input type="text" id="dateBorrowed" class="form-control" readonly>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Last Updated <span class="text-danger">*</span></label>
+                                    <input type="text" id="lastUpdated" class="form-control" readonly>
+                                </div>
+                            </div>
+
+                            <!-- Remarks -->
+                            <div class="mb-4">
+                                <label class="form-label">Remarks</label>
+                                <textarea id="remarks" name="Remarks" class="form-control" rows="2" placeholder="Optional remarks..."></textarea>
+                            </div>
+
+                            <hr>
+
+                            <!-- Borrowing Information Section -->
+                            <h6 class="mb-3"><i class="bi bi-box-seam me-2"></i>Borrowing Information</h6>
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Equipment Category <span class="text-danger">*</span></label>
+                                    <select id="equipmentCategory" class="form-select">
+                                        <option value="">Select Category</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Equipment <span class="text-danger">*</span></label>
+                                    <select id="equipmentSelect" class="form-select" disabled>
+                                        <option value="">Select Equipment</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Current Status <span class="text-danger">*</span></label>
+                                    <select id="currentStatus" class="form-select" disabled>
+                                        <option value="">-</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Serial No. <span class="text-danger">*</span></label>
+                                    <select id="serialNoSelect" name="UnitId" class="form-select" disabled>
+                                        <option value="">Select Serial No.</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Due Date <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" name="DueDate" id="dueDate" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Quick Due Date</label>
+                                    <div class="btn-group w-100">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-due" data-days="1">1D</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-due" data-days="3">3D</button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-due" data-days="7">1W</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Return Condition</label>
+                                    <select id="returnCondition" class="form-select" disabled>
+                                        <option value="">N/A (Not yet returned)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Last Updated <span class="text-danger">*</span></label>
+                                    <input type="text" id="itemLastUpdated" class="form-control" readonly>
+                                </div>
+                            </div>
+
+                            <!-- Add Button -->
+                            <div class="mb-4">
+                                <button type="button" id="btnAddItem" class="btn btn-success" disabled>
+                                    <i class="bi bi-plus-circle me-1"></i>Add
+                                </button>
+                            </div>
+
+                            <!-- Items Table -->
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="itemsTable">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Equipment Category</th>
+                                            <th>Equipment</th>
+                                            <th>Serial No.</th>
+                                            <th>Current Status</th>
+                                            <th>Code</th>
+                                            <th>Return Condition</th>
+                                            <th>Last Updated</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Items added here -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" id="btnBackStep1">
+                                    <i class="bi bi-arrow-left me-1"></i>Back
+                                </button>
+                                <button type="button" class="btn btn-primary" id="btnNextStep3" disabled>
+                                    Next<i class="bi bi-arrow-right ms-1"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <ol class="mb-0">
-                        <li>Search and select the student borrower</li>
-                        <li>Choose equipment type and available unit</li>
-                        <li>Set the due date for return</li>
-                        <li>Click "Process Borrow Transaction"</li>
-                    </ol>
+            </div>
+
+            <!-- Step 3: Summary -->
+            <div class="step-content d-none" id="step3Content">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-check-circle me-2"></i>Summary
+                    </div>
+                    <div class="card-body">
+                        <!-- Transaction Details Box -->
+                        <div class="summary-box mb-4 p-3 border rounded bg-light">
+                            <h6 class="mb-3 text-muted">Transaction Details</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><small class="text-muted">Transaction Code:</small></p>
+                                    <p class="fw-bold" id="sumTransactionCode">Auto-generated</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><small class="text-muted">Last Updated:</small></p>
+                                    <p id="sumLastUpdated">-</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><small class="text-muted">Processed by:</small></p>
+                                    <p id="sumProcessedBy">-</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><small class="text-muted">Remarks:</small></p>
+                                    <p id="sumRemarks">-</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><small class="text-muted">Date Borrowed:</small></p>
+                                    <p id="sumDateBorrowed">-</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Borrowing Information Table -->
+                        <h6 class="mb-3"><i class="bi bi-box-seam me-2"></i>Borrowing Information</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="summaryItemsTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Equipment Category</th>
+                                        <th>Equipment</th>
+                                        <th>Serial No.</th>
+                                        <th>Current Status</th>
+                                        <th>Due Date</th>
+                                        <th>Date Returned</th>
+                                        <th>Return Condition</th>
+                                        <th>Last Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Summary items -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <button type="button" class="btn btn-secondary" id="btnBackStep2">
+                                <i class="bi bi-arrow-left me-1"></i>Back
+                            </button>
+                            <button type="button" class="btn btn-success btn-lg" id="btnConfirmBorrow">
+                                <i class="bi bi-check-circle me-1"></i>Submit
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+
+<!-- Add Student Modal -->
+<div class="modal fade" id="addStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Add New Student</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addStudentForm">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Student ID Number <span class="text-danger">*</span></label>
+                            <input type="text" name="StudentIdNumber" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">College <span class="text-danger">*</span></label>
+                            <input type="text" name="College" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" name="FirstName" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Middle Name</label>
+                            <input type="text" name="MiddleName" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" name="LastName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Course</label>
+                            <input type="text" name="Course" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="Email" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact No.</label>
+                            <input type="text" name="ContactNo" class="form-control">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btnSaveStudent">
+                    <i class="bi bi-check-circle me-1"></i>Save Student
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Student Modal -->
+<div class="modal fade" id="editStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Student Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editStudentForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="StudentId" id="editStudentId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Student ID Number <span class="text-danger">*</span></label>
+                            <input type="text" name="StudentIdNumber" id="editStudentIdNumber" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">College <span class="text-danger">*</span></label>
+                            <input type="text" name="College" id="editCollege" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" name="FirstName" id="editFirstName" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Middle Name</label>
+                            <input type="text" name="MiddleName" id="editMiddleName" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" name="LastName" id="editLastName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Course</label>
+                            <input type="text" name="Course" id="editCourse" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="Email" id="editEmail" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact No.</label>
+                            <input type="text" name="ContactNo" id="editContactNo" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="Status" id="editStatus" class="form-select" disabled>
+                                <option value="true">Active</option>
+                                <option value="false">Blocked</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="btnUpdateStudent">
+                    <i class="bi bi-check-circle me-1"></i>Save Changes
+                </button>
+                <button type="button" class="btn btn-success" id="btnSelectStudent">
+                    <i class="bi bi-check2-square me-1"></i>Select as Borrower
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.wizard-step .step-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+.wizard-step.active .step-circle {
+    background: var(--primary-red) !important;
+}
+.wizard-step.completed .step-circle {
+    background: #22c55e !important;
+}
+#studentsTable tbody tr {
+    cursor: pointer;
+}
+#studentsTable tbody tr:hover {
+    background-color: rgba(139, 0, 0, 0.05);
+}
+#itemsTable tbody tr {
+    cursor: pointer;
+}
+
+/* Ensure dropdowns are clickable */
+#step2Content .form-select {
+    position: relative;
+    z-index: 10;
+    cursor: pointer;
+}
+#step2Content .form-select:not(:disabled) {
+    background-color: #fff;
+    pointer-events: auto !important;
+}
+#step2Content .form-select:disabled {
+    background-color: #e9ecef;
+    cursor: not-allowed;
+}
+
+/* Summary box styling */
+.summary-box {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+.summary-box p {
+    margin-bottom: 0.25rem;
+}
+</style>
+
 @section Scripts {
 <script>
-$(document).ready(function() {
-    // Set default due date to 7 days from now
-    const defaultDue = new Date();
-    defaultDue.setDate(defaultDue.getDate() + 7);
-    $('#dueDate').val(defaultDue.toISOString().slice(0, 16));
+// Global state
+let selectedStudent = null;
+let borrowItems = [];
+let studentsData = [];
+let equipmentData = [];
+let categoriesSet = new Set();
 
-    // Load equipment types
-    $.get('/SupportAdmin/Equipment/GetAll', function(res) {
-        if (res.success) {
-            res.data.forEach(e => {
-                if (e.availableStock > 0) {
-                    $('#equipmentSelect').append(`<option value="${e.equipmentId}" data-name="${e.equipmentName}">${e.equipmentName} (${e.availableStock} available)</option>`);
-                }
-            });
-        }
+$(document).ready(function() {
+    console.log('Document ready - initializing Borrow page');
+    
+    // Initialize
+    loadStudents();
+    loadEquipment();
+    setDefaultDates();
+    
+    // Debug: Check if dropdowns exist
+    console.log('Equipment Category dropdown exists:', $('#equipmentCategory').length > 0);
+    console.log('Equipment dropdown exists:', $('#equipmentSelect').length > 0);
+    console.log('Serial No dropdown exists:', $('#serialNoSelect').length > 0);
+    
+    // Debug click handlers
+    $('#equipmentCategory').on('click', function() {
+        console.log('Equipment Category clicked');
+    });
+    $('#equipmentSelect').on('click', function() {
+        console.log('Equipment Select clicked, disabled:', $(this).prop('disabled'));
+    });
+    $('#serialNoSelect').on('click', function() {
+        console.log('Serial No clicked, disabled:', $(this).prop('disabled'));
+    });
+    $('#currentStatus').on('click', function() {
+        console.log('Current Status clicked, disabled:', $(this).prop('disabled'));
     });
 
     // Search student
-    $('#btnSearchStudent').click(searchStudent);
-    $('#studentSearch').keypress(function(e) { if (e.which === 13) { e.preventDefault(); searchStudent(); }});
+    $('#searchStudent').on('input', filterStudents);
+    $('#filterCollege').change(filterStudents);
+    $('#filterCourse').change(filterStudents);
 
-    function searchStudent() {
-        const q = $('#studentSearch').val().trim();
-        if (q.length < 2) return;
-        $.get(`/SupportAdmin/Students/Search?q=${encodeURIComponent(q)}`, function(res) {
-            if (res.success) {
-                let html = '';
-                res.data.forEach(s => {
-                    if (s.studentStatus) {
-                        html += `<a href="#" class="list-group-item list-group-item-action student-item" 
-                                    data-id="${s.studentId}" data-number="${s.studentIdNumber}" data-name="${s.fullName}">
-                                    <strong>${s.studentIdNumber}</strong> - ${s.fullName}
-                                    <small class="text-muted d-block">${s.studentCollege} - ${s.studentCourse || ''}</small>
-                                </a>`;
-                    } else {
-                        html += `<div class="list-group-item list-group-item-danger">
-                                    <strong>${s.studentIdNumber}</strong> - ${s.fullName}
-                                    <small class="text-danger d-block">BLOCKED - Cannot borrow</small>
-                                </div>`;
-                    }
+    // Equipment category change - using on() for better event binding
+    $(document).on('change', '#equipmentCategory', function() {
+        const category = $(this).val();
+        console.log('Category selected:', category);
+        
+        // Reset dependent dropdowns
+        $('#equipmentSelect').empty().append('<option value="">Select Equipment</option>');
+        $('#serialNoSelect').empty().append('<option value="">Select Serial No.</option>').prop('disabled', true).removeAttr('disabled').prop('disabled', true);
+        $('#currentStatus').empty().append('<option value="">-</option>').prop('disabled', true);
+        
+        if (category) {
+            const filteredEquipment = equipmentData.filter(e => e.equipmentCategory === category);
+            console.log('Filtered equipment for category', category, ':', filteredEquipment);
+            
+            if (filteredEquipment.length > 0) {
+                filteredEquipment.forEach(e => {
+                    const stockText = e.availableStock > 0 ? `(${e.availableStock} available)` : '(No stock)';
+                    const disabled = e.availableStock <= 0 ? 'disabled' : '';
+                    $('#equipmentSelect').append(`<option value="${e.equipmentId}" data-name="${e.equipmentName}" ${disabled}>${e.equipmentName} ${stockText}</option>`);
                 });
-                $('#studentResults').html(html || '<div class="list-group-item text-muted">No students found</div>');
+                // Enable the equipment dropdown
+                $('#equipmentSelect').prop('disabled', false).removeAttr('disabled');
+                console.log('Equipment dropdown enabled');
+            } else {
+                $('#equipmentSelect').append('<option value="" disabled>No equipment in this category</option>');
+                $('#equipmentSelect').prop('disabled', true);
             }
-        });
-    }
-
-    // Select student
-    $(document).on('click', '.student-item', function(e) {
-        e.preventDefault();
-        const id = $(this).data('id');
-        const number = $(this).data('number');
-        const name = $(this).data('name');
-        $('#studentId').val(id);
-        $('#studentInfo').text(`${number} - ${name}`);
-        $('#selectedStudent').removeClass('d-none');
-        $('#studentResults').empty();
-        $('#summaryStudent').text(`${number} - ${name}`);
-        checkFormComplete();
+        } else {
+            $('#equipmentSelect').prop('disabled', true);
+        }
+        checkAddItemEnabled();
     });
 
-    // Equipment type change - load available units
-    $('#equipmentSelect').change(function() {
+    // Equipment change - load units
+    $(document).on('change', '#equipmentSelect', function() {
         const equipmentId = $(this).val();
-        const equipmentName = $(this).find(':selected').data('name');
-        $('#unitSelect').empty().append('<option value="">-- Select Unit --</option>').prop('disabled', true);
-        $('#selectedUnit').addClass('d-none');
-        $('#summaryEquipment').text(equipmentName || '-');
-        $('#summarySerial').text('-');
-
+        console.log('Equipment selected:', equipmentId);
+        
+        // Reset dependent dropdowns
+        $('#serialNoSelect').empty().append('<option value="">Select Serial No.</option>').prop('disabled', true);
+        $('#currentStatus').empty().append('<option value="">-</option>').prop('disabled', true);
+        
         if (equipmentId) {
-            $.get(`/SupportAdmin/Equipment/AvailableUnits/${equipmentId}`, function(res) {
-                if (res.success && res.data.length > 0) {
-                    res.data.forEach(u => {
-                        $('#unitSelect').append(`<option value="${u.eunitId}" data-serial="${u.eunitSerialNo}">${u.eunitSerialNo} (${u.condition})</option>`);
-                    });
-                    $('#unitSelect').prop('disabled', false);
-                } else {
-                    $('#unitSelect').append('<option value="">No available units</option>');
+            console.log('Loading available units for equipment:', equipmentId);
+            $.ajax({
+                url: `/SupportAdmin/Equipment/AvailableUnits/${equipmentId}`,
+                type: 'GET',
+                dataType: 'json',
+                success: function(res) {
+                    console.log('Available units response:', res);
+                    if (res.success && res.data && res.data.length > 0) {
+                        res.data.forEach(u => {
+                            $('#serialNoSelect').append(`<option value="${u.eunitId}" data-serial="${u.eunitSerialNo}" data-condition="${u.condition}">${u.eunitSerialNo} (${u.condition})</option>`);
+                        });
+                        // Enable the serial number dropdown
+                        $('#serialNoSelect').prop('disabled', false).removeAttr('disabled');
+                        $('#currentStatus').empty().append('<option value="available" selected>Available</option>');
+                        console.log('Serial No dropdown enabled');
+                    } else {
+                        $('#serialNoSelect').append('<option value="" disabled>No available units</option>');
+                        console.log('No available units for this equipment');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading units:', error);
+                    console.error('XHR status:', xhr.status);
                 }
             });
         }
-        checkFormComplete();
+        checkAddItemEnabled();
     });
 
-    // Unit selection
-    $('#unitSelect').change(function() {
-        const serial = $(this).find(':selected').data('serial');
-        if ($(this).val()) {
-            $('#unitInfo').text(serial);
-            $('#selectedUnit').removeClass('d-none');
-            $('#summarySerial').text(serial);
-        } else {
-            $('#selectedUnit').addClass('d-none');
-            $('#summarySerial').text('-');
-        }
-        checkFormComplete();
+    // Serial number change
+    $(document).on('change', '#serialNoSelect', function() {
+        console.log('Serial selected:', $(this).val());
+        checkAddItemEnabled();
+        const now = new Date().toLocaleString();
+        $('#itemLastUpdated').val(now);
     });
 
-    // Due date quick select
+    // Quick due date buttons
     $('.btn-due').click(function() {
         const days = $(this).data('days');
         const due = new Date();
         due.setDate(due.getDate() + days);
         $('#dueDate').val(due.toISOString().slice(0, 16));
-        $('#summaryDue').text(due.toLocaleDateString());
     });
 
-    $('#dueDate').change(function() {
-        $('#summaryDue').text(new Date($(this).val()).toLocaleDateString());
-    });
+    // Add item to table
+    $('#btnAddItem').click(addItemToTable);
 
-    function checkFormComplete() {
-        const studentId = $('#studentId').val();
-        const unitId = $('#unitSelect').val();
-        const dueDate = $('#dueDate').val();
-        $('#btnSubmit').prop('disabled', !(studentId && unitId && dueDate));
+    // Navigation
+    $('#btnBackStep1').click(() => goToStep(1));
+    $('#btnNextStep3').click(() => goToStep(3));
+    $('#btnBackStep2').click(() => goToStep(2));
+
+    // Confirm borrow
+    $('#btnConfirmBorrow').click(confirmBorrow);
+
+    // Save new student
+    $('#btnSaveStudent').click(saveNewStudent);
+
+    // Update student
+    $('#btnUpdateStudent').click(updateStudent);
+
+    // Select student from modal
+    $('#btnSelectStudent').click(selectStudentFromModal);
+});
+
+function loadStudents() {
+    $.get('/SupportAdmin/Students/GetAll', function(res) {
+        if (res.success) {
+            studentsData = res.data;
+            
+            // Populate filters
+            const colleges = [...new Set(res.data.map(s => s.studentCollege).filter(c => c))];
+            const courses = [...new Set(res.data.map(s => s.studentCourse).filter(c => c))];
+            
+            colleges.forEach(c => $('#filterCollege').append(`<option value="${c}">${c}</option>`));
+            courses.forEach(c => $('#filterCourse').append(`<option value="${c}">${c}</option>`));
+            
+            renderStudentsTable(studentsData);
+        }
+    });
+}
+
+function filterStudents() {
+    const search = $('#searchStudent').val().toLowerCase();
+    const college = $('#filterCollege').val();
+    const course = $('#filterCourse').val();
+    
+    let filtered = studentsData.filter(s => {
+        const matchSearch = !search || 
+            s.studentIdNumber.toLowerCase().includes(search) || 
+            s.fullName.toLowerCase().includes(search);
+        const matchCollege = !college || s.studentCollege === college;
+        const matchCourse = !course || s.studentCourse === course;
+        return matchSearch && matchCollege && matchCourse;
+    });
+    
+    renderStudentsTable(filtered);
+}
+
+function renderStudentsTable(data) {
+    let html = '';
+    data.forEach(s => {
+        const statusBadge = s.studentStatus 
+            ? '<span class="badge bg-success">Active</span>' 
+            : '<span class="badge bg-danger">Blocked</span>';
+        
+        // Choose button - only enabled for active students
+        const chooseBtn = s.studentStatus 
+            ? `<button class="btn btn-sm btn-success btn-choose-student me-1" data-id="${s.studentId}" title="Select as Borrower">
+                   <i class="bi bi-check2-square"></i>
+               </button>`
+            : `<button class="btn btn-sm btn-secondary me-1" disabled title="Student is blocked">
+                   <i class="bi bi-check2-square"></i>
+               </button>`;
+        
+        // Edit button - always available
+        const editBtn = `<button class="btn btn-sm btn-outline-warning btn-edit-student" data-id="${s.studentId}" title="Edit Student">
+                            <i class="bi bi-pencil"></i>
+                         </button>`;
+        
+        html += `<tr data-id="${s.studentId}" class="${!s.studentStatus ? 'table-danger' : ''}">
+            <td>${s.studentIdNumber}</td>
+            <td>${s.fullName}</td>
+            <td>${s.studentCollege || '-'}</td>
+            <td>${s.studentCourse || '-'}</td>
+            <td>${s.studentEmail || '-'}</td>
+            <td>${s.studentContactNo || '-'}</td>
+            <td>${statusBadge}</td>
+            <td>
+                <div class="btn-group btn-group-sm">
+                    ${chooseBtn}
+                    ${editBtn}
+                </div>
+            </td>
+        </tr>`;
+    });
+    $('#studentsTable tbody').html(html || '<tr><td colspan="8" class="text-center text-muted">No students found</td></tr>');
+    
+    // Choose button - directly select student and go to step 2
+    $('.btn-choose-student').click(function(e) {
+        e.stopPropagation();
+        const studentId = $(this).data('id');
+        chooseStudent(studentId);
+    });
+    
+    // Edit button - open modal with student details
+    $('.btn-edit-student').click(function(e) {
+        e.stopPropagation();
+        const studentId = $(this).data('id');
+        openStudentModal(studentId);
+    });
+}
+
+// Choose student directly (without opening modal)
+function chooseStudent(studentId) {
+    const student = studentsData.find(s => s.studentId === studentId);
+    
+    if (!student) {
+        alert('Student not found');
+        return;
     }
+    
+    if (!student.studentStatus) {
+        alert('Cannot select blocked student. Please contact an administrator.');
+        return;
+    }
+    
+    selectedStudent = student;
+    $('#selectedStudentId').val(student.studentId);
+    
+    // Update summary fields
+    $('#sumStudentId').text(student.studentIdNumber);
+    $('#sumFullName').text(student.fullName);
+    $('#sumCollege').text(student.studentCollege || '-');
+    $('#sumCourse').text(student.studentCourse || '-');
+    $('#sumEmail').text(student.studentEmail || '-');
+    $('#sumContact').text(student.studentContactNo || '-');
+    
+    // Go to step 2
+    goToStep(2);
+}
 
-    // Submit form
-    $('#borrowForm').submit(function(e) {
-        e.preventDefault();
-        if (!confirm('Confirm borrow transaction?')) return;
+function openStudentModal(studentId) {
+    const student = studentsData.find(s => s.studentId === studentId);
+    if (!student) return;
+    
+    $('#editStudentId').val(student.studentId);
+    $('#editStudentIdNumber').val(student.studentIdNumber);
+    $('#editFirstName').val(student.fullName.split(' ')[0]);
+    $('#editLastName').val(student.fullName.split(' ').slice(-1)[0]);
+    $('#editCollege').val(student.studentCollege);
+    $('#editCourse').val(student.studentCourse);
+    $('#editEmail').val(student.studentEmail);
+    $('#editContactNo').val(student.studentContactNo);
+    $('#editStatus').val(student.studentStatus.toString());
+    
+    // Disable select button if blocked
+    $('#btnSelectStudent').prop('disabled', !student.studentStatus);
+    
+    new bootstrap.Modal('#editStudentModal').show();
+}
 
-        $.post('/SupportAdmin/Transactions/ProcessBorrow', $(this).serialize(), function(res) {
-            if (res.success) {
-                alert(`Success! Transaction Code: ${res.transactionCode}`);
-                window.location.href = '/SupportAdmin/Transactions';
+function selectStudentFromModal() {
+    const studentId = parseInt($('#editStudentId').val());
+    const student = studentsData.find(s => s.studentId === studentId);
+    
+    if (!student || !student.studentStatus) {
+        alert('Cannot select blocked student');
+        return;
+    }
+    
+    selectedStudent = student;
+    $('#selectedStudentId').val(student.studentId);
+    
+    // Update summary
+    $('#sumStudentId').text(student.studentIdNumber);
+    $('#sumFullName').text(student.fullName);
+    $('#sumCollege').text(student.studentCollege || '-');
+    $('#sumCourse').text(student.studentCourse || '-');
+    $('#sumEmail').text(student.studentEmail || '-');
+    $('#sumContact').text(student.studentContactNo || '-');
+    
+    bootstrap.Modal.getInstance('#editStudentModal').hide();
+    goToStep(2);
+}
+
+function loadEquipment() {
+    console.log('Loading equipment...');
+    $.ajax({
+        url: '/SupportAdmin/Equipment/GetAll',
+        type: 'GET',
+        dataType: 'json',
+        success: function(res) {
+            console.log('Equipment API response:', res);
+            if (res.success && res.data) {
+                equipmentData = res.data;
+                
+                // Clear existing options first
+                $('#equipmentCategory').empty().append('<option value="">Select Category</option>');
+                categoriesSet.clear();
+                
+                // Get unique categories from equipment with available stock
+                res.data.forEach(e => {
+                    if (e.availableStock > 0 && e.equipmentCategory) {
+                        categoriesSet.add(e.equipmentCategory);
+                    }
+                });
+                
+                // Also include categories even if no stock (for display purposes)
+                if (categoriesSet.size === 0) {
+                    res.data.forEach(e => {
+                        if (e.equipmentCategory) {
+                            categoriesSet.add(e.equipmentCategory);
+                        }
+                    });
+                }
+                
+                // Populate dropdown
+                categoriesSet.forEach(c => {
+                    $('#equipmentCategory').append(`<option value="${c}">${c}</option>`);
+                });
+                
+                // Ensure dropdown is enabled and remove any disabled state
+                $('#equipmentCategory').prop('disabled', false).removeAttr('disabled');
+                
+                console.log('Categories loaded:', Array.from(categoriesSet));
+                console.log('Equipment Category dropdown options:', $('#equipmentCategory option').length);
             } else {
-                alert('Error: ' + res.message);
+                console.error('Failed to load equipment:', res.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Equipment API error:', error);
+            console.error('XHR status:', xhr.status);
+            console.error('Response:', xhr.responseText);
+        }
+    });
+}
+
+function setDefaultDates() {
+    const now = new Date();
+    $('#dateBorrowed').val(now.toLocaleString());
+    $('#lastUpdated').val(now.toLocaleString());
+    
+    const defaultDue = new Date();
+    defaultDue.setDate(defaultDue.getDate() + 7);
+    $('#dueDate').val(defaultDue.toISOString().slice(0, 16));
+}
+
+function checkAddItemEnabled() {
+    const hasEquipment = $('#equipmentSelect').val();
+    const hasSerial = $('#serialNoSelect').val();
+    const hasDue = $('#dueDate').val();
+    $('#btnAddItem').prop('disabled', !(hasEquipment && hasSerial && hasDue));
+}
+
+function addItemToTable() {
+    const category = $('#equipmentCategory option:selected').text();
+    const equipment = $('#equipmentSelect option:selected').text();
+    const equipmentName = $('#equipmentSelect option:selected').data('name');
+    const serial = $('#serialNoSelect option:selected').data('serial');
+    const unitId = $('#serialNoSelect').val();
+    const dueDate = $('#dueDate').val();
+    const now = new Date().toLocaleString();
+    
+    // Check if already added
+    if (borrowItems.find(i => i.unitId === unitId)) {
+        alert('This item is already added');
+        return;
+    }
+    
+    borrowItems.push({
+        unitId: unitId,
+        category: category,
+        equipmentName: equipmentName,
+        serial: serial,
+        dueDate: dueDate
+    });
+    
+    const html = `<tr data-unit-id="${unitId}">
+        <td>${category}</td>
+        <td>${equipmentName}</td>
+        <td>${serial}</td>
+        <td><span class="badge bg-warning">Borrowed</span></td>
+        <td>-</td>
+        <td>N/A</td>
+        <td>${now}</td>
+    </tr>`;
+    
+    $('#itemsTable tbody').append(html);
+    
+    // Reset form
+    $('#equipmentCategory').val('');
+    $('#equipmentSelect').empty().append('<option value="">Select Equipment</option>').prop('disabled', true);
+    $('#serialNoSelect').empty().append('<option value="">Select Serial No.</option>').prop('disabled', true);
+    $('#currentStatus').empty().append('<option value="">-</option>');
+    
+    checkNextEnabled();
+}
+
+function checkNextEnabled() {
+    $('#btnNextStep3').prop('disabled', borrowItems.length === 0);
+}
+
+function goToStep(step) {
+    $('.step-content').addClass('d-none');
+    $(`#step${step}Content`).removeClass('d-none');
+    
+    // Update indicators
+    for (let i = 1; i <= 3; i++) {
+        const indicator = $(`#step${i}Indicator`);
+        indicator.removeClass('active completed');
+        if (i < step) indicator.addClass('completed');
+        if (i === step) indicator.addClass('active');
+    }
+    
+    if (step === 3) {
+        populateSummary();
+    }
+}
+
+function populateSummary() {
+    $('#sumProcessedBy').text($('#processedBy').val());
+    $('#sumDateBorrowed').text($('#dateBorrowed').val());
+    $('#sumLastUpdated').text($('#lastUpdated').val());
+    $('#sumRemarks').text($('#remarks').val() || '-');
+    
+    let html = '';
+    borrowItems.forEach(item => {
+        const dueDate = new Date(item.dueDate).toLocaleString('en-US', {
+            year: 'numeric', month: '2-digit', day: '2-digit'
+        });
+        const lastUpdated = new Date().toLocaleString('en-US', {
+            year: 'numeric', month: '2-digit', day: '2-digit'
+        });
+        
+        html += `<tr>
+            <td>${item.category}</td>
+            <td>${item.equipmentName}</td>
+            <td>${item.serial}</td>
+            <td><span class="badge bg-warning text-dark">Borrowed</span></td>
+            <td>${dueDate}</td>
+            <td>N/A</td>
+            <td>N/A</td>
+            <td>${lastUpdated}</td>
+        </tr>`;
+    });
+    $('#summaryItemsTable tbody').html(html);
+}
+
+function confirmBorrow() {
+    if (!selectedStudent || borrowItems.length === 0) {
+        alert('Please select a student and add at least one item');
+        return;
+    }
+    
+    if (!confirm('Confirm this borrow transaction?')) return;
+    
+    // Process each item
+    let processed = 0;
+    let transactionCode = '';
+    
+    borrowItems.forEach((item, index) => {
+        const formData = new FormData();
+        formData.append('StudentId', selectedStudent.studentId);
+        formData.append('UnitId', item.unitId);
+        formData.append('DueDate', item.dueDate);
+        formData.append('__RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
+        
+        $.ajax({
+            url: '/SupportAdmin/Transactions/ProcessBorrow',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                processed++;
+                if (res.success && res.transactionCode) {
+                    transactionCode = res.transactionCode;
+                }
+                
+                if (processed === borrowItems.length) {
+                    alert(`Success! Transaction Code: ${transactionCode}\n${borrowItems.length} item(s) borrowed.`);
+                    window.location.href = '/SupportAdmin/Transactions';
+                }
+            },
+            error: function() {
+                alert('Error processing borrow');
             }
         });
     });
-});
+}
+
+function saveNewStudent() {
+    const form = $('#addStudentForm');
+    $.post('/SupportAdmin/Students/Create', form.serialize(), function(res) {
+        if (res.success) {
+            alert('Student added successfully');
+            bootstrap.Modal.getInstance('#addStudentModal').hide();
+            form[0].reset();
+            loadStudents();
+        } else {
+            alert('Error: ' + res.message);
+        }
+    });
+}
+
+function updateStudent() {
+    const form = $('#editStudentForm');
+    $.post('/SupportAdmin/Students/Update', form.serialize(), function(res) {
+        if (res.success) {
+            alert('Student updated successfully');
+            bootstrap.Modal.getInstance('#editStudentModal').hide();
+            loadStudents();
+        } else {
+            alert('Error: ' + res.message);
+        }
+    });
+}
 </script>
 }

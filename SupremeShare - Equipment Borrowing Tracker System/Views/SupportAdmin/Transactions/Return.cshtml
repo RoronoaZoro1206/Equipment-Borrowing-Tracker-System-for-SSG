@@ -153,44 +153,57 @@
 
 @section Scripts {
 <script>
-$(document).ready(function() {
-    loadActiveBorrows();
+let activeBorrowsTable;
 
-    function loadActiveBorrows() {
-        $.get('/SupportAdmin/Transactions/GetActiveBorrows', function(res) {
-            if (res.success) {
-                let html = '';
-                res.data.forEach(b => {
-                    const statusCls = b.status === 'overdue' ? 'bg-danger' : 'bg-info';
-                    const overdueText = b.daysOverdue > 0 ? `<br><small class="text-danger">${b.daysOverdue} days overdue</small>` : '';
-                    
-                    html += `<tr>
-                        <td>${b.studentIdNumber}<br><small class="text-muted">${b.studentName}</small></td>
-                        <td>${b.equipmentName}</td>
-                        <td><strong>${b.serialNo}</strong></td>
-                        <td>${b.dueDate}${overdueText}</td>
-                        <td><span class="badge ${statusCls}">${b.status}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-success btn-select-return" 
-                                    data-id="${b.borrowId}"
-                                    data-code="${b.transactionCode}"
-                                    data-student="${b.studentIdNumber} - ${b.studentName}"
-                                    data-equipment="${b.equipmentName}"
-                                    data-serial="${b.serialNo}"
-                                    data-due="${b.dueDate}"
-                                    data-overdue="${b.daysOverdue}">
-                                <i class="bi bi-arrow-return-left"></i> Return
-                            </button>
-                        </td>
-                    </tr>`;
-                });
-                $('#activeBorrowsTable tbody').html(html || '<tr><td colspan="6" class="text-center text-muted">No active borrows</td></tr>');
+$(document).ready(function() {
+    // Initialize DataTable with DataTableConfig helper
+    activeBorrowsTable = DataTableConfig.init('#activeBorrowsTable', {
+        ajax: {
+            url: '/SupportAdmin/Transactions/GetActiveBorrows',
+            dataSrc: json => json.success ? json.data : []
+        },
+        columns: [
+            { 
+                data: null,
+                render: row => `<strong>${row.studentIdNumber}</strong><br><small class="text-muted">${row.studentName}</small>`
+            },
+            { data: 'equipmentName' },
+            { data: 'serialNo', render: data => `<strong class="text-primary">${data}</strong>` },
+            { 
+                data: null,
+                render: row => {
+                    const overdueText = row.daysOverdue > 0 ? `<br><small class="text-danger">${row.daysOverdue} days overdue</small>` : '';
+                    return `${row.dueDate}${overdueText}`;
+                }
+            },
+            { 
+                data: 'status',
+                render: data => `<span class="status-badge ${data === 'overdue' ? 'overdue' : 'borrowed'}">${data}</span>`
+            },
+            {
+                data: null,
+                orderable: false,
+                render: row => `
+                    <button class="btn btn-sm btn-success btn-action btn-select-return" 
+                            data-id="${row.borrowId}"
+                            data-code="${row.transactionCode}"
+                            data-student="${row.studentIdNumber} - ${row.studentName}"
+                            data-equipment="${row.equipmentName}"
+                            data-serial="${row.serialNo}"
+                            data-due="${row.dueDate}"
+                            data-overdue="${row.daysOverdue}">
+                        <i class="bi bi-arrow-return-left"></i> Return
+                    </button>`
             }
-        });
-    }
+        ],
+        order: [[3, 'asc']] // Sort by due date
+    });
 
     // Refresh
-    $('#btnRefresh').click(loadActiveBorrows);
+    $('#btnRefresh').click(() => {
+        Toast.info('Refreshing...');
+        activeBorrowsTable.ajax.reload();
+    });
 
     // Select item for return
     $(document).on('click', '.btn-select-return', function() {
@@ -250,22 +263,38 @@ $(document).ready(function() {
         });
     }
 
-    // Submit return
-    $('#returnForm').submit(function(e) {
+    // Submit return with SweetAlert2
+    $('#returnForm').submit(async function(e) {
         e.preventDefault();
         const condition = $('input[name="Condition"]:checked').val() === 'true';
         const conditionText = condition ? 'Good' : 'Damaged';
+        const equipment = $('#returnEquipment').val();
 
-        if (!confirm(`Confirm return with condition: ${conditionText}?`)) return;
+        const confirmed = await Confirm.action(
+            'Confirm Return',
+            `Return <strong>${equipment}</strong> in <strong class="${condition ? 'text-success' : 'text-danger'}">${conditionText}</strong> condition?`,
+            '<i class="bi bi-check2-all me-1"></i>Confirm Return',
+            'question'
+        );
+        
+        if (!confirmed) return;
 
-        $.post('/SupportAdmin/Transactions/ProcessReturn', $(this).serialize(), function(res) {
+        Loading.show('Processing return...');
+        
+        try {
+            const res = await $.post('/SupportAdmin/Transactions/ProcessReturn', $(this).serialize());
+            Loading.hide();
+            
             if (res.success) {
-                alert(res.message);
+                await Result.success('Return Processed', res.message);
                 window.location.reload();
             } else {
-                alert('Error: ' + res.message);
+                Toast.error(res.message);
             }
-        });
+        } catch (error) {
+            Loading.hide();
+            Toast.error('Failed to process return');
+        }
     });
 });
 </script>

@@ -45,13 +45,6 @@
         </div>
     </div>
 
-    <!-- Real-time indicator -->
-    <div class="alert alert-info d-flex align-items-center mb-4" id="realtimeAlert">
-        <i class="bi bi-broadcast me-2"></i>
-        <span>Real-time updates enabled. New audit entries will appear automatically.</span>
-        <span class="badge bg-success ms-auto" id="connectionBadge">Connected</span>
-    </div>
-
     <!-- Audit Log Table -->
     <div class="card shadow-sm">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
@@ -103,35 +96,20 @@
 </div>
 
 @section Scripts {
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 <script>
 let currentPage = 1;
 
 $(document).ready(function() {
     loadAuditLogs(1);
 
-    // SignalR for real-time audit updates
-    const connection = new signalR.HubConnectionBuilder()
-        .withUrl("/hubs/dashboard")
-        .withAutomaticReconnect()
-        .build();
-
-    connection.on("StatsUpdated", function() {
-        // Refresh if on first page
-        if (currentPage === 1) {
-            loadAuditLogs(1);
+    // Listen for SignalR updates via global client
+    document.addEventListener('signalr:update', function(e) {
+        if (e.detail.type === 'audit' || e.detail.type === 'all' || e.detail.type === 'stats') {
+            if (currentPage === 1) {
+                loadAuditLogs(1);
+            }
         }
     });
-
-    connection.onclose(() => {
-        $('#connectionBadge').removeClass('bg-success').addClass('bg-danger').text('Disconnected');
-    });
-
-    connection.onreconnected(() => {
-        $('#connectionBadge').removeClass('bg-danger').addClass('bg-success').text('Connected');
-    });
-
-    connection.start().catch(err => console.error(err));
 });
 
 function loadAuditLogs(page) {
@@ -139,7 +117,7 @@ function loadAuditLogs(page) {
     const action = $('#actionFilter').val();
     const pageSize = $('#pageSize').val();
 
-    $.get(`/Admin/Reports/GetAuditLogs?page=${page}&pageSize=${pageSize}&action=${encodeURIComponent(action)}`, function(res) {
+    $.get(`/Admin/AuditLog/GetLogs?page=${page}&pageSize=${pageSize}&action=${encodeURIComponent(action)}`, function(res) {
         if (res.success) {
             renderTable(res.data);
             renderPagination(res.pagination);
