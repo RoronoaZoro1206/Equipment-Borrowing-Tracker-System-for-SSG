@@ -85,6 +85,17 @@ builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IDashboardNotificationService, DashboardNotificationService>();
 
 // ===========================================
+// Register Advanced Feature Services (Phase 8)
+// ===========================================
+builder.Services.AddScoped<IBulkOperationsService, BulkOperationsService>();
+builder.Services.AddScoped<IEquipmentConditionTrackingService, EquipmentConditionTrackingService>();
+builder.Services.AddScoped<ILostItemProtocolService, LostItemProtocolService>();
+builder.Services.AddScoped<IExportService, ExportService>();
+
+// Register Background Service for Auto-Overdue Updates
+builder.Services.AddHostedService<OverdueStatusBackgroundService>();
+
+// ===========================================
 // Register Initializers & Migration Services
 // ===========================================
 builder.Services.AddScoped<AdminInitializer>();

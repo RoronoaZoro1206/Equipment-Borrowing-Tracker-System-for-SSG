@@ -26,10 +26,9 @@ DECLARE
     v_count INT;
 BEGIN
     -- Count records that match the requested status
-    -- The input is cast to the ENUM type used in the table
     SELECT COUNT(*) INTO v_count
     FROM borrow_record
-    WHERE borrow_status = p_status_type::borrow_status_enum;
+    WHERE borrow_status = p_status_type;
 
     -- Return the count (0 if no records found)
     RETURN COALESCE(v_count, 0);
@@ -40,24 +39,37 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION fn_check_student_eligibility(p_student_id INT)
 RETURNS BOOLEAN AS $$
 DECLARE
-    v_status VARCHAR(20);
+    v_status BOOLEAN;
 BEGIN
-    -- Retrieve the status of the student
+    -- Retrieve the status of the student (BOOLEAN: TRUE = Active, FALSE = Blocked)
     SELECT student_status INTO v_status
     FROM student
     WHERE student_id = p_student_id;
 
-    -- Return TRUE if active, FALSE if blocked or not found
-    IF v_status = 'active' THEN
-        RETURN TRUE;
-    ELSE
-        RETURN FALSE;
-    END IF;
+    -- Return the status directly (TRUE if active, FALSE if blocked or not found)
+    RETURN COALESCE(v_status, FALSE);
 END;
 $$ LANGUAGE plpgsql;
 
--- 4. fn_trigger_enforce_lost
--- Step 1: Create the Function Logic
+-- 4. fn_calculate_days_overdue (helper function)
+CREATE OR REPLACE FUNCTION fn_calculate_days_overdue(p_borrow_id INT)
+RETURNS INT AS $$
+DECLARE
+    v_due_date TIMESTAMP;
+    v_days INT;
+BEGIN
+    SELECT borrow_due_date INTO v_due_date FROM borrow_record WHERE borrow_id = p_borrow_id;
+    IF v_due_date IS NULL THEN RETURN 0; END IF;
+    v_days := EXTRACT(DAY FROM (NOW() - v_due_date))::INT;
+    RETURN GREATEST(v_days, 0);
+END;
+$$ LANGUAGE plpgsql;
+
+-- =============================================
+-- TRIGGERS
+-- =============================================
+
+-- 5. fn_trigger_enforce_lost
 CREATE OR REPLACE FUNCTION fn_trigger_enforce_lost()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -65,7 +77,6 @@ DECLARE
 BEGIN
     -- Check if the status was changed to 'lost'
     IF NEW.borrow_status = 'lost' AND OLD.borrow_status != 'lost' THEN
-
         -- 1. Update the Equipment Unit status to 'lost'
         UPDATE equipment_unit
         SET eunit_status = 'lost'
@@ -76,66 +87,53 @@ BEGIN
         FROM transaction
         WHERE transaction_id = NEW.transaction_id;
 
-        -- 3. Block the student
+        -- 3. Block the student (set status to FALSE)
         UPDATE student
-        SET student_status = 'blocked'
+        SET student_status = FALSE
         WHERE student_id = v_student_id;
-
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Step 2: Bind the Function to the Table via a Trigger
+-- Bind the Function to the Table via a Trigger
+DROP TRIGGER IF EXISTS trg_enforce_lost_protocol ON borrow_record;
 CREATE TRIGGER trg_enforce_lost_protocol
 AFTER UPDATE ON borrow_record
 FOR EACH ROW
 EXECUTE FUNCTION fn_trigger_enforce_lost();
 
-
--- 5. fn_trigger_audit_borrow_status
--- Step 1: Create the Function Logic
+-- 6. fn_trigger_audit_borrow_status
 CREATE OR REPLACE FUNCTION fn_trigger_audit_borrow_status()
 RETURNS TRIGGER AS $$
 DECLARE
-    -- Default to User ID 1 (System/Admin) if session user is not found
-    v_current_user_id INT := 1; 
+    v_current_user_id INT := 1; -- Default to User ID 1 (System/Admin)
 BEGIN
     -- Check if the borrow_status column has changed
     IF NEW.borrow_status IS DISTINCT FROM OLD.borrow_status THEN
-
-        -- Insert a new record into the AUDIT_LOG table
-        -- Mapping data to the correct columns defined in the Schema
-        INSERT INTO AUDIT_LOG (
-            USER_ID, 
-            AUDIT_ACTION, 
-            AUDIT_OLD_DATA, 
-            AUDIT_NEW_DATA, 
-            AUDIT_LOGGED_AT
-        )
+        INSERT INTO audit_log (user_id, audit_action, audit_old_data, audit_new_data, audit_logged_at)
         VALUES (
             v_current_user_id,
             'Borrow Status Changed for Record ID ' || NEW.borrow_id,
-            OLD.borrow_status, -- Logs the previous status
-            NEW.borrow_status, -- Logs the new status
+            OLD.borrow_status,
+            NEW.borrow_status,
             NOW()
         );
-
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Step 2: Bind the Function to the Table via a Trigger
+-- Bind the Function to the Table via a Trigger
+DROP TRIGGER IF EXISTS trg_audit_borrow_status_change ON borrow_record;
 CREATE TRIGGER trg_audit_borrow_status_change
 AFTER UPDATE ON borrow_record
 FOR EACH ROW
 EXECUTE FUNCTION fn_trigger_audit_borrow_status();
 
--- 6. fn_log_timeline_activity
--- Step 1: Create the Function Logic
+-- 7. fn_log_timeline_activity
 CREATE OR REPLACE FUNCTION fn_log_timeline_activity()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -144,7 +142,6 @@ DECLARE
 BEGIN
     -- Only proceed if the status has actually changed
     IF NEW.borrow_status IS DISTINCT FROM OLD.borrow_status THEN
-
         -- 1. Construct a readable description for the Timeline
         IF NEW.borrow_status = 'returned' THEN
             v_action_description := 'Item unit ' || NEW.eunit_id || ' returned.';
@@ -156,24 +153,16 @@ BEGIN
             v_action_description := 'Status changed to ' || NEW.borrow_status;
         END IF;
 
-        -- 2. Identify the User (In a real app, this comes from the session. 
-        -- Here we use a session variable or fallback to the transaction owner)
+        -- 2. Identify the User
         BEGIN
             v_current_user_id := current_setting('app.current_user_id')::INT;
         EXCEPTION WHEN OTHERS THEN
-            -- Fallback: Use the user who created the original transaction if session ID is missing
             SELECT user_id INTO v_current_user_id 
             FROM transaction WHERE transaction_id = NEW.transaction_id;
         END;
 
         -- 3. Insert into AUDIT_LOG
-        INSERT INTO audit_log (
-            user_id,
-            audit_action,
-            audit_old_data,
-            audit_new_data,
-            audit_logged_at
-        )
+        INSERT INTO audit_log (user_id, audit_action, audit_old_data, audit_new_data, audit_logged_at)
         VALUES (
             v_current_user_id,
             v_action_description,
@@ -187,7 +176,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Step 2: Bind the Function to the Table via a Trigger
+-- Bind the Function to the Table via a Trigger
+DROP TRIGGER IF EXISTS trg_log_timeline_activity ON borrow_record;
 CREATE TRIGGER trg_log_timeline_activity
 AFTER UPDATE ON borrow_record
 FOR EACH ROW

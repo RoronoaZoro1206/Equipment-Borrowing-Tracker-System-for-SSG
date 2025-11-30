@@ -1024,3 +1024,506 @@
         padding: 8px 6px;
     }
 }
+
+
+/* ===========================================
+   DataTables Styling
+   =========================================== */
+
+/* Ensure sorting arrows are visible */
+table.dataTable thead th.dt-orderable-asc,
+table.dataTable thead th.dt-orderable-desc,
+table.dataTable thead th.sorting,
+table.dataTable thead th.sorting_asc,
+table.dataTable thead th.sorting_desc {
+    cursor: pointer;
+    position: relative;
+    padding-right: 26px !important;
+}
+
+/* DataTables wrapper styling */
+.dataTables_wrapper {
+    padding: 0;
+}
+
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+    margin-bottom: 16px;
+}
+
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_filter input {
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    margin-left: 8px;
+}
+
+.dataTables_wrapper .dataTables_info {
+    padding-top: 16px;
+    color: var(--medium-gray);
+    font-size: 0.85rem;
+}
+
+.dataTables_wrapper .dataTables_paginate {
+    padding-top: 16px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 6px 12px;
+    margin: 0 2px;
+    border-radius: 6px;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    background: var(--white) !important;
+    color: var(--text-dark) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: var(--off-white) !important;
+    border-color: var(--primary-red) !important;
+    color: var(--primary-red) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: var(--primary-red) !important;
+    border-color: var(--primary-red) !important;
+    color: var(--white) !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Table header styling */
+table.dataTable thead th {
+    border-bottom: 2px solid var(--primary-red);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+table.dataTable.table-dark thead th {
+    background: #1a1a1a;
+    color: var(--white);
+}
+
+/* Row hover effect */
+table.dataTable tbody tr:hover {
+    background-color: rgba(139, 0, 0, 0.05) !important;
+}
+
+/* Empty table message */
+table.dataTable tbody td.dataTables_empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--medium-gray);
+    font-style: italic;
+}
+
+/* Responsive DataTables */
+table.dataTable.dtr-inline.collapsed > tbody > tr > td.dtr-control:before,
+table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control:before {
+    background-color: var(--primary-red);
+}
+
+
+/* ===========================================
+   Phase 9: UI/UX Polish Styles
+   =========================================== */
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* Button Loading State */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    top: 50%;
+    left: 50%;
+    margin-left: -0.5rem;
+    margin-top: -0.5rem;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spinner-border 0.75s linear infinite;
+}
+
+/* Skeleton Loading */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.skeleton-text {
+    height: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-title {
+    height: 1.5rem;
+    width: 60%;
+    margin-bottom: 1rem;
+}
+
+.skeleton-card {
+    height: 120px;
+    border-radius: 12px;
+}
+
+/* Toast Customization */
+.toastify {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    padding: 12px 20px;
+    min-width: 250px;
+}
+
+/* SweetAlert2 Customization */
+.swal2-popup {
+    font-family: 'Inter', sans-serif;
+    border-radius: 16px;
+}
+
+.swal2-title {
+    font-family: 'Playfair Display', serif;
+    color: var(--text-dark);
+}
+
+.swal2-html-container {
+    color: var(--medium-gray);
+}
+
+.swal2-confirm {
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    padding: 10px 24px !important;
+}
+
+.swal2-cancel {
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    padding: 10px 24px !important;
+}
+
+.swal2-deny {
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    padding: 10px 24px !important;
+}
+
+/* Enhanced Card Hover Effects */
+.card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Action Buttons */
+.btn-action {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+}
+
+.btn-action-group {
+    display: flex;
+    gap: 6px;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.available {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+}
+
+.status-badge.borrowed {
+    background: rgba(59, 130, 246, 0.15);
+    color: #2563eb;
+}
+
+.status-badge.overdue {
+    background: rgba(239, 68, 68, 0.15);
+    color: #dc2626;
+}
+
+.status-badge.lost {
+    background: rgba(107, 114, 128, 0.15);
+    color: #4b5563;
+}
+
+.status-badge.returned {
+    background: rgba(34, 197, 94, 0.15);
+    color: #16a34a;
+}
+
+.status-badge.maintenance {
+    background: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+}
+
+/* Pulse Animation for Alerts */
+.pulse-alert {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Fade In Animation */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Slide In Animation */
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--medium-gray);
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    opacity: 0.3;
+    margin-bottom: 16px;
+}
+
+.empty-state-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.empty-state-text {
+    font-size: 0.9rem;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Search Input Enhancement */
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input-wrapper .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--medium-gray);
+}
+
+.search-input-wrapper input {
+    padding-left: 40px;
+}
+
+/* Filter Dropdown */
+.filter-dropdown {
+    min-width: 200px;
+}
+
+.filter-dropdown .dropdown-item {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+}
+
+.filter-dropdown .dropdown-item:hover {
+    background: var(--off-white);
+}
+
+.filter-dropdown .dropdown-item.active {
+    background: var(--primary-red);
+    color: var(--white);
+}
+
+/* Mobile Responsive Enhancements */
+@media (max-width: 576px) {
+    /* Stack buttons on mobile */
+    .btn-action-group {
+        flex-direction: column;
+    }
+    
+    /* Full width buttons */
+    .btn-mobile-full {
+        width: 100%;
+    }
+    
+    /* Smaller padding on cards */
+    .card-body {
+        padding: 16px;
+    }
+    
+    /* Adjust table font size */
+    .table {
+        font-size: 0.8rem;
+    }
+    
+    /* Hide less important columns */
+    .hide-mobile {
+        display: none !important;
+    }
+    
+    /* Stack form elements */
+    .form-row-mobile {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    /* Adjust modal size */
+    .modal-dialog {
+        margin: 10px;
+    }
+    
+    /* Smaller stat cards */
+    .admin-stat-card {
+        padding: 16px;
+    }
+    
+    .admin-stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+
+/* Tablet Responsive */
+@media (min-width: 577px) and (max-width: 991px) {
+    .admin-content {
+        padding: 20px;
+    }
+    
+    .row-tablet-2 > * {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .admin-sidebar,
+    .admin-navbar,
+    .sidebar-overlay,
+    .btn,
+    .no-print {
+        display: none !important;
+    }
+    
+    .admin-content {
+        margin-left: 0;
+        padding: 0;
+    }
+    
+    .card {
+        border: 1px solid #ddd;
+        box-shadow: none;
+    }
+}
+
+/* Focus States for Accessibility */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    outline: 2px solid var(--primary-red);
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .card {
+        border: 2px solid #000;
+    }
+    
+    .btn {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,0 +1,124 @@
+@{
+    ViewData["Title"] = "Bulk Return";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4 fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-box-arrow-in-down me-2"></i>Bulk Return</h2>
+        <a href="/Admin/BulkOperations" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    </div>
+
+    <div class="card card-hover">
+        <div class="card-header bg-warning text-dark">
+            <i class="bi bi-calendar-event me-2"></i>Event Bulk Return
+        </div>
+        <div class="card-body">
+            <form id="bulkReturnForm">
+                @Html.AntiForgeryToken()
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <label class="form-label">Event Name <small class="text-muted">(optional)</small></label>
+                        <input type="text" class="form-control" id="eventName" placeholder="e.g., Science Fair 2025">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Default Return Condition</label>
+                        <select class="form-select" id="defaultCondition">
+                            <option value="true" selected>✓ Good Condition</option>
+                            <option value="false">✗ Damaged</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Borrow Record IDs</label>
+                    <textarea class="form-control" id="borrowIds" rows="4" placeholder="Enter borrow record IDs, separated by commas or new lines&#10;&#10;Example:&#10;1, 2, 3, 4, 5&#10;or&#10;1&#10;2&#10;3"></textarea>
+                    <small class="text-muted">Enter the borrow record IDs to return. You can find these IDs in the Transactions page.</small>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4">
+                    <button type="submit" class="btn btn-warning" id="submitBtn">
+                        <i class="bi bi-check-circle me-1"></i>Process Bulk Return
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Tips -->
+    <div class="card mt-4">
+        <div class="card-header bg-light">
+            <i class="bi bi-lightbulb me-2"></i>Quick Tips
+        </div>
+        <div class="card-body">
+            <ul class="mb-0">
+                <li>You can paste multiple IDs from a spreadsheet - they'll be automatically parsed</li>
+                <li>Items returned in "Damaged" condition will be sent to maintenance</li>
+                <li>Already returned items will be skipped automatically</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('bulkReturnForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const eventName = document.getElementById('eventName').value;
+        const defaultCondition = document.getElementById('defaultCondition').value === 'true';
+        const borrowIdsText = document.getElementById('borrowIds').value;
+        
+        // Parse IDs (support comma, newline, space, tab separators)
+        const borrowIds = borrowIdsText
+            .split(/[,\n\r\t\s]+/)
+            .map(id => parseInt(id.trim()))
+            .filter(id => !isNaN(id) && id > 0);
+
+        if (borrowIds.length === 0) {
+            Toast.error('Please enter at least one valid borrow ID');
+            return;
+        }
+
+        // Confirm before processing
+        const conditionText = defaultCondition ? 'Good Condition' : 'Damaged';
+        const confirmed = await Confirm.action(
+            'Process Bulk Return',
+            `<p>You are about to return <strong>${borrowIds.length}</strong> items as <strong>${conditionText}</strong>.</p>
+             ${!defaultCondition ? '<div class="alert alert-warning mt-2 mb-0"><i class="bi bi-exclamation-triangle me-1"></i>Damaged items will be sent to maintenance.</div>' : ''}`,
+            '<i class="bi bi-check-circle me-1"></i>Process Return',
+            'question'
+        );
+
+        if (!confirmed) return;
+
+        const submitBtn = document.getElementById('submitBtn');
+        Loading.button(submitBtn, true);
+
+        try {
+            const result = await Api.post('/Admin/BulkOperations/ProcessBulkReturn', {
+                eventName,
+                borrowIds,
+                defaultCondition
+            });
+
+            Loading.button(submitBtn, false);
+
+            if (result.success) {
+                await Result.bulkOperation(result.data);
+                if (result.data.successCount > 0) {
+                    document.getElementById('borrowIds').value = '';
+                    Toast.success(`${result.data.successCount} items returned successfully`);
+                }
+            } else {
+                Toast.error(result.message || 'Operation failed');
+            }
+        } catch (error) {
+            Loading.button(submitBtn, false);
+            Toast.error('Error processing request: ' + error.message);
+        }
+    });
+</script>
+}
