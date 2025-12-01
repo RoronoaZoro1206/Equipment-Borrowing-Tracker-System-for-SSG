@@ -60,6 +60,16 @@
                     <span>Equipment</span>
                 </a>
             </li>
+            
+            <li class="sidebar-section">Account</li>
+            
+            <li class="sidebar-item">
+                <a class="sidebar-link @(currentPath.StartsWith("/supportadmin/account") || currentPath == "/account" ? "active" : "")" 
+                   href="/SupportAdmin/Account">
+                    <i class="bi bi-person-circle"></i>
+                    <span>My Account</span>
+                </a>
+            </li>
         </ul>
     </nav>
 </aside>

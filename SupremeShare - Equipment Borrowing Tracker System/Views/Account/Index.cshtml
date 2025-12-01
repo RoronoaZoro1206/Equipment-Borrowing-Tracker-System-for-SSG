@@ -1,0 +1,285 @@
+@model SupremeShare___Equipment_Borrowing_Tracker_System.Models.DTOs.AccountViewModel
+@{
+    ViewData["Title"] = "Account";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+    var userRole = ViewBag.Role?.ToString()?.ToLower() ?? "";
+}
+
+<!-- Hero Banner -->
+<div class="dashboard-hero">
+    <div class="hero-bg" style="background-image: url('/File_Images/admin-MAIN.png');"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <div class="hero-logo">
+            <img src="~/File_Images/533693089_1177970501030425_4668075712780998242_n.jpg" alt="SSG Logo" />
+        </div>
+        <div class="hero-text">
+            <h1>Supreme Student Government</h1>
+            <p>Cebu Technological University - Main Campus</p>
+        </div>
+    </div>
+    <div class="hero-stripe"></div>
+</div>
+
+<!-- Anti-forgery token for AJAX requests -->
+@Html.AntiForgeryToken()
+
+<!-- Account Section -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2 class="section-title"><i class="bi bi-person-circle"></i> ACCOUNT</h2>
+    </div>
+
+    <!-- Account Information Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-shield-lock"></i> Account Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Username:</label>
+                    <input type="text" class="form-control" id="displayUsername" value="@Model.Username" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">E-mail:</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="displayEmail" value="@Model.Email" readonly />
+                        @if (Model.HasPendingEmailVerification)
+                        {
+                            <span class="input-group-text bg-warning text-dark" title="Pending verification for: @Model.PendingEmail">
+                                <i class="bi bi-hourglass-split"></i>
+                            </span>
+                        }
+                    </div>
+                    @if (Model.HasPendingEmailVerification)
+                    {
+                        <small class="text-warning">Pending: @Model.PendingEmail</small>
+                    }
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Password:</label>
+                    <input type="password" class="form-control" value="••••••••" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Role:</label>
+                    <input type="text" class="form-control" id="displayRole" value="@Model.Role" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Position:</label>
+                    <input type="text" class="form-control" id="displayPosition" value="@Model.Position" readonly />
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-primary" onclick="openAccountInfoModal()">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personal Information Card -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0"><i class="bi bi-person-vcard"></i> Personal Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Last Name:</label>
+                    <input type="text" class="form-control" id="displayLastName" value="@Model.LastName" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">First Name:</label>
+                    <input type="text" class="form-control" id="displayFirstName" value="@Model.FirstName" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Middle Name:</label>
+                    <input type="text" class="form-control" id="displayMiddleName" value="@Model.MiddleName" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Suffix:</label>
+                    <input type="text" class="form-control" id="displaySuffix" value="@Model.Suffix" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label text-muted small">Contact No:</label>
+                    <input type="text" class="form-control" id="displayContactNo" value="@Model.ContactNo" readonly />
+                </div>
+                <div class="col-md-4 d-flex align-items-end justify-content-between">
+                    <div>
+                        <small class="text-muted">Last Updated:</small>
+                        <br />
+                        <small id="lastUpdatedDisplay">@Model.LastUpdated.ToString("MMMM dd, yyyy 'at' hh:mm tt")</small>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="openPersonalInfoModal()">
+                        <i class="bi bi-pencil-square"></i> Edit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Account Info Edit Modal -->
+<div class="modal fade" id="accountInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-shield-lock"></i> Edit Account Information</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs mb-3" id="accountTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="username-tab" data-bs-toggle="tab" data-bs-target="#usernamePane" type="button">
+                            <i class="bi bi-person"></i> Username
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#emailPane" type="button">
+                            <i class="bi bi-envelope"></i> Email
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="password-tab" data-bs-toggle="tab" data-bs-target="#passwordPane" type="button">
+                            <i class="bi bi-key"></i> Password
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="accountTabsContent">
+                    <!-- Username Tab -->
+                    <div class="tab-pane fade show active" id="usernamePane" role="tabpanel">
+                        <form id="usernameForm">
+                            <div class="mb-3">
+                                <label class="form-label">Username <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="editUsername" name="username" required 
+                                       minlength="3" maxlength="50" pattern="^[a-zA-Z0-9_]+$" />
+                                <div class="form-text">Only letters, numbers, and underscores allowed (3-50 characters)</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> Save Username
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Email Tab -->
+                    <div class="tab-pane fade" id="emailPane" role="tabpanel">
+                        <div id="pendingEmailAlert" class="alert alert-warning d-none">
+                            <i class="bi bi-hourglass-split"></i>
+                            <span>Pending verification for: <strong id="pendingEmailDisplay"></strong></span>
+                            <button type="button" class="btn btn-sm btn-outline-warning ms-2" onclick="cancelEmailChange()">
+                                Cancel Request
+                            </button>
+                        </div>
+                        <form id="emailForm">
+                            <div class="mb-3">
+                                <label class="form-label">Current Email</label>
+                                <input type="text" class="form-control" id="currentEmailDisplay" readonly />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">New Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="editEmail" name="newEmail" required maxlength="100" />
+                                <div class="form-text">A verification email will be sent to this address</div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-envelope-check"></i> Send Verification Email
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Password Tab -->
+                    <div class="tab-pane fade" id="passwordPane" role="tabpanel">
+                        <form id="passwordForm">
+                            <div class="mb-3">
+                                <label class="form-label">Current Password <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="currentPassword" name="currentPassword" required />
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('currentPassword')">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">New Password <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="newPassword" name="newPassword" required 
+                                           minlength="8" maxlength="72" />
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('newPassword')">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="form-text">Min 8 characters with uppercase, lowercase, number, and special character</div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('confirmPassword')">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="passwordStrength" class="mb-3"></div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-key"></i> Change Password
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Personal Info Edit Modal -->
+<div class="modal fade" id="personalInfoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-person-vcard"></i> Edit Personal Information</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="personalInfoForm">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editLastName" name="lastName" required maxlength="100" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editFirstName" name="firstName" required maxlength="100" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Middle Name</label>
+                            <input type="text" class="form-control" id="editMiddleName" name="middleName" maxlength="100" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Suffix</label>
+                            <input type="text" class="form-control" id="editSuffix" name="suffix" maxlength="20" 
+                                   placeholder="Jr., Sr., III, etc." />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Contact No</label>
+                            <input type="text" class="form-control" id="editContactNo" name="contactNo" maxlength="20" 
+                                   placeholder="+63 XXX XXX XXXX" />
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i> Save Changes
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/account.js"></script>
+}

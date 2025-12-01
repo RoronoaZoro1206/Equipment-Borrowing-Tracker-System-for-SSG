@@ -78,6 +78,16 @@
                     <span>Bulk Operations</span>
                 </a>
             </li>
+            
+            <li class="sidebar-section">Account</li>
+            
+            <li class="sidebar-item">
+                <a class="sidebar-link @(currentPath.StartsWith("/admin/account") || currentPath == "/account" ? "active" : "")" 
+                   href="/Admin/Account">
+                    <i class="bi bi-person-circle"></i>
+                    <span>My Account</span>
+                </a>
+            </li>
         </ul>
     </nav>
 </aside>

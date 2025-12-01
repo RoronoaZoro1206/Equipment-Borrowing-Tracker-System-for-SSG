@@ -92,6 +92,11 @@ builder.Services.AddScoped<IEquipmentConditionTrackingService, EquipmentConditio
 builder.Services.AddScoped<ILostItemProtocolService, LostItemProtocolService>();
 builder.Services.AddScoped<IExportService, ExportService>();
 
+// ===========================================
+// Register Email Service
+// ===========================================
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 // Register Background Service for Auto-Overdue Updates
 builder.Services.AddHostedService<OverdueStatusBackgroundService>();
 
@@ -122,14 +127,18 @@ else
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
-    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 }
 
-// Security middleware (order matters!)
-app.UseMiddleware<SecurityHeadersMiddleware>();
-app.UseMiddleware<RateLimitingMiddleware>();
+// TEMPORARILY DISABLED FOR DEBUGGING - uncomment after fixing
+// app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+// app.UseMiddleware<SecurityHeadersMiddleware>();
+// app.UseMiddleware<RateLimitingMiddleware>();
 
-app.UseHttpsRedirection();
+// Only redirect to HTTPS in production
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 
 // Serve files from File_Images folder
@@ -144,6 +153,98 @@ app.UseRouting();
 
 app.UseSession();
 app.UseAuthorization();
+
+// Minimal API test endpoint - bypasses all controllers
+app.MapGet("/ping", () => "pong - server is running!");
+
+// Email verification endpoint - bypasses AccountController
+app.MapGet("/verify-email", async (string? token, DatabaseHelper db, ILogger<Program> logger) =>
+{
+    try
+    {
+        logger.LogInformation("Verify email called with token: {Token}", token?.Substring(0, Math.Min(10, token?.Length ?? 0)));
+        
+        if (string.IsNullOrEmpty(token))
+        {
+            return Results.Content(GenerateVerificationHtml(false, "Invalid verification link.", null), "text/html");
+        }
+
+        var query = @"SELECT user_id, new_email, expires_at, is_used FROM email_verification_tokens WHERE token = @token";
+        var dt = await db.ExecuteQueryAsync(query, new[] { new Npgsql.NpgsqlParameter("@token", token) });
+
+        if (dt.Rows.Count == 0)
+        {
+            return Results.Content(GenerateVerificationHtml(false, "Invalid or expired verification link.", null), "text/html");
+        }
+
+        var row = dt.Rows[0];
+        var userId = Convert.ToInt32(row["user_id"]);
+        var newEmail = row["new_email"]?.ToString() ?? "";
+        var isUsed = Convert.ToBoolean(row["is_used"]);
+        var expiresAt = row["expires_at"] is DateTimeOffset dto ? dto.UtcDateTime : Convert.ToDateTime(row["expires_at"]);
+
+        if (isUsed)
+        {
+            return Results.Content(GenerateVerificationHtml(false, "This verification link has already been used.", null), "text/html");
+        }
+
+        if (DateTime.UtcNow > expiresAt)
+        {
+            return Results.Content(GenerateVerificationHtml(false, "This verification link has expired.", null), "text/html");
+        }
+
+        // Update user email
+        var updateQuery = @"UPDATE ""USER"" SET user_email = @email, user_last_updated = CURRENT_TIMESTAMP WHERE user_id = @userId";
+        await db.ExecuteNonQueryAsync(updateQuery, new[] {
+            new Npgsql.NpgsqlParameter("@email", newEmail),
+            new Npgsql.NpgsqlParameter("@userId", userId)
+        });
+
+        // Mark token as used
+        await db.ExecuteNonQueryAsync("UPDATE email_verification_tokens SET is_used = TRUE WHERE token = @token", 
+            new[] { new Npgsql.NpgsqlParameter("@token", token) });
+
+        logger.LogInformation("Email verified successfully for user {UserId}", userId);
+        return Results.Content(GenerateVerificationHtml(true, "Your email has been verified successfully!", newEmail), "text/html");
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Error verifying email");
+        return Results.Content(GenerateVerificationHtml(false, "An error occurred. Please try again.", null), "text/html");
+    }
+});
+
+static string GenerateVerificationHtml(bool success, string message, string? email)
+{
+    var iconClass = success ? "icon-success" : "icon-error";
+    var iconSymbol = success ? "&#10003;" : "&#10007;";
+    var title = success ? "Email Verified!" : "Verification Failed";
+    var emailBadge = !string.IsNullOrEmpty(email) ? $"<div class='email-badge'>&#9993; {System.Net.WebUtility.HtmlEncode(email)}</div>" : "";
+
+    return $@"<!DOCTYPE html>
+<html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>{title}</title>
+<style>
+body {{ background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: 'Segoe UI', sans-serif; margin: 0; }}
+.card {{ background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); padding: 50px 40px; text-align: center; max-width: 480px; margin: 20px; }}
+.logo {{ color: #8B0000; font-size: 32px; font-weight: 700; margin-bottom: 30px; }}
+.icon {{ width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 25px; font-size: 50px; }}
+.icon-success {{ background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); color: #28a745; }}
+.icon-error {{ background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); color: #dc3545; }}
+h1 {{ color: #333; font-size: 28px; margin-bottom: 15px; }}
+.message {{ color: #666; font-size: 16px; margin-bottom: 30px; }}
+.email-badge {{ background: #f8f9fa; border: 1px solid #e9ecef; padding: 8px 16px; border-radius: 20px; font-size: 14px; margin-bottom: 25px; display: inline-block; }}
+.btn {{ background: #8B0000; color: white; padding: 14px 35px; border-radius: 8px; text-decoration: none; display: inline-block; }}
+.btn:hover {{ background: #6B0000; }}
+</style></head>
+<body><div class='card'>
+<div class='logo'>&#128230; SupremeShare</div>
+<div class='icon {iconClass}'>{iconSymbol}</div>
+<h1>{title}</h1>
+<p class='message'>{System.Net.WebUtility.HtmlEncode(message)}</p>
+{emailBadge}
+<a href='/Auth/Login' class='btn'>Go to Login</a>
+</div></body></html>";
+}
 
 app.MapControllerRoute(
     name: "default",

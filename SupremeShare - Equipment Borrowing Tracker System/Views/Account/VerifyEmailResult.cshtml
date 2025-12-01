@@ -1,0 +1,161 @@
+@model SupremeShare___Equipment_Borrowing_Tracker_System.Models.DTOs.EmailVerificationResultModel
+@{
+    ViewData["Title"] = Model?.Title ?? "Email Verification";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - SupremeShare</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --maroon: #8B0000;
+            --maroon-dark: #6B0000;
+            --gold: #D4AF37;
+        }
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .verification-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            padding: 50px 40px;
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            margin: 20px;
+            animation: slideUp 0.5s ease-out;
+        }
+        @@keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .logo {
+            color: var(--maroon);
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .icon-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 50px;
+        }
+        .icon-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #28a745;
+        }
+        .icon-error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #dc3545;
+        }
+        h1 {
+            color: #333;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .message {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .email-badge {
+            display: inline-block;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #495057;
+            margin-bottom: 25px;
+        }
+        .btn-maroon {
+            background: var(--maroon);
+            border: none;
+            color: white;
+            padding: 14px 35px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-maroon:hover {
+            background: var(--maroon-dark);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(139, 0, 0, 0.3);
+        }
+        .footer-text {
+            margin-top: 30px;
+            color: #999;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="verification-card">
+        <div class="logo">
+            <i class="bi bi-box-seam"></i>
+            SupremeShare
+        </div>
+        
+        @if (Model?.Success == true)
+        {
+            <div class="icon-circle icon-success">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            <h1>Email Verified!</h1>
+        }
+        else
+        {
+            <div class="icon-circle icon-error">
+                <i class="bi bi-x-lg"></i>
+            </div>
+            <h1>Verification Failed</h1>
+        }
+        
+        <p class="message">@(Model?.Message ?? "An error occurred.")</p>
+        
+        @if (Model?.Success == true && !string.IsNullOrEmpty(Model?.Email))
+        {
+            <div class="email-badge">
+                <i class="bi bi-envelope-check me-2"></i>@Model.Email
+            </div>
+        }
+        
+        <a href="/Auth/Login" class="btn-maroon">
+            <i class="bi bi-box-arrow-in-right"></i>
+            Go to Login
+        </a>
+        
+        <p class="footer-text">
+            &copy; 2025 SupremeShare - Equipment Borrowing Tracker System
+        </p>
+    </div>
+</body>
+</html>
