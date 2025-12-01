@@ -237,6 +237,16 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers
                 if (user.UserEmail?.ToLower() == dto.NewEmail.ToLower())
                     return Json(new { success = false, message = "New email is the same as current email" });
 
+                // Check if email is already used by another user
+                var emailCheckQuery = @"SELECT user_id FROM ""USER"" WHERE LOWER(user_email) = LOWER(@email) AND user_id != @userId";
+                var emailCheckResult = await _db.ExecuteQueryAsync(emailCheckQuery, new[]
+                {
+                    new NpgsqlParameter("@email", dto.NewEmail),
+                    new NpgsqlParameter("@userId", userId)
+                });
+                if (emailCheckResult.Rows.Count > 0)
+                    return Json(new { success = false, message = "This email is already registered to another user" });
+
                 // Generate verification token
                 var token = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
                 var expiresAt = DateTime.UtcNow.AddHours(24);

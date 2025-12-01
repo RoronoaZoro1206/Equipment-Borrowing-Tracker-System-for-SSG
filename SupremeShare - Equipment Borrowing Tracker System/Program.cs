@@ -193,6 +193,17 @@ app.MapGet("/verify-email", async (string? token, DatabaseHelper db, ILogger<Pro
             return Results.Content(GenerateVerificationHtml(false, "This verification link has expired.", null), "text/html");
         }
 
+        // Check if email is already used by another user (unique email enforcement)
+        var emailCheckQuery = @"SELECT user_id FROM ""USER"" WHERE LOWER(user_email) = LOWER(@email) AND user_id != @userId";
+        var emailCheck = await db.ExecuteQueryAsync(emailCheckQuery, new[] {
+            new Npgsql.NpgsqlParameter("@email", newEmail),
+            new Npgsql.NpgsqlParameter("@userId", userId)
+        });
+        if (emailCheck.Rows.Count > 0)
+        {
+            return Results.Content(GenerateVerificationHtml(false, "This email is already registered to another user.", null), "text/html");
+        }
+
         // Update user email
         var updateQuery = @"UPDATE ""USER"" SET user_email = @email, user_last_updated = CURRENT_TIMESTAMP WHERE user_id = @userId";
         await db.ExecuteNonQueryAsync(updateQuery, new[] {
