@@ -307,9 +307,9 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers
                 else
                 {
                     // Get pending verification
-                    var query = @"SELECT user_id, new_email, expires_at, is_used 
-                        FROM email_verification_tokens 
-                        WHERE token = @token";
+                    var query = @"SELECT user_id, evt_new_email, evt_expires_at, evt_is_used 
+                        FROM EMAIL_VERIFICATION_TOKEN 
+                        WHERE evt_token = @token";
 
                     var dt = await _db.ExecuteQueryAsync(query, new[] { new NpgsqlParameter("@token", token) });
 
@@ -322,11 +322,11 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers
                     {
                         var row = dt.Rows[0];
                         var userId = Convert.ToInt32(row["user_id"]);
-                        var newEmail = row["new_email"]?.ToString() ?? "";
-                        var isUsed = Convert.ToBoolean(row["is_used"]);
+                        var newEmail = row["evt_new_email"]?.ToString() ?? "";
+                        var isUsed = Convert.ToBoolean(row["evt_is_used"]);
 
                         // Handle timestamp
-                        var expiresAtValue = row["expires_at"];
+                        var expiresAtValue = row["evt_expires_at"];
                         DateTime expiresAt;
                         if (expiresAtValue is DateTimeOffset dto)
                             expiresAt = dto.UtcDateTime;
@@ -357,7 +357,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers
                             });
 
                             // Mark token as used
-                            var markUsedQuery = "UPDATE email_verification_tokens SET is_used = TRUE WHERE token = @token";
+                            var markUsedQuery = @"UPDATE EMAIL_VERIFICATION_TOKEN SET evt_is_used = TRUE WHERE evt_token = @token";
                             await _db.ExecuteNonQueryAsync(markUsedQuery, new[] { new NpgsqlParameter("@token", token) });
 
                             try
@@ -583,7 +583,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers
 
             try
             {
-                var query = "DELETE FROM email_verification_tokens WHERE user_id = @userId AND is_used = FALSE";
+                var query = @"DELETE FROM EMAIL_VERIFICATION_TOKEN WHERE user_id = @userId AND evt_is_used = FALSE";
                 await _db.ExecuteNonQueryAsync(query, new[] { new NpgsqlParameter("@userId", userId) });
 
                 await _auditService.LogActionAsync(userId, "EMAIL_CHANGE_CANCELLED", null, null);
@@ -603,16 +603,16 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers
         {
             try
             {
-                var query = @"SELECT new_email FROM email_verification_tokens 
-                    WHERE user_id = @userId AND is_used = FALSE AND expires_at > @now
-                    ORDER BY created_at DESC LIMIT 1";
+                var query = @"SELECT evt_new_email FROM EMAIL_VERIFICATION_TOKEN 
+                    WHERE user_id = @userId AND evt_is_used = FALSE AND evt_expires_at > @now
+                    ORDER BY evt_date_created DESC LIMIT 1";
                 var dt = await _db.ExecuteQueryAsync(query, new[]
                 {
                     new NpgsqlParameter("@userId", userId),
                     new NpgsqlParameter("@now", DateTime.UtcNow)
                 });
 
-                return dt.Rows.Count > 0 ? dt.Rows[0]["new_email"].ToString() : null;
+                return dt.Rows.Count > 0 ? dt.Rows[0]["evt_new_email"].ToString() : null;
             }
             catch
             {
@@ -623,12 +623,12 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers
         private async Task StorePendingEmailVerificationAsync(int userId, string newEmail, string token, DateTime expiresAt)
         {
             // Delete any existing pending verifications for this user
-            var deleteQuery = "DELETE FROM email_verification_tokens WHERE user_id = @userId AND is_used = FALSE";
+            var deleteQuery = @"DELETE FROM EMAIL_VERIFICATION_TOKEN WHERE user_id = @userId AND evt_is_used = FALSE";
             await _db.ExecuteNonQueryAsync(deleteQuery, new[] { new NpgsqlParameter("@userId", userId) });
 
             // Insert new verification token
-            var insertQuery = @"INSERT INTO email_verification_tokens 
-                (user_id, token, new_email, expires_at, created_at, is_used)
+            var insertQuery = @"INSERT INTO EMAIL_VERIFICATION_TOKEN 
+                (user_id, evt_token, evt_new_email, evt_expires_at, evt_date_created, evt_is_used)
                 VALUES (@userId, @token, @newEmail, @expiresAt, @createdAt, FALSE)";
             await _db.ExecuteNonQueryAsync(insertQuery, new[]
             {

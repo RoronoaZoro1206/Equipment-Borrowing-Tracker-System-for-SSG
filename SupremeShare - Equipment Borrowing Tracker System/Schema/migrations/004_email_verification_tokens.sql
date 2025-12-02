@@ -7,27 +7,27 @@
 -- ===========================================
 
 -- Create email verification tokens table
-CREATE TABLE IF NOT EXISTS email_verification_tokens (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES "USER"(user_id) ON DELETE CASCADE,
-    token VARCHAR(100) NOT NULL UNIQUE,
-    new_email VARCHAR(100) NOT NULL,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    is_used BOOLEAN DEFAULT FALSE
+CREATE TABLE IF NOT EXISTS EMAIL_VERIFICATION_TOKEN (
+    EVT_ID SERIAL PRIMARY KEY,
+    USER_ID INTEGER NOT NULL REFERENCES "USER"(USER_ID) ON DELETE CASCADE,
+    EVT_TOKEN VARCHAR(100) NOT NULL UNIQUE,
+    EVT_NEW_EMAIL VARCHAR(100) NOT NULL,
+    EVT_EXPIRES_AT TIMESTAMP WITH TIME ZONE NOT NULL,
+    EVT_DATE_CREATED TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    EVT_IS_USED BOOLEAN DEFAULT FALSE
 );
 
 -- Create indexes for performance
-CREATE INDEX IF NOT EXISTS idx_email_verification_user_id ON email_verification_tokens(user_id);
-CREATE INDEX IF NOT EXISTS idx_email_verification_token ON email_verification_tokens(token);
-CREATE INDEX IF NOT EXISTS idx_email_verification_expires ON email_verification_tokens(expires_at);
+CREATE INDEX IF NOT EXISTS idx_evt_user_id ON EMAIL_VERIFICATION_TOKEN(USER_ID);
+CREATE INDEX IF NOT EXISTS idx_evt_token ON EMAIL_VERIFICATION_TOKEN(EVT_TOKEN);
+CREATE INDEX IF NOT EXISTS idx_evt_expires ON EMAIL_VERIFICATION_TOKEN(EVT_EXPIRES_AT);
 
 -- Add comments for documentation
-COMMENT ON TABLE email_verification_tokens IS 'Stores pending email verification tokens for email change requests';
-COMMENT ON COLUMN email_verification_tokens.token IS 'Unique verification token sent via email';
-COMMENT ON COLUMN email_verification_tokens.new_email IS 'The new email address to be verified';
-COMMENT ON COLUMN email_verification_tokens.expires_at IS 'Token expiration timestamp (24 hours from creation)';
-COMMENT ON COLUMN email_verification_tokens.is_used IS 'Whether the token has been used for verification';
+COMMENT ON TABLE EMAIL_VERIFICATION_TOKEN IS 'Stores pending email verification tokens for email change requests';
+COMMENT ON COLUMN EMAIL_VERIFICATION_TOKEN.EVT_TOKEN IS 'Unique verification token sent via email';
+COMMENT ON COLUMN EMAIL_VERIFICATION_TOKEN.EVT_NEW_EMAIL IS 'The new email address to be verified';
+COMMENT ON COLUMN EMAIL_VERIFICATION_TOKEN.EVT_EXPIRES_AT IS 'Token expiration timestamp (24 hours from creation)';
+COMMENT ON COLUMN EMAIL_VERIFICATION_TOKEN.EVT_IS_USED IS 'Whether the token has been used for verification';
 
 -- ===========================================
 -- PART 2: Unique Email Constraint on USER table
@@ -50,4 +50,4 @@ COMMENT ON CONSTRAINT user_email_unique ON "USER" IS 'Ensures each user has a un
 -- ===========================================
 -- Cleanup job (run periodically if needed)
 -- ===========================================
--- DELETE FROM email_verification_tokens WHERE expires_at < CURRENT_TIMESTAMP OR is_used = TRUE;
+-- DELETE FROM EMAIL_VERIFICATION_TOKEN WHERE EVT_EXPIRES_AT < CURRENT_TIMESTAMP OR EVT_IS_USED = TRUE;

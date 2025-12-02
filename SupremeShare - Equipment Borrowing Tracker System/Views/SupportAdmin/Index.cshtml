@@ -27,31 +27,72 @@
     
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
-            <div class="status-card borrowed">
+            <div class="status-card borrowed clickable-card" data-status="borrowed" onclick="showStatusModal('borrowed')">
                 <div class="status-icon"><i class="bi bi-box-arrow-up-right"></i></div>
-                <div class="status-label">Borrowed</div>
+                <div class="status-label"><i class="bi bi-journal-text"></i> Borrowed</div>
                 <div class="status-value">@(ViewBag.BorrowedCount ?? 0)</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="status-card available">
+            <div class="status-card available clickable-card" data-status="returned" onclick="showStatusModal('returned')">
                 <div class="status-icon"><i class="bi bi-check-circle"></i></div>
-                <div class="status-label">Returned</div>
+                <div class="status-label"><i class="bi bi-arrow-return-left"></i> Returned</div>
                 <div class="status-value">@(ViewBag.ReturnedCount ?? 0)</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="status-card review">
+            <div class="status-card review clickable-card" data-status="overdue" onclick="showStatusModal('overdue')">
                 <div class="status-icon"><i class="bi bi-clock-history"></i></div>
-                <div class="status-label">Overdue</div>
+                <div class="status-label"><i class="bi bi-exclamation-circle"></i> Overdue</div>
                 <div class="status-value">@(ViewBag.OverdueCount ?? 0)</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="status-card lost">
+            <div class="status-card lost clickable-card" data-status="lost" onclick="showStatusModal('lost')">
                 <div class="status-icon"><i class="bi bi-exclamation-triangle"></i></div>
-                <div class="status-label">Lost/Missing</div>
+                <div class="status-label"><i class="bi bi-x-circle"></i> Lost/Missing</div>
                 <div class="status-value">@(ViewBag.LostCount ?? 0)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Records Modal -->
+<div class="modal fade" id="statusRecordsModal" tabindex="-1" aria-labelledby="statusRecordsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" id="statusModalHeader">
+                <h5 class="modal-title" id="statusRecordsModalLabel">
+                    <i class="bi bi-list-ul"></i> <span id="modalStatusTitle">Records</span>
+                </h5>
+                <button type="button" class="btn-close-modal" data-bs-dismiss="modal" aria-label="Close">Close X</button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="statusRecordsTable">
+                        <thead>
+                            <tr>
+                                <th>Transaction Code</th>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
+                                <th>Equipment</th>
+                                <th>Serial No.</th>
+                                <th>Date Borrowed</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statusRecordsBody">
+                            <tr>
+                                <td colspan="9" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                                    Loading records...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -195,7 +236,6 @@ $(document).ready(function() {
 function loadDashboardStats() {
     $.get('/SupportAdmin/Transactions/Stats', function(res) {
         if (res.success) {
-            // Update the status cards with actual data
             $('.status-card.borrowed .status-value').text(res.data.activeBorrows);
             $('.status-card.available .status-value').text(res.data.returnedToday);
             $('.status-card.review .status-value').text(res.data.overdueCount);
@@ -204,9 +244,125 @@ function loadDashboardStats() {
     });
 }
 
+// Show modal with records for clicked status card
+function showStatusModal(status) {
+    const titles = {
+        'borrowed': 'Borrowed Items',
+        'returned': 'Returned Items',
+        'overdue': 'Overdue Items',
+        'lost': 'Lost/Missing Items'
+    };
+    
+    const headerColors = {
+        'borrowed': '#3D5A3D',
+        'returned': '#059669',
+        'overdue': '#DC2626',
+        'lost': '#6B7280'
+    };
+    
+    // Button colors - white for red/dark backgrounds to ensure visibility
+    const buttonStyles = {
+        'borrowed': { bg: '#DC2626', color: 'white' },
+        'returned': { bg: '#DC2626', color: 'white' },
+        'overdue': { bg: 'white', color: '#DC2626' },  // White button on red header
+        'lost': { bg: '#DC2626', color: 'white' }
+    };
+    
+    $('#modalStatusTitle').text(titles[status] || 'Records');
+    $('#statusModalHeader').css('background', headerColors[status] || '#3D5A3D');
+    
+    // Update close button style based on status
+    const btnStyle = buttonStyles[status] || { bg: '#DC2626', color: 'white' };
+    $('.btn-close-modal').css({
+        'background': btnStyle.bg,
+        'color': btnStyle.color,
+        'border': status === 'overdue' ? '1px solid #DC2626' : 'none'
+    });
+    $('#statusRecordsBody').html(`
+        <tr>
+            <td colspan="9" class="text-center text-muted py-4">
+                <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+                Loading records...
+            </td>
+        </tr>
+    `);
+    
+    const modal = new bootstrap.Modal(document.getElementById('statusRecordsModal'));
+    modal.show();
+    
+    // Fetch records by status
+    $.get(`/SupportAdmin/GetRecordsByStatus?status=${status}`, function(res) {
+        if (res.success && res.data && res.data.length > 0) {
+            let html = '';
+            res.data.forEach(r => {
+                const statusBadge = getStatusBadge(r.borrowStatus);
+                const dueDate = r.borrowDueDate ? new Date(r.borrowDueDate).toLocaleDateString() : '-';
+                const borrowDate = r.dateBorrowed ? new Date(r.dateBorrowed).toLocaleDateString() : '-';
+                
+                html += `<tr>
+                    <td><span class="fw-medium">${r.transactionCode || '-'}</span></td>
+                    <td>${r.studentIdNumber || '-'}</td>
+                    <td>${r.studentName || '-'}</td>
+                    <td>${r.equipmentName || '-'}</td>
+                    <td><code>${r.serialNo || '-'}</code></td>
+                    <td>${borrowDate}</td>
+                    <td>${dueDate}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewTransactionFromModal('${r.transactionCode}')">
+                            <i class="bi bi-eye"></i> View
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            $('#statusRecordsBody').html(html);
+        } else {
+            $('#statusRecordsBody').html(`
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
+                        No records found
+                    </td>
+                </tr>
+            `);
+        }
+    }).fail(function() {
+        $('#statusRecordsBody').html(`
+            <tr>
+                <td colspan="9" class="text-center text-danger py-4">
+                    <i class="bi bi-exclamation-triangle fs-1 d-block mb-2"></i>
+                    Failed to load records
+                </td>
+            </tr>
+        `);
+    });
+}
+
+function getStatusBadge(status) {
+    const badges = {
+        'borrowed': '<span class="badge bg-primary">Borrowed</span>',
+        'returned': '<span class="badge bg-success">Returned</span>',
+        'overdue': '<span class="badge bg-danger">Overdue</span>',
+        'lost': '<span class="badge bg-secondary">Lost</span>'
+    };
+    return badges[status?.toLowerCase()] || `<span class="badge bg-info">${status || '-'}</span>`;
+}
+
+function viewTransactionFromModal(code) {
+    // Close modal first
+    bootstrap.Modal.getInstance(document.getElementById('statusRecordsModal'))?.hide();
+    
+    // Set the transaction code and search
+    document.getElementById('transactionCode').value = code;
+    searchTransaction();
+}
+
 function searchTransaction() {
     const code = document.getElementById('transactionCode').value.trim();
-    if (!code) return;
+    if (!code) {
+        Swal.fire('Info', 'Please enter a transaction code', 'info');
+        return;
+    }
 
     $.get(`/SupportAdmin/Transactions/SearchByCode?code=${encodeURIComponent(code)}`, function(res) {
         if (res.success && res.data) {
@@ -216,41 +372,65 @@ function searchTransaction() {
             document.getElementById('studentId').textContent = d.student.studentIdNumber;
             document.getElementById('studentName').textContent = d.student.fullName;
             document.getElementById('studentCollege').textContent = d.student.studentCollege || '-';
-            document.getElementById('studentCourse').textContent = '-';
-            document.getElementById('studentEmail').textContent = '-';
-            document.getElementById('studentContact').textContent = '-';
-            document.getElementById('studentStatus').textContent = 'Active';
+            document.getElementById('studentCourse').textContent = d.student.studentCourse || '-';
+            document.getElementById('studentEmail').textContent = d.student.studentEmail || '-';
+            document.getElementById('studentContact').textContent = d.student.studentContactNo || '-';
+            document.getElementById('studentStatus').textContent = d.student.studentStatus ? 'Active' : 'Inactive';
             document.getElementById('txnRemarks').textContent = d.transactionRemarks || 'No remarks';
-            document.getElementById('recordedBy').textContent = '-';
-            document.getElementById('dateBorrowed').textContent = new Date(d.transactionDateBorrowed).toLocaleString();
-            document.getElementById('lastUpdated').textContent = '-';
+            document.getElementById('recordedBy').textContent = d.recordedBy || '-';
+            document.getElementById('dateBorrowed').textContent = d.transactionDateBorrowed ? new Date(d.transactionDateBorrowed).toLocaleString() : '-';
+            document.getElementById('lastUpdated').textContent = d.transactionLastUpdated ? new Date(d.transactionLastUpdated).toLocaleString() : '-';
 
             // Populate borrowing table
             let itemsHtml = '';
-            d.items.forEach(i => {
-                const statusCls = i.borrowStatus === 'returned' ? 'text-success' : 
-                                  i.borrowStatus === 'overdue' ? 'text-danger' : 'text-info';
-                itemsHtml += `<tr>
-                    <td>-</td>
-                    <td>${i.equipmentName || '-'}</td>
-                    <td>${i.serialNo || '-'}</td>
-                    <td class="${statusCls}">${i.borrowStatus}</td>
-                    <td>${new Date(d.transactionDateBorrowed).toLocaleDateString()}</td>
-                    <td>${new Date(i.borrowDueDate).toLocaleDateString()}</td>
-                    <td>${i.borrowDateReturned ? new Date(i.borrowDateReturned).toLocaleDateString() : '-'}</td>
-                    <td>${i.borrowReturnCondition !== null ? (i.borrowReturnCondition ? 'Good' : 'Damaged') : '-'}</td>
-                    <td>-</td>
-                </tr>`;
-            });
+            if (d.items && d.items.length > 0) {
+                d.items.forEach(i => {
+                    const statusBadge = getStatusBadge(i.borrowStatus);
+                    const returnCondition = i.borrowReturnCondition !== null 
+                        ? (i.borrowReturnCondition ? '<span class="text-success">Good</span>' : '<span class="text-danger">Damaged</span>') 
+                        : '-';
+                    
+                    itemsHtml += `<tr>
+                        <td>${i.equipmentCategory || '-'}</td>
+                        <td>${i.equipmentName || '-'}</td>
+                        <td><code>${i.serialNo || '-'}</code></td>
+                        <td>${statusBadge}</td>
+                        <td>${d.transactionDateBorrowed ? new Date(d.transactionDateBorrowed).toLocaleDateString() : '-'}</td>
+                        <td>${i.borrowDueDate ? new Date(i.borrowDueDate).toLocaleDateString() : '-'}</td>
+                        <td>${i.borrowDateReturned ? new Date(i.borrowDateReturned).toLocaleDateString() : '-'}</td>
+                        <td>${returnCondition}</td>
+                        <td>${i.borrowLastUpdated ? new Date(i.borrowLastUpdated).toLocaleDateString() : '-'}</td>
+                    </tr>`;
+                });
+            }
             document.getElementById('borrowingTableBody').innerHTML = itemsHtml || '<tr><td colspan="9" class="text-center text-muted">No items found</td></tr>';
+            
+            // Populate timeline
+            let timelineHtml = '';
+            if (d.timeline && d.timeline.length > 0) {
+                d.timeline.forEach(t => {
+                    timelineHtml += `<tr>
+                        <td>${t.date ? new Date(t.date).toLocaleString() : '-'}</td>
+                        <td>${t.action || '-'}</td>
+                        <td>${t.by || '-'}</td>
+                    </tr>`;
+                });
+            }
+            document.getElementById('timelineTableBody').innerHTML = timelineHtml || '<tr><td colspan="3" class="text-center text-muted">No timeline data</td></tr>';
+            
+            // Scroll to transaction details
+            document.getElementById('transactionDetails').scrollIntoView({ behavior: 'smooth', block: 'start' });
         } else {
-            alert(res.message || 'Transaction not found');
+            Swal.fire('Not Found', res.message || 'Transaction not found', 'warning');
         }
+    }).fail(function() {
+        Swal.fire('Error', 'Failed to search transaction', 'error');
     });
 }
 
 function closeTransactionDetails() {
     document.getElementById('transactionDetails').style.display = 'none';
+    document.getElementById('transactionCode').value = '';
 }
 
 // Allow Enter key to search
@@ -260,4 +440,83 @@ document.getElementById('transactionCode').addEventListener('keypress', function
     }
 });
 </script>
+
+<style>
+/* Clickable Status Cards */
+.clickable-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clickable-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+}
+
+.clickable-card:active {
+    transform: translateY(-2px);
+}
+
+/* Status Modal Styles */
+#statusRecordsModal .modal-header {
+    background: #3D5A3D;
+    color: white;
+    border-bottom: none;
+    padding: 16px 24px;
+}
+
+#statusRecordsModal .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-close-modal {
+    background: #DC2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-close-modal:hover {
+    background: #B91C1C;
+}
+
+#statusRecordsModal .modal-body {
+    padding: 24px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+#statusRecordsTable thead {
+    background: #3D5A3D;
+    color: white;
+}
+
+#statusRecordsTable thead th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 10px;
+    font-weight: 500;
+    border: none;
+}
+
+#statusRecordsTable tbody td {
+    padding: 12px 10px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+#statusRecordsTable tbody tr:hover {
+    background: rgba(139, 0, 0, 0.05);
+}
+</style>
 }

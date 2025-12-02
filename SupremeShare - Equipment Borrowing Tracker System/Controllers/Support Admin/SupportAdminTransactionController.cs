@@ -125,6 +125,12 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
                 var borrowRecords = await _borrowRepo.GetByTransactionIdAsync(id);
                 var student = await _studentRepo.GetByIdAsync(transaction.StudentId);
 
+                // Get recorded by user
+                var userQuery = @"SELECT user_username, CONCAT(user_first_name, ' ', user_last_name) as full_name 
+                                  FROM ""USER"" WHERE user_id = @userId";
+                var userDt = await _db.ExecuteQueryAsync(userQuery, new[] { new NpgsqlParameter("@userId", transaction.UserId) });
+                var recordedBy = userDt.Rows.Count > 0 ? userDt.Rows[0]["full_name"]?.ToString() : "Unknown";
+
                 var items = new List<object>();
                 foreach (var record in borrowRecords)
                 {
@@ -138,10 +144,46 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
                         record.BorrowDueDate,
                         record.BorrowDateReturned,
                         record.BorrowReturnCondition,
+                        BorrowLastUpdated = record.BorrowLastUpdated,
                         SerialNo = unit?.EunitSerialNo,
                         EquipmentName = equipment?.EquipmentName,
+                        EquipmentCategory = equipment?.EquipmentCategory,
                         DaysOverdue = record.BorrowStatus == "overdue" || record.BorrowStatus == "borrowed"
                             ? Math.Max(0, (DateTime.Now - record.BorrowDueDate).Days) : 0
+                    });
+                }
+
+                // Get timeline from audit log
+                var timelineQuery = @"
+                    SELECT al.audit_logged_at as date, al.audit_action as action, 
+                           CONCAT(u.user_first_name, ' ', u.user_last_name) as by
+                    FROM audit_log al
+                    LEFT JOIN ""USER"" u ON al.user_id = u.user_id
+                    WHERE al.audit_new_data LIKE @txnCode OR al.audit_old_data LIKE @txnCode
+                    ORDER BY al.audit_logged_at DESC
+                    LIMIT 20";
+                var timelineDt = await _db.ExecuteQueryAsync(timelineQuery, 
+                    new[] { new NpgsqlParameter("@txnCode", $"%{transaction.TransactionCode}%") });
+                
+                var timeline = new List<object>();
+                foreach (DataRow row in timelineDt.Rows)
+                {
+                    timeline.Add(new
+                    {
+                        date = row["date"] != DBNull.Value ? Convert.ToDateTime(row["date"]) : (DateTime?)null,
+                        action = row["action"]?.ToString(),
+                        by = row["by"]?.ToString() ?? "System"
+                    });
+                }
+
+                // Add default timeline entry if empty
+                if (timeline.Count == 0)
+                {
+                    timeline.Add(new
+                    {
+                        date = (DateTime?)transaction.TransactionDateBorrowed,
+                        action = "Borrowing Transaction Recorded",
+                        by = recordedBy
                     });
                 }
 
@@ -154,8 +196,20 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
                         transaction.TransactionCode,
                         transaction.TransactionDateBorrowed,
                         transaction.TransactionRemarks,
-                        Student = new { student?.StudentIdNumber, student?.FullName, student?.StudentCollege },
-                        Items = items
+                        TransactionLastUpdated = transaction.TransactionLastUpdated,
+                        RecordedBy = recordedBy,
+                        Student = new 
+                        { 
+                            student?.StudentIdNumber, 
+                            student?.FullName, 
+                            student?.StudentCollege,
+                            StudentCourse = student?.StudentCourse,
+                            StudentEmail = student?.StudentEmail,
+                            StudentContactNo = student?.StudentContactNo,
+                            StudentStatus = student?.StudentStatus
+                        },
+                        Items = items,
+                        Timeline = timeline
                     }
                 });
             }
@@ -366,9 +420,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
                     SELECT 
                         (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'borrowed') as active_borrows,
                         (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'overdue') as overdue_count,
-                        (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'returned' 
-                         AND DATE(borrow_date_returned) = CURRENT_DATE) as returned_today,
-                        (SELECT COUNT(*) FROM transaction WHERE DATE(transaction_date_borrowed) = CURRENT_DATE) as borrowed_today,
+                        (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'returned') as returned_count,
                         (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'lost') as lost_count";
 
                 var dt = await _db.ExecuteQueryAsync(query);
@@ -382,8 +434,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
                         {
                             ActiveBorrows = Convert.ToInt32(row["active_borrows"]),
                             OverdueCount = Convert.ToInt32(row["overdue_count"]),
-                            ReturnedToday = Convert.ToInt32(row["returned_today"]),
-                            BorrowedToday = Convert.ToInt32(row["borrowed_today"]),
+                            ReturnedToday = Convert.ToInt32(row["returned_count"]), // Total returned (keeping property name for compatibility)
                             LostCount = Convert.ToInt32(row["lost_count"])
                         }
                     });

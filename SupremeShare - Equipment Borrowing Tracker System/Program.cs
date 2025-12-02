@@ -169,7 +169,7 @@ app.MapGet("/verify-email", async (string? token, DatabaseHelper db, ILogger<Pro
             return Results.Content(GenerateVerificationHtml(false, "Invalid verification link.", null), "text/html");
         }
 
-        var query = @"SELECT user_id, new_email, expires_at, is_used FROM email_verification_tokens WHERE token = @token";
+        var query = @"SELECT user_id, evt_new_email, evt_expires_at, evt_is_used FROM EMAIL_VERIFICATION_TOKEN WHERE evt_token = @token";
         var dt = await db.ExecuteQueryAsync(query, new[] { new Npgsql.NpgsqlParameter("@token", token) });
 
         if (dt.Rows.Count == 0)
@@ -179,9 +179,9 @@ app.MapGet("/verify-email", async (string? token, DatabaseHelper db, ILogger<Pro
 
         var row = dt.Rows[0];
         var userId = Convert.ToInt32(row["user_id"]);
-        var newEmail = row["new_email"]?.ToString() ?? "";
-        var isUsed = Convert.ToBoolean(row["is_used"]);
-        var expiresAt = row["expires_at"] is DateTimeOffset dto ? dto.UtcDateTime : Convert.ToDateTime(row["expires_at"]);
+        var newEmail = row["evt_new_email"]?.ToString() ?? "";
+        var isUsed = Convert.ToBoolean(row["evt_is_used"]);
+        var expiresAt = row["evt_expires_at"] is DateTimeOffset dto ? dto.UtcDateTime : Convert.ToDateTime(row["evt_expires_at"]);
 
         if (isUsed)
         {
@@ -212,7 +212,7 @@ app.MapGet("/verify-email", async (string? token, DatabaseHelper db, ILogger<Pro
         });
 
         // Mark token as used
-        await db.ExecuteNonQueryAsync("UPDATE email_verification_tokens SET is_used = TRUE WHERE token = @token", 
+        await db.ExecuteNonQueryAsync(@"UPDATE EMAIL_VERIFICATION_TOKEN SET evt_is_used = TRUE WHERE evt_token = @token", 
             new[] { new Npgsql.NpgsqlParameter("@token", token) });
 
         logger.LogInformation("Email verified successfully for user {UserId}", userId);
