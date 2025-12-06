@@ -4,58 +4,73 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-clock-history me-2 text-danger"></i>Overdue Items Report</h2>
-        <div>
-            <button class="btn btn-outline-success me-2" onclick="exportToExcel()">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-report">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Overdue Items Report</h2>
+                <p class="text-muted mb-0 small">Track and manage overdue equipment borrows</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-export-report" onclick="exportToExcel()">
                 <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
             </button>
-            <a href="/Admin/Reports" class="btn btn-outline-secondary">
+            <a href="/Admin/Reports" class="btn btn-back-report">
                 <i class="bi bi-arrow-left me-1"></i>Back to Reports
             </a>
         </div>
     </div>
 
-    <!-- Summary Cards -->
+    <!-- Summary Stats -->
     <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="card bg-danger text-white">
-                <div class="card-body text-center">
-                    <h2 id="totalOverdue">-</h2>
-                    <small>Total Overdue Items</small>
+            <div class="stat-card-report danger">
+                <div class="stat-icon-report"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <div class="stat-content-report">
+                    <span class="stat-value-report" id="totalOverdue">-</span>
+                    <span class="stat-label-report">Total Overdue Items</span>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-warning text-dark">
-                <div class="card-body text-center">
-                    <h2 id="criticalOverdue">-</h2>
-                    <small>Critical (7+ days)</small>
+            <div class="stat-card-report warning">
+                <div class="stat-icon-report"><i class="bi bi-alarm-fill"></i></div>
+                <div class="stat-content-report">
+                    <span class="stat-value-report" id="criticalOverdue">-</span>
+                    <span class="stat-label-report">Critical (7+ days)</span>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <h2 id="studentsAffected">-</h2>
-                    <small>Students Affected</small>
+            <div class="stat-card-report info">
+                <div class="stat-icon-report"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-content-report">
+                    <span class="stat-value-report" id="studentsAffected">-</span>
+                    <span class="stat-label-report">Students Affected</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Overdue Table -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-table me-2"></i>Overdue Items List</span>
-            <button class="btn btn-sm btn-light" onclick="loadOverdueItems()">
-                <i class="bi bi-arrow-clockwise"></i> Refresh
+    <div class="report-card">
+        <div class="report-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-table"></i>
+                <span>Overdue Items List</span>
+            </div>
+            <button class="btn btn-refresh-report" onclick="loadOverdueItems()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
             </button>
         </div>
-        <div class="card-body p-0">
+        <div class="report-card-body">
             <div class="table-responsive">
-                <table class="table table-hover mb-0" id="overdueTable">
-                    <thead class="table-light">
+                <table class="table table-report mb-0" id="overdueTable">
+                    <thead>
                         <tr>
                             <th>Days Overdue</th>
                             <th>Student</th>
@@ -68,13 +83,210 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <div class="spinner-border text-danger" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Loading overdue items...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Page Icon */
+.page-icon-report {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+
+/* Buttons */
+.btn-export-report {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+}
+
+.btn-export-report:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.35);
+    color: white;
+}
+
+.btn-back-report {
+    background: white;
+    color: var(--primary-red);
+    border: 2px solid var(--primary-red);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-back-report:hover {
+    background: var(--primary-red);
+    color: white;
+}
+
+/* Stat Cards */
+.stat-card-report {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-report::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.stat-card-report.danger::before { background: #ef4444; }
+.stat-card-report.warning::before { background: #f59e0b; }
+.stat-card-report.info::before { background: #3b82f6; }
+
+.stat-card-report:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon-report {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.stat-card-report.danger .stat-icon-report { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.stat-card-report.warning .stat-icon-report { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.stat-card-report.info .stat-icon-report { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+.stat-content-report { display: flex; flex-direction: column; }
+.stat-value-report { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label-report { font-size: 0.85rem; color: #6b7280; margin-top: 6px; }
+
+/* Report Card */
+.report-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.report-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.report-card-body { padding: 24px; }
+
+.btn-refresh-report {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh-report:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+
+/* Table */
+.table-report thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 12px;
+    border: none;
+}
+
+.table-report tbody td { 
+    padding: 14px 12px; 
+    vertical-align: middle; 
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05); 
+}
+
+.table-report tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+
+/* Badges */
+.badge-days { 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 0.8rem; 
+    font-weight: 700; 
+}
+
+.badge-days.critical { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+.badge-days.warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+.badge-days.normal { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
+
+.btn-action-return {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.btn-action-return:hover { 
+    transform: scale(1.05); 
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* Responsive */
+@@media (max-width: 991px) {
+    .stat-card-report { padding: 18px; }
+    .stat-value-report { font-size: 1.5rem; }
+}
+
+@@media (max-width: 768px) {
+    .page-icon-report { width: 48px; height: 48px; font-size: 1.25rem; }
+    .btn-export-report, .btn-back-report { padding: 8px 14px; font-size: 0.85rem; }
+}
+</style>
 
 @section Scripts {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
@@ -83,19 +295,8 @@ let overdueData = [];
 let dataTable = null;
 
 $(document).ready(function() {
-    // Initialize DataTable with DataTableConfig helper
-    dataTable = DataTableConfig.init('#overdueTable', {
-        order: [[0, 'desc']], // Sort by days overdue descending
-        pageLength: 25,
-        columnDefs: [
-            { orderable: true, targets: '_all' },
-            { type: 'num', targets: 0 } // Days overdue column
-        ]
-    });
-
     loadOverdueItems();
 
-    // SignalR for real-time updates
     const connection = new signalR.HubConnectionBuilder()
         .withUrl("/hubs/dashboard")
         .withAutomaticReconnect()
@@ -105,6 +306,21 @@ $(document).ready(function() {
     connection.start().catch(err => console.error(err));
 });
 
+function initDataTable() {
+    if (dataTable) return;
+    dataTable = $('#overdueTable').DataTable({
+        responsive: true,
+        order: [[0, 'desc']],
+        pageLength: 25,
+        language: {
+            search: "",
+            searchPlaceholder: "Search...",
+            emptyTable: '<div class="text-center py-4"><i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i><p class="text-muted mt-2 mb-0">No overdue items found</p></div>'
+        },
+        columnDefs: [{ orderable: true, targets: '_all' }, { type: 'num', targets: 0 }]
+    });
+}
+
 function loadOverdueItems() {
     $.get('/Admin/Reports/GetOverdueItems', function(res) {
         if (res.success) {
@@ -112,42 +328,51 @@ function loadOverdueItems() {
             renderTable(res.data);
             updateSummary(res.data);
         }
+    }).fail(function() {
+        $('#overdueTable tbody').html('<tr><td colspan="8" class="text-center text-danger py-4">Failed to load data</td></tr>');
     });
 }
 
 function renderTable(data) {
-    dataTable.clear();
-    data.forEach(item => {
-        const badgeClass = item.daysOverdue >= 7 ? 'bg-danger' : item.daysOverdue >= 3 ? 'bg-warning text-dark' : 'bg-info';
-        dataTable.row.add([
-            `<span class="badge ${badgeClass} fs-6">${item.daysOverdue}</span>`,
-            `<strong>${item.studentIdNumber}</strong><br><small>${item.studentName}</small><br><small class="text-muted">${item.studentCollege}</small>`,
-            `${item.studentEmail ? `<a href="mailto:${item.studentEmail}"><i class="bi bi-envelope"></i></a>` : ''}${item.studentContact ? `<a href="tel:${item.studentContact}"><i class="bi bi-telephone ms-2"></i></a>` : ''}<br><small class="text-muted">${item.studentContact || item.studentEmail || 'No contact'}</small>`,
-            `${item.equipmentName}<br><small class="text-muted">${item.category}</small>`,
-            `<strong>${item.serialNo}</strong>`,
-            item.dueDate,
-            `<code>${item.transactionCode}</code>`,
-            `<a href="/Admin/Transactions/Return" class="btn btn-sm btn-success" title="Process Return"><i class="bi bi-arrow-return-left"></i></a>`
-        ]);
-    });
-    dataTable.draw();
+    if (dataTable) { dataTable.destroy(); dataTable = null; }
+    
+    let html = '';
+    if (data.length === 0) {
+        html = '<tr><td colspan="8" class="text-center py-5"><i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No overdue items found</p></td></tr>';
+    } else {
+        data.forEach(item => {
+            const badgeClass = item.daysOverdue >= 7 ? 'critical' : item.daysOverdue >= 3 ? 'warning' : 'normal';
+            html += `<tr>
+                <td><span class="badge-days ${badgeClass}">${item.daysOverdue} days</span></td>
+                <td><strong class="text-danger">${item.studentIdNumber}</strong><br><small>${item.studentName}</small><br><small class="text-muted">${item.studentCollege || ''}</small></td>
+                <td>${item.studentEmail ? `<a href="mailto:${item.studentEmail}" class="text-danger"><i class="bi bi-envelope-fill"></i></a>` : ''}${item.studentContact ? `<a href="tel:${item.studentContact}" class="text-danger ms-2"><i class="bi bi-telephone-fill"></i></a>` : ''}<br><small class="text-muted">${item.studentContact || item.studentEmail || 'No contact'}</small></td>
+                <td><strong>${item.equipmentName}</strong><br><small class="text-muted">${item.category || ''}</small></td>
+                <td><code class="text-danger">${item.serialNo}</code></td>
+                <td><span class="text-danger fw-bold">${item.dueDate}</span></td>
+                <td><code>${item.transactionCode}</code></td>
+                <td><a href="/Admin/Transactions/Return" class="btn-action-return"><i class="bi bi-arrow-return-left me-1"></i>Return</a></td>
+            </tr>`;
+        });
+    }
+    
+    $('#overdueTable tbody').html(html);
+    if (data.length > 0) initDataTable();
 }
 
 function updateSummary(data) {
     $('#totalOverdue').text(data.length);
     $('#criticalOverdue').text(data.filter(d => d.daysOverdue >= 7).length);
-    const uniqueStudents = [...new Set(data.map(d => d.studentIdNumber))];
-    $('#studentsAffected').text(uniqueStudents.length);
+    $('#studentsAffected').text([...new Set(data.map(d => d.studentIdNumber))].length);
 }
 
 function exportToExcel() {
     if (overdueData.length === 0) {
-        alert('No data to export');
+        Swal.fire({ icon: 'warning', title: 'No Data', text: 'No data to export', confirmButtonColor: '#8b0000' });
         return;
     }
     let csv = 'Days Overdue,Student ID,Student Name,College,Email,Contact,Equipment,Serial No,Due Date,Transaction Code\n';
     overdueData.forEach(d => {
-        csv += `${d.daysOverdue},"${d.studentIdNumber}","${d.studentName}","${d.studentCollege}","${d.studentEmail || ''}","${d.studentContact || ''}","${d.equipmentName}","${d.serialNo}","${d.dueDate}","${d.transactionCode}"\n`;
+        csv += `${d.daysOverdue},"${d.studentIdNumber}","${d.studentName}","${d.studentCollege || ''}","${d.studentEmail || ''}","${d.studentContact || ''}","${d.equipmentName}","${d.serialNo}","${d.dueDate}","${d.transactionCode}"\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -156,6 +381,8 @@ function exportToExcel() {
     a.href = url;
     a.download = `overdue_report_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+    
+    Toastify({ text: 'Report exported successfully!', duration: 3000, gravity: "top", position: "right", style: { background: 'linear-gradient(135deg, #22c55e, #16a34a)', borderRadius: '10px' } }).showToast();
 }
 </script>
 }

@@ -4,50 +4,69 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-person-lines-fill me-2 text-primary"></i>Student Borrowing History</h2>
-        <a href="/Admin/Reports" class="btn btn-outline-secondary">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-report">
+                <i class="bi bi-person-lines-fill"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Student Borrowing History</h2>
+                <p class="text-muted mb-0 small">View individual student transaction records</p>
+            </div>
+        </div>
+        <a href="/Admin/Reports" class="btn btn-back-report">
             <i class="bi bi-arrow-left me-1"></i>Back to Reports
         </a>
     </div>
 
     <!-- Search Student -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-primary text-white">
+    <div class="search-card mb-4">
+        <div class="search-card-header">
             <i class="bi bi-search me-2"></i>Search Student
         </div>
-        <div class="card-body">
-            <div class="input-group">
+        <div class="search-card-body">
+            <div class="input-group input-group-search">
                 <span class="input-group-text"><i class="bi bi-person"></i></span>
                 <input type="text" id="studentSearch" class="form-control" placeholder="Enter Student ID Number or Name...">
-                <button class="btn btn-primary" id="btnSearch">Search</button>
+                <button class="btn btn-search" id="btnSearch">
+                    <i class="bi bi-search me-1"></i>Search
+                </button>
             </div>
-            <div id="searchResults" class="list-group mt-2" style="max-height: 200px; overflow-y: auto;"></div>
+            <div id="searchResults" class="search-results mt-3"></div>
         </div>
     </div>
 
     <!-- Selected Student Info -->
-    <div class="card shadow-sm mb-4" id="studentInfoCard" style="display: none;">
-        <div class="card-header bg-dark text-white">
+    <div class="student-info-card mb-4" id="studentInfoCard" style="display: none;">
+        <div class="student-info-header">
             <i class="bi bi-person-badge me-2"></i>Student Information
         </div>
-        <div class="card-body">
-            <div class="row">
+        <div class="student-info-body">
+            <div class="row g-4">
                 <div class="col-md-3">
-                    <strong>Student ID:</strong><br>
-                    <span id="infoStudentId">-</span>
+                    <div class="info-item">
+                        <span class="info-label">Student ID</span>
+                        <span class="info-value" id="infoStudentId">-</span>
+                    </div>
                 </div>
                 <div class="col-md-3">
-                    <strong>Name:</strong><br>
-                    <span id="infoStudentName">-</span>
+                    <div class="info-item">
+                        <span class="info-label">Name</span>
+                        <span class="info-value" id="infoStudentName">-</span>
+                    </div>
                 </div>
                 <div class="col-md-3">
-                    <strong>College:</strong><br>
-                    <span id="infoStudentCollege">-</span>
+                    <div class="info-item">
+                        <span class="info-label">College</span>
+                        <span class="info-value" id="infoStudentCollege">-</span>
+                    </div>
                 </div>
                 <div class="col-md-3">
-                    <strong>Status:</strong><br>
-                    <span id="infoStudentStatus">-</span>
+                    <div class="info-item">
+                        <span class="info-label">Status</span>
+                        <span class="info-value" id="infoStudentStatus">-</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -55,49 +74,56 @@
 
     <!-- History Summary -->
     <div class="row g-3 mb-4" id="summaryCards" style="display: none;">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white text-center">
-                <div class="card-body">
-                    <h3 id="statTotalBorrows">0</h3>
-                    <small>Total Borrows</small>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-history primary">
+                <div class="stat-icon-history"><i class="bi bi-box-arrow-up-right"></i></div>
+                <div class="stat-content-history">
+                    <span class="stat-value-history" id="statTotalBorrows">0</span>
+                    <span class="stat-label-history">Total Borrows</span>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white text-center">
-                <div class="card-body">
-                    <h3 id="statReturned">0</h3>
-                    <small>Returned</small>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-history success">
+                <div class="stat-icon-history"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="stat-content-history">
+                    <span class="stat-value-history" id="statReturned">0</span>
+                    <span class="stat-label-history">Returned</span>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white text-center">
-                <div class="card-body">
-                    <h3 id="statActive">0</h3>
-                    <small>Active Borrows</small>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-history info">
+                <div class="stat-icon-history"><i class="bi bi-hourglass-split"></i></div>
+                <div class="stat-content-history">
+                    <span class="stat-value-history" id="statActive">0</span>
+                    <span class="stat-label-history">Active Borrows</span>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-danger text-white text-center">
-                <div class="card-body">
-                    <h3 id="statOverdue">0</h3>
-                    <small>Overdue</small>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-history danger">
+                <div class="stat-icon-history"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <div class="stat-content-history">
+                    <span class="stat-value-history" id="statOverdue">0</span>
+                    <span class="stat-label-history">Overdue</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- History Table -->
-    <div class="card shadow-sm" id="historyCard" style="display: none;">
-        <div class="card-header bg-dark text-white">
-            <i class="bi bi-table me-2"></i>Borrowing History
+    <div class="report-card" id="historyCard" style="display: none;">
+        <div class="report-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-table"></i>
+                <span>Borrowing History</span>
+            </div>
         </div>
-        <div class="card-body p-0">
+        <div class="report-card-body">
             <div class="table-responsive">
-                <table class="table table-hover mb-0" id="historyTable">
-                    <thead class="table-light">
+                <table class="table table-report mb-0" id="historyTable">
+                    <thead>
                         <tr>
                             <th>Transaction Code</th>
                             <th>Equipment</th>
@@ -116,15 +142,300 @@
     </div>
 
     <!-- No Student Selected -->
-    <div class="text-center text-muted py-5" id="noStudentMessage">
-        <i class="bi bi-search fs-1"></i>
-        <p class="mt-3">Search for a student to view their borrowing history</p>
+    <div class="empty-state" id="noStudentMessage">
+        <div class="empty-state-icon">
+            <i class="bi bi-search"></i>
+        </div>
+        <h4>Search for a Student</h4>
+        <p class="text-muted">Enter a student ID or name above to view their borrowing history</p>
     </div>
 </div>
+
+<style>
+/* Page Icon */
+.page-icon-report {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+
+.btn-back-report {
+    background: white;
+    color: var(--primary-red);
+    border: 2px solid var(--primary-red);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-back-report:hover {
+    background: var(--primary-red);
+    color: white;
+}
+
+/* Search Card */
+.search-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.search-card-header {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.search-card-body { padding: 24px; }
+
+.input-group-search .input-group-text {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 12px 16px;
+}
+
+.input-group-search .form-control {
+    border: 2px solid #e5e7eb;
+    padding: 12px 16px;
+    font-size: 1rem;
+}
+
+.input-group-search .form-control:focus {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+}
+
+.btn-search {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-weight: 600;
+}
+
+.btn-search:hover { color: white; opacity: 0.9; }
+
+/* Search Results */
+.search-results { max-height: 250px; overflow-y: auto; }
+
+.search-result-item {
+    display: block;
+    padding: 14px 18px;
+    background: #fafafa;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: var(--text-dark);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.search-result-item:hover {
+    background: rgba(139, 0, 0, 0.05);
+    border-color: var(--primary-red);
+    color: var(--text-dark);
+}
+
+/* Student Info Card */
+.student-info-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.student-info-header {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.student-info-body { padding: 24px; }
+
+.info-item {
+    background: #fafafa;
+    padding: 16px;
+    border-radius: 12px;
+    border-left: 4px solid var(--primary-red);
+}
+
+.info-label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.info-value {
+    display: block;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+/* Stat Cards */
+.stat-card-history {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-history::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.stat-card-history.primary::before { background: #3b82f6; }
+.stat-card-history.success::before { background: #22c55e; }
+.stat-card-history.info::before { background: #06b6d4; }
+.stat-card-history.danger::before { background: #ef4444; }
+
+.stat-icon-history {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.stat-card-history.primary .stat-icon-history { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.stat-card-history.success .stat-icon-history { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.stat-card-history.info .stat-icon-history { background: rgba(6, 182, 212, 0.1); color: #06b6d4; }
+.stat-card-history.danger .stat-icon-history { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.stat-content-history { display: flex; flex-direction: column; }
+.stat-value-history { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label-history { font-size: 0.8rem; color: #6b7280; margin-top: 4px; }
+
+/* Report Card */
+.report-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.report-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.report-card-body { padding: 24px; }
+
+/* Table */
+.table-report thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 12px;
+    border: none;
+}
+
+.table-report tbody td { 
+    padding: 14px 12px; 
+    vertical-align: middle; 
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05); 
+}
+
+.table-report tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+
+/* Status Badges */
+.badge-status {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-status.returned { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-status.borrowed { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
+.badge-status.overdue { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+
+.badge-condition {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.badge-condition.good { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.badge-condition.damaged { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(139, 0, 0, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 2rem;
+    color: var(--primary-red);
+}
+
+.empty-state h4 { color: var(--text-dark); margin-bottom: 8px; }
+
+/* Responsive */
+@@media (max-width: 768px) {
+    .page-icon-report { width: 48px; height: 48px; font-size: 1.25rem; }
+    .stat-card-history { padding: 16px; }
+    .stat-value-history { font-size: 1.5rem; }
+}
+</style>
 
 @section Scripts {
 <script>
 let selectedStudentId = null;
+let historyDataTable = null;
 
 $(document).ready(function() {
     $('#btnSearch').click(searchStudent);
@@ -133,24 +444,27 @@ $(document).ready(function() {
 
 function searchStudent() {
     const q = $('#studentSearch').val().trim();
-    if (q.length < 2) return;
+    if (q.length < 2) {
+        Toastify({ text: 'Please enter at least 2 characters', duration: 2000, gravity: "top", position: "right", style: { background: 'linear-gradient(135deg, #f59e0b, #d97706)', borderRadius: '10px' } }).showToast();
+        return;
+    }
 
     $.get(`/Admin/Students/Search?q=${encodeURIComponent(q)}`, function(res) {
         if (res.success && res.data.length > 0) {
             let html = '';
             res.data.forEach(s => {
-                const statusBadge = s.studentStatus ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Blocked</span>';
-                html += `<a href="#" class="list-group-item list-group-item-action student-result" 
+                const statusBadge = s.studentStatus ? '<span class="badge bg-success ms-2">Active</span>' : '<span class="badge bg-danger ms-2">Blocked</span>';
+                html += `<a href="#" class="search-result-item student-result" 
                             data-id="${s.studentId}" data-number="${s.studentIdNumber}" 
                             data-name="${s.fullName}" data-college="${s.studentCollege}"
                             data-status="${s.studentStatus}">
-                            <strong>${s.studentIdNumber}</strong> - ${s.fullName} ${statusBadge}
-                            <small class="text-muted d-block">${s.studentCollege}</small>
+                            <strong class="text-danger">${s.studentIdNumber}</strong> - ${s.fullName} ${statusBadge}
+                            <small class="text-muted d-block mt-1">${s.studentCollege}</small>
                         </a>`;
             });
             $('#searchResults').html(html);
         } else {
-            $('#searchResults').html('<div class="list-group-item text-muted">No students found</div>');
+            $('#searchResults').html('<div class="text-center text-muted py-3"><i class="bi bi-person-x me-2"></i>No students found</div>');
         }
     });
 }
@@ -159,63 +473,65 @@ $(document).on('click', '.student-result', function(e) {
     e.preventDefault();
     selectedStudentId = $(this).data('id');
     
-    // Update student info
     $('#infoStudentId').text($(this).data('number'));
     $('#infoStudentName').text($(this).data('name'));
     $('#infoStudentCollege').text($(this).data('college'));
     $('#infoStudentStatus').html($(this).data('status') ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Blocked</span>');
     
-    // Show cards
     $('#studentInfoCard, #summaryCards, #historyCard').show();
     $('#noStudentMessage').hide();
     $('#searchResults').empty();
     
-    // Load history
     loadHistory(selectedStudentId);
 });
 
 function loadHistory(studentId) {
+    $('#historyTable tbody').html('<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-danger" role="status"></div></td></tr>');
+    
     $.get(`/Admin/Reports/GetStudentHistory/${studentId}`, function(res) {
         if (res.success) {
             renderHistory(res.data);
             updateSummary(res.data);
         }
+    }).fail(function() {
+        $('#historyTable tbody').html('<tr><td colspan="8" class="text-center text-danger py-4">Failed to load history</td></tr>');
     });
 }
 
-let historyDataTable = null;
-
 function renderHistory(data) {
-    // Initialize DataTable if not already
-    if (!historyDataTable) {
-        historyDataTable = DataTableConfig.init('#historyTable', {
-            order: [[3, 'desc']], // Sort by date borrowed descending
-            pageLength: 25,
-            columnDefs: [
-                { orderable: true, targets: '_all' }
-            ]
+    if (historyDataTable) { historyDataTable.destroy(); historyDataTable = null; }
+    
+    let html = '';
+    if (data.length === 0) {
+        html = '<tr><td colspan="8" class="text-center py-5"><i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i><p class="text-muted mt-2 mb-0">No borrowing history found</p></td></tr>';
+    } else {
+        data.forEach(item => {
+            const statusClass = item.status === 'returned' ? 'returned' : item.status === 'overdue' ? 'overdue' : 'borrowed';
+            const conditionClass = item.returnCondition === 'Good' ? 'good' : item.returnCondition === 'Damaged' ? 'damaged' : '';
+            
+            html += `<tr>
+                <td><code class="text-danger">${item.transactionCode}</code></td>
+                <td><strong>${item.equipmentName}</strong><br><small class="text-muted">${item.category || ''}</small></td>
+                <td><code>${item.serialNo}</code></td>
+                <td>${item.dateBorrowed}</td>
+                <td>${item.dueDate}</td>
+                <td>${item.dateReturned || '<span class="text-muted">-</span>'}</td>
+                <td>${item.returnCondition ? `<span class="badge-condition ${conditionClass}">${item.returnCondition}</span>` : '<span class="text-muted">-</span>'}</td>
+                <td><span class="badge-status ${statusClass}">${item.status}</span></td>
+            </tr>`;
         });
     }
     
-    historyDataTable.clear();
-    data.forEach(item => {
-        const statusClass = item.status === 'returned' ? 'bg-success' : 
-                           item.status === 'overdue' ? 'bg-danger' : 'bg-info';
-        const conditionClass = item.returnCondition === 'Good' ? 'text-success' : 
-                              item.returnCondition === 'Damaged' ? 'text-danger' : 'text-muted';
-        
-        historyDataTable.row.add([
-            `<code>${item.transactionCode}</code>`,
-            `${item.equipmentName}<br><small class="text-muted">${item.category}</small>`,
-            `<strong>${item.serialNo}</strong>`,
-            item.dateBorrowed,
-            item.dueDate,
-            item.dateReturned || '-',
-            `<span class="${conditionClass}">${item.returnCondition || '-'}</span>`,
-            `<span class="badge ${statusClass}">${item.status}</span>`
-        ]);
-    });
-    historyDataTable.draw();
+    $('#historyTable tbody').html(html);
+    
+    if (data.length > 0) {
+        historyDataTable = $('#historyTable').DataTable({
+            responsive: true,
+            order: [[3, 'desc']],
+            pageLength: 25,
+            language: { search: "", searchPlaceholder: "Search history..." }
+        });
+    }
 }
 
 function updateSummary(data) {

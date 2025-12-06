@@ -4,62 +4,79 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-bar-chart me-2 text-info"></i>Equipment Utilization Report</h2>
-        <a href="/Admin/Reports" class="btn btn-outline-secondary">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-report">
+                <i class="bi bi-bar-chart-fill"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Equipment Utilization Report</h2>
+                <p class="text-muted mb-0 small">Analyze equipment usage and borrowing patterns</p>
+            </div>
+        </div>
+        <a href="/Admin/Reports" class="btn btn-back-report">
             <i class="bi bi-arrow-left me-1"></i>Back to Reports
         </a>
     </div>
 
     <!-- Charts Row -->
     <div class="row g-4 mb-4">
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header bg-info text-white">
-                    <i class="bi bi-pie-chart me-2"></i>Borrows by Equipment
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <i class="bi bi-pie-chart-fill me-2"></i>Borrows by Equipment
                 </div>
-                <div class="card-body">
-                    <canvas id="utilizationChart" height="250"></canvas>
+                <div class="chart-card-body">
+                    <canvas id="utilizationChart" height="280"></canvas>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card h-100">
-                <div class="card-header bg-primary text-white">
-                    <i class="bi bi-bar-chart me-2"></i>Top Borrowed Equipment
+        <div class="col-lg-6">
+            <div class="chart-card">
+                <div class="chart-card-header blue">
+                    <i class="bi bi-bar-chart-fill me-2"></i>Top Borrowed Equipment
                 </div>
-                <div class="card-body">
-                    <canvas id="topBorrowedChart" height="250"></canvas>
+                <div class="chart-card-body">
+                    <canvas id="topBorrowedChart" height="280"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Utilization Table -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-table me-2"></i>Equipment Utilization Details</span>
-            <button class="btn btn-sm btn-light" onclick="loadData()">
-                <i class="bi bi-arrow-clockwise"></i> Refresh
+    <div class="report-card">
+        <div class="report-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-table"></i>
+                <span>Equipment Utilization Details</span>
+            </div>
+            <button class="btn btn-refresh-report" onclick="loadData()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
             </button>
         </div>
-        <div class="card-body p-0">
+        <div class="report-card-body">
             <div class="table-responsive">
-                <table class="table table-hover mb-0" id="utilizationTable">
-                    <thead class="table-light">
+                <table class="table table-report mb-0" id="utilizationTable">
+                    <thead>
                         <tr>
                             <th>Equipment</th>
                             <th>Category</th>
-                            <th>Total Units</th>
-                            <th>Available</th>
-                            <th>Borrowed</th>
-                            <th>Total Borrows</th>
-                            <th>Returns</th>
+                            <th class="text-center">Total Units</th>
+                            <th class="text-center">Available</th>
+                            <th class="text-center">Borrowed</th>
+                            <th class="text-center">Total Borrows</th>
+                            <th class="text-center">Returns</th>
                             <th>Utilization Rate</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="8" class="text-center">Loading...</td></tr>
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <div class="spinner-border text-danger" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Loading equipment data...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -67,10 +84,165 @@
     </div>
 </div>
 
+<style>
+/* Page Icon */
+.page-icon-report {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+
+.btn-back-report {
+    background: white;
+    color: var(--primary-red);
+    border: 2px solid var(--primary-red);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-back-report:hover {
+    background: var(--primary-red);
+    color: white;
+}
+
+/* Chart Card */
+.chart-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+    height: 100%;
+}
+
+.chart-card-header {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.chart-card-header.blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.chart-card-body { padding: 20px; }
+
+/* Report Card */
+.report-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.report-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.report-card-body { padding: 24px; }
+
+.btn-refresh-report {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh-report:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+
+/* Table */
+.table-report thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 12px;
+    border: none;
+}
+
+.table-report tbody td { 
+    padding: 14px 12px; 
+    vertical-align: middle; 
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05); 
+}
+
+.table-report tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+
+/* Badges */
+.badge-category {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-count {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.badge-count.available { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.badge-count.borrowed { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.badge-count.total { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); font-weight: 700; }
+
+/* Progress Bar */
+.progress-utilization {
+    height: 24px;
+    border-radius: 12px;
+    background: #f3f4f6;
+    overflow: hidden;
+}
+
+.progress-utilization .progress-bar {
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-utilization .progress-bar.high { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+.progress-utilization .progress-bar.medium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.progress-utilization .progress-bar.low { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+
+/* Responsive */
+@@media (max-width: 768px) {
+    .page-icon-report { width: 48px; height: 48px; font-size: 1.25rem; }
+}
+</style>
+
 @section Scripts {
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 let utilizationChart, topBorrowedChart;
+let utilizationDataTable = null;
 
 $(document).ready(function() {
     loadData();
@@ -82,54 +254,63 @@ function loadData() {
             renderTable(res.data);
             renderCharts(res.data);
         }
+    }).fail(function() {
+        $('#utilizationTable tbody').html('<tr><td colspan="8" class="text-center text-danger py-4">Failed to load data</td></tr>');
     });
 }
 
-let utilizationDataTable = null;
-
 function initDataTable() {
     if (utilizationDataTable) return;
-    utilizationDataTable = DataTableConfig.init('#utilizationTable', {
-        order: [[5, 'desc']], // Sort by total borrows descending
+    utilizationDataTable = $('#utilizationTable').DataTable({
+        responsive: true,
+        order: [[5, 'desc']],
         pageLength: 25,
-        columnDefs: [
-            { orderable: true, targets: '_all' },
-            { type: 'num', targets: [2, 3, 4, 5, 6] }
-        ]
+        language: {
+            search: "",
+            searchPlaceholder: "Search...",
+            emptyTable: '<div class="text-center py-4"><i class="bi bi-box-seam text-muted" style="font-size: 2rem;"></i><p class="text-muted mt-2 mb-0">No equipment data found</p></div>'
+        },
+        columnDefs: [{ orderable: true, targets: '_all' }, { type: 'num', targets: [2, 3, 4, 5, 6] }]
     });
 }
 
 function renderTable(data) {
-    initDataTable();
-    utilizationDataTable.clear();
-    data.forEach(item => {
-        const utilizationPct = item.totalUnits > 0 ? Math.round((item.borrowedUnits / item.totalUnits) * 100) : 0;
-        const utilizationClass = utilizationPct >= 80 ? 'bg-danger' : utilizationPct >= 50 ? 'bg-warning' : 'bg-success';
-        
-        utilizationDataTable.row.add([
-            `<strong>${item.equipmentName}</strong>`,
-            `<span class="badge bg-secondary">${item.category}</span>`,
-            item.totalUnits,
-            `<span class="text-success">${item.availableUnits}</span>`,
-            `<span class="text-info">${item.borrowedUnits}</span>`,
-            `<strong>${item.totalBorrows}</strong>`,
-            item.totalReturns,
-            `<div class="progress" style="height: 20px;"><div class="progress-bar ${utilizationClass}" style="width: ${utilizationPct}%">${utilizationPct}%</div></div>`
-        ]);
-    });
-    utilizationDataTable.draw();
+    if (utilizationDataTable) { utilizationDataTable.destroy(); utilizationDataTable = null; }
+    
+    let html = '';
+    if (data.length === 0) {
+        html = '<tr><td colspan="8" class="text-center py-5"><i class="bi bi-box-seam text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No equipment data found</p></td></tr>';
+    } else {
+        data.forEach(item => {
+            const utilizationPct = item.totalUnits > 0 ? Math.round((item.borrowedUnits / item.totalUnits) * 100) : 0;
+            const progressClass = utilizationPct >= 80 ? 'high' : utilizationPct >= 50 ? 'medium' : 'low';
+            
+            html += `<tr>
+                <td><strong>${item.equipmentName}</strong></td>
+                <td><span class="badge-category">${item.category || 'N/A'}</span></td>
+                <td class="text-center">${item.totalUnits}</td>
+                <td class="text-center"><span class="badge-count available">${item.availableUnits}</span></td>
+                <td class="text-center"><span class="badge-count borrowed">${item.borrowedUnits}</span></td>
+                <td class="text-center"><span class="badge-count total">${item.totalBorrows}</span></td>
+                <td class="text-center">${item.totalReturns}</td>
+                <td><div class="progress-utilization"><div class="progress-bar ${progressClass}" style="width: ${Math.max(utilizationPct, 10)}%">${utilizationPct}%</div></div></td>
+            </tr>`;
+        });
+    }
+    
+    $('#utilizationTable tbody').html(html);
+    if (data.length > 0) initDataTable();
 }
 
 function renderCharts(data) {
     const labels = data.map(d => d.equipmentName);
     const borrowCounts = data.map(d => d.totalBorrows);
-    const colors = ['#8B0000', '#D4AF37', '#059669', '#3B82F6', '#F59E0B', '#8B5CF6', '#14B8A6', '#DC2626'];
+    const colors = ['#8B0000', '#D4AF37', '#059669', '#3B82F6', '#F59E0B', '#8B5CF6', '#14B8A6', '#DC2626', '#6366F1', '#EC4899'];
 
-    // Destroy existing charts
     if (utilizationChart) utilizationChart.destroy();
     if (topBorrowedChart) topBorrowedChart.destroy();
 
-    // Pie Chart
+    // Doughnut Chart
     utilizationChart = new Chart(document.getElementById('utilizationChart'), {
         type: 'doughnut',
         data: {
@@ -137,14 +318,15 @@ function renderCharts(data) {
             datasets: [{
                 data: borrowCounts,
                 backgroundColor: colors.slice(0, labels.length),
-                borderWidth: 0
+                borderWidth: 0,
+                hoverOffset: 10
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'right', labels: { font: { size: 11 } } }
+                legend: { position: 'right', labels: { font: { size: 11 }, padding: 15, usePointStyle: true } }
             }
         }
     });
@@ -159,7 +341,8 @@ function renderCharts(data) {
                 label: 'Total Borrows',
                 data: sortedData.map(d => d.totalBorrows),
                 backgroundColor: '#8B0000',
-                borderRadius: 4
+                borderRadius: 8,
+                barThickness: 30
             }]
         },
         options: {
@@ -168,8 +351,8 @@ function renderCharts(data) {
             indexAxis: 'y',
             plugins: { legend: { display: false } },
             scales: {
-                x: { beginAtZero: true, grid: { display: false } },
-                y: { grid: { display: false } }
+                x: { beginAtZero: true, grid: { display: false }, ticks: { font: { weight: 600 } } },
+                y: { grid: { display: false }, ticks: { font: { size: 11 } } }
             }
         }
     });

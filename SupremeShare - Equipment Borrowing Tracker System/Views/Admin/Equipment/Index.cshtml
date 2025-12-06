@@ -15,9 +15,14 @@
                 <p class="text-muted mb-0 small">Manage equipment types and units</p>
             </div>
         </div>
-        <button class="btn btn-add-equip" data-bs-toggle="modal" data-bs-target="#createEquipmentModal">
-            <i class="bi bi-plus-lg me-1"></i>Add Equipment Type
-        </button>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sync-equip" id="btnSyncQuantities" title="Sync quantities with actual unit counts">
+                <i class="bi bi-arrow-repeat me-1"></i>Sync Quantities
+            </button>
+            <button class="btn btn-add-equip" data-bs-toggle="modal" data-bs-target="#createEquipmentModal">
+                <i class="bi bi-plus-lg me-1"></i>Add Equipment Type
+            </button>
+        </div>
     </div>
 
     <!-- Stats Cards -->
@@ -360,6 +365,30 @@
     color: white;
 }
 
+/* Sync Button */
+.btn-sync-equip {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.btn-sync-equip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
+    color: white;
+}
+
+.btn-sync-equip:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
 /* Stat Cards */
 .stat-card-equip {
     background: white;
@@ -652,6 +681,40 @@ $(document).ready(function() {
     setupFilterHandlers();
     setupFormHandlers();
     initSignalR();
+    
+    // Sync Quantities button handler
+    $('#btnSyncQuantities').click(function() {
+        var $btn = $(this);
+        Swal.fire({
+            title: 'Sync Equipment Quantities?',
+            html: 'This will update all equipment quantities to match the actual unit counts.<br><small class="text-muted">Use this to fix any quantity mismatches.</small>',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="bi bi-arrow-repeat me-1"></i>Sync Now',
+            cancelButtonText: 'Cancel'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                $btn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i>Syncing...');
+                $.post('/Admin/Equipment/SyncQuantities', { 
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() 
+                }, function(res) {
+                    $btn.prop('disabled', false).html('<i class="bi bi-arrow-repeat me-1"></i>Sync Quantities');
+                    if (res.success) {
+                        showToast('Quantities synchronized successfully!', 'success');
+                        equipmentTable.ajax.reload();
+                        loadStats();
+                    } else {
+                        showToast('Error: ' + res.message, 'error');
+                    }
+                }).fail(function() {
+                    $btn.prop('disabled', false).html('<i class="bi bi-arrow-repeat me-1"></i>Sync Quantities');
+                    showToast('Failed to sync quantities', 'error');
+                });
+            }
+        });
+    });
 });
 
 // Initialize SignalR for real-time updates

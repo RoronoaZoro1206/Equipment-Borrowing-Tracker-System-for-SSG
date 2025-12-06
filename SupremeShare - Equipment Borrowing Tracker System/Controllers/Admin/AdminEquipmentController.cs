@@ -296,6 +296,11 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 var result = await _unitRepo.AddAsync(unit);
                 if (result)
                 {
+                    // Auto-increment equipment_quantity when unit is added
+                    await _db.ExecuteNonQueryAsync(
+                        "UPDATE equipment SET equipment_quantity = equipment_quantity + 1 WHERE equipment_id = @id",
+                        new[] { new NpgsqlParameter("@id", request.EquipmentId) });
+
                     var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
                     _logger.LogInformation("Equipment unit created: {SerialNo} by user {UserId}", request.SerialNo, userId);
                     
@@ -474,9 +479,19 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
             try
             {
                 var unit = await _unitRepo.GetByIdAsync(unitId);
+                if (unit == null)
+                    return Json(new { success = false, message = "Unit not found" });
+
+                var equipmentId = unit.EquipmentId;
                 var result = await _unitRepo.DeleteAsync(unitId);
-                if (result && unit != null)
+                
+                if (result)
                 {
+                    // Auto-decrement equipment_quantity when unit is deleted
+                    await _db.ExecuteNonQueryAsync(
+                        "UPDATE equipment SET equipment_quantity = GREATEST(equipment_quantity - 1, 0) WHERE equipment_id = @id",
+                        new[] { new NpgsqlParameter("@id", equipmentId) });
+
                     var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
                     await _auditService.LogActionAsync(userId, "UNIT_DELETED", new { unit.EunitSerialNo }, null);
                     await _notificationService.NotifyStatsUpdated();
@@ -493,6 +508,36 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
         #endregion
 
         #region Dashboard Stats
+
+        // POST: Admin/Equipment/SyncQuantities - Fix any quantity mismatches
+        [HttpPost("SyncQuantities")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SyncQuantities()
+        {
+            try
+            {
+                // Update all equipment quantities to match actual unit counts
+                var query = @"
+                    UPDATE equipment e
+                    SET equipment_quantity = (
+                        SELECT COUNT(*) FROM equipment_unit eu WHERE eu.equipment_id = e.equipment_id
+                    )";
+                
+                await _db.ExecuteNonQueryAsync(query);
+                
+                var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                _logger.LogInformation("Equipment quantities synced by user {UserId}", userId);
+                await _auditService.LogActionAsync(userId, "EQUIPMENT_QUANTITIES_SYNCED", null, null);
+                await _notificationService.NotifyStatsUpdated();
+                
+                return Json(new { success = true, message = "Quantities synchronized with actual unit counts" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error syncing quantities");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
 
         // GET: Admin/Equipment/Stats
         [HttpGet("Stats")]
