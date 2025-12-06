@@ -3,80 +3,118 @@
     Layout = "~/Views/Shared/_MainLayout.cshtml";
 }
 
-<div class="container-fluid py-4 fade-in">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-        <h2><i class="bi bi-box-seam-fill me-2"></i>Equipment Inventory</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEquipmentModal">
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-equip">
+                <i class="bi bi-box-seam-fill"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Equipment Inventory</h2>
+                <p class="text-muted mb-0 small">Manage equipment types and units</p>
+            </div>
+        </div>
+        <button class="btn btn-add-equip" data-bs-toggle="modal" data-bs-target="#createEquipmentModal">
             <i class="bi bi-plus-lg me-1"></i>Add Equipment Type
         </button>
     </div>
 
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md">
-            <div class="card card-hover bg-primary text-white">
-                <div class="card-body text-center py-3">
-                    <h3 id="statTypes" class="mb-1">-</h3>
-                    <small>Equipment Types</small>
+        <div class="col-6 col-lg">
+            <div class="stat-card-equip types">
+                <div class="stat-icon-equip"><i class="bi bi-grid-3x3-gap"></i></div>
+                <div class="stat-content-equip">
+                    <span class="stat-value-equip" id="statTypes">-</span>
+                    <span class="stat-label-equip">Equipment Types</span>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md">
-            <div class="card card-hover bg-info text-white">
-                <div class="card-body text-center py-3">
-                    <h3 id="statTotal" class="mb-1">-</h3>
-                    <small>Total Units</small>
+        <div class="col-6 col-lg">
+            <div class="stat-card-equip total">
+                <div class="stat-icon-equip"><i class="bi bi-boxes"></i></div>
+                <div class="stat-content-equip">
+                    <span class="stat-value-equip" id="statTotal">-</span>
+                    <span class="stat-label-equip">Total Units</span>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md">
-            <div class="card card-hover bg-success text-white">
-                <div class="card-body text-center py-3">
-                    <h3 id="statAvailable" class="mb-1">-</h3>
-                    <small>Available</small>
+        <div class="col-6 col-lg">
+            <div class="stat-card-equip available">
+                <div class="stat-icon-equip"><i class="bi bi-check-circle"></i></div>
+                <div class="stat-content-equip">
+                    <span class="stat-value-equip" id="statAvailable">-</span>
+                    <span class="stat-label-equip">Available</span>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md">
-            <div class="card card-hover bg-warning text-dark">
-                <div class="card-body text-center py-3">
-                    <h3 id="statBorrowed" class="mb-1">-</h3>
-                    <small>Borrowed</small>
+        <div class="col-6 col-lg">
+            <div class="stat-card-equip borrowed">
+                <div class="stat-icon-equip"><i class="bi bi-arrow-up-right-circle"></i></div>
+                <div class="stat-content-equip">
+                    <span class="stat-value-equip" id="statBorrowed">-</span>
+                    <span class="stat-label-equip">Borrowed</span>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md">
-            <div class="card card-hover bg-danger text-white">
-                <div class="card-body text-center py-3">
-                    <h3 id="statDamaged" class="mb-1">-</h3>
-                    <small>Damaged</small>
+        <div class="col-6 col-lg">
+            <div class="stat-card-equip damaged">
+                <div class="stat-icon-equip"><i class="bi bi-exclamation-triangle"></i></div>
+                <div class="stat-content-equip">
+                    <span class="stat-value-equip" id="statDamaged">-</span>
+                    <span class="stat-label-equip">Damaged</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Equipment Types Table -->
-    <div class="card card-hover shadow-sm">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-list-ul me-2"></i>Equipment Types</span>
-            <button class="btn btn-sm btn-outline-light" onclick="refreshData()">
-                <i class="bi bi-arrow-clockwise"></i>
+    <div class="equip-card">
+        <div class="equip-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-list-ul"></i>
+                <span>Equipment Types</span>
+            </div>
+            <button class="btn btn-refresh-equip" onclick="refreshData()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
             </button>
         </div>
-        <div class="card-body">
-            <table class="table table-striped table-hover" id="equipmentTable" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th class="text-center">Total</th>
-                        <th class="text-center">Available</th>
-                        <th class="hide-mobile">Date Added</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+        <div class="equip-card-body">
+            <!-- Filter Row -->
+            <div class="filter-row-equip mb-3">
+                <div class="filter-group-equip">
+                    <label class="filter-label-equip"><i class="bi bi-funnel me-1"></i>Filter:</label>
+                    <select id="filterCategory" class="filter-select-equip">
+                        <option value="">All Categories</option>
+                    </select>
+                    <button class="btn btn-clear-filter-equip" id="btnClearFilters" title="Clear">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-equip mb-0" id="equipmentTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th class="text-center">Total</th>
+                            <th class="text-center">Available</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <div class="spinner-border text-danger" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Loading equipment...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -84,31 +122,31 @@
 <!-- Create Equipment Modal -->
 <div class="modal fade" id="createEquipmentModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content modal-equip">
             <form id="createEquipmentForm">
                 @Html.AntiForgeryToken()
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Equipment Type</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Equipment Name <span class="text-danger">*</span></label>
-                        <input type="text" name="Name" class="form-control" required placeholder="e.g., Laptop, Projector">
+                        <label class="form-label-equip">Equipment Name <span class="text-danger">*</span></label>
+                        <input type="text" name="Name" class="form-control form-control-equip" required placeholder="e.g., Laptop, Projector">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Category <span class="text-danger">*</span></label>
-                        <input type="text" name="Category" class="form-control" required placeholder="e.g., Electronics, Audio">
+                        <label class="form-label-equip">Category <span class="text-danger">*</span></label>
+                        <input type="text" name="Category" class="form-control form-control-equip" required placeholder="e.g., Electronics, Audio">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Initial Quantity</label>
-                        <input type="number" name="Quantity" class="form-control" value="0" min="0">
+                        <label class="form-label-equip">Initial Quantity</label>
+                        <input type="number" name="Quantity" class="form-control form-control-equip" value="0" min="0">
                         <small class="text-muted">You can add individual units later</small>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="createEquipBtn">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-submit-equip" id="createEquipBtn">
                         <i class="bi bi-plus-circle me-1"></i>Create
                     </button>
                 </div>
@@ -120,32 +158,32 @@
 <!-- Edit Equipment Modal -->
 <div class="modal fade" id="editEquipmentModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content modal-equip">
             <form id="editEquipmentForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="EquipmentId" id="editEquipmentId">
-                <div class="modal-header bg-warning">
+                <div class="modal-header header-warning">
                     <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Equipment</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Equipment Name</label>
-                        <input type="text" name="Name" id="editName" class="form-control">
+                        <label class="form-label-equip">Equipment Name</label>
+                        <input type="text" name="Name" id="editName" class="form-control form-control-equip">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Category</label>
-                        <input type="text" name="Category" id="editCategory" class="form-control">
+                        <label class="form-label-equip">Category</label>
+                        <input type="text" name="Category" id="editCategory" class="form-control form-control-equip">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Quantity</label>
-                        <input type="number" name="Quantity" id="editQuantity" class="form-control" min="0">
+                        <label class="form-label-equip">Quantity</label>
+                        <input type="number" name="Quantity" id="editQuantity" class="form-control form-control-equip" min="0">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning" id="editEquipBtn">
-                        <i class="bi bi-check-circle me-1"></i>Save
+                        <i class="bi bi-check-circle me-1"></i>Save Changes
                     </button>
                 </div>
             </form>
@@ -156,29 +194,29 @@
 <!-- Add Unit Modal -->
 <div class="modal fade" id="addUnitModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content modal-equip">
             <form id="addUnitForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="EquipmentId" id="addUnitEquipmentId">
-                <div class="modal-header bg-success text-white">
+                <div class="modal-header header-success">
                     <h5 class="modal-title"><i class="bi bi-plus-square me-2"></i>Add Equipment Unit</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Serial Number <span class="text-danger">*</span></label>
-                        <input type="text" name="SerialNo" class="form-control" required placeholder="e.g., SN-001">
+                        <label class="form-label-equip">Serial Number <span class="text-danger">*</span></label>
+                        <input type="text" name="SerialNo" class="form-control form-control-equip" required placeholder="e.g., SN-001">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Condition</label>
-                        <select name="Condition" class="form-select">
+                        <label class="form-label-equip">Condition</label>
+                        <select name="Condition" class="form-select form-select-equip">
                             <option value="true">✓ Good</option>
                             <option value="false">✗ Damaged</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select name="Status" class="form-select">
+                        <label class="form-label-equip">Status</label>
+                        <select name="Status" class="form-select form-select-equip">
                             <option value="available">Available</option>
                             <option value="maintenance">Under Maintenance</option>
                             <option value="retired">Retired</option>
@@ -186,7 +224,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-success" id="addUnitBtn">
                         <i class="bi bi-plus-circle me-1"></i>Add Unit
                     </button>
@@ -196,281 +234,425 @@
     </div>
 </div>
 
-<!-- View Units Modal -->
+<!-- View/Edit Units Modal -->
 <div class="modal fade" id="viewUnitsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header bg-info text-white">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content modal-equip">
+            <div class="modal-header">
                 <h5 class="modal-title"><i class="bi bi-list-check me-2"></i>Units: <span id="viewUnitsTitle"></span></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <table class="table table-sm table-striped table-hover" id="unitsTable" style="width:100%">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Serial No</th>
-                            <th>Condition</th>
-                            <th>Status</th>
-                            <th class="hide-mobile">Date Added</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="units-legend mb-3">
+                    <span class="legend-item"><span class="legend-dot available"></span> Available</span>
+                    <span class="legend-item"><span class="legend-dot borrowed"></span> Borrowed</span>
+                    <span class="legend-item"><span class="legend-dot maintenance"></span> Maintenance</span>
+                    <span class="legend-item"><span class="legend-dot damaged"></span> Damaged</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-units mb-0" id="unitsTable">
+                        <thead>
+                            <tr>
+                                <th>Serial No</th>
+                                <th>Condition</th>
+                                <th>Status</th>
+                                <th>Date Added</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Edit Unit Modal -->
+<div class="modal fade" id="editUnitModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-equip">
+            <form id="editUnitForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="UnitId" id="editUnitId">
+                <input type="hidden" name="EquipmentId" id="editUnitEquipmentId">
+                <div class="modal-header header-warning">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Unit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label-equip">Serial Number</label>
+                        <input type="text" name="SerialNo" id="editUnitSerial" class="form-control form-control-equip">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-equip">Condition</label>
+                        <div class="condition-toggle">
+                            <label class="condition-option-edit good">
+                                <input type="radio" name="Condition" value="true">
+                                <span><i class="bi bi-check-circle-fill"></i> Good</span>
+                            </label>
+                            <label class="condition-option-edit damaged">
+                                <input type="radio" name="Condition" value="false">
+                                <span><i class="bi bi-x-circle-fill"></i> Damaged</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-equip">Status</label>
+                        <select name="Status" id="editUnitStatus" class="form-select form-select-equip">
+                            <option value="available">Available</option>
+                            <option value="maintenance">Under Maintenance</option>
+                            <option value="retired">Retired</option>
+                        </select>
+                        <small class="text-muted">Note: Borrowed status is managed by transactions</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="editUnitBtn">
+                        <i class="bi bi-check-circle me-1"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<style>
+/* ===========================================
+   Equipment Page - Red & White Theme
+   =========================================== */
+
+/* Page Icon */
+.page-icon-equip {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+
+/* Add Button */
+.btn-add-equip {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.25);
+}
+
+.btn-add-equip:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.35);
+    color: white;
+}
+
+/* Stat Cards */
+.stat-card-equip {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-equip::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.stat-card-equip.types::before { background: var(--primary-red); }
+.stat-card-equip.total::before { background: #3b82f6; }
+.stat-card-equip.available::before { background: #22c55e; }
+.stat-card-equip.borrowed::before { background: #f59e0b; }
+.stat-card-equip.damaged::before { background: #ef4444; }
+
+.stat-card-equip:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon-equip {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.stat-card-equip.types .stat-icon-equip { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
+.stat-card-equip.total .stat-icon-equip { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.stat-card-equip.available .stat-icon-equip { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.stat-card-equip.borrowed .stat-icon-equip { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.stat-card-equip.damaged .stat-icon-equip { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.stat-content-equip { display: flex; flex-direction: column; }
+.stat-value-equip { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label-equip { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+
+/* Equipment Card */
+.equip-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.equip-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.equip-card-body { padding: 24px; }
+
+.btn-refresh-equip {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh-equip:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+
+/* Filter Row */
+.filter-row-equip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.filter-group-equip { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.filter-label-equip { font-weight: 600; font-size: 0.85rem; color: var(--primary-red); margin: 0; }
+
+.filter-select-equip {
+    padding: 8px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: white;
+    transition: all 0.3s ease;
+    min-width: 150px;
+}
+
+.filter-select-equip:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
+
+.btn-clear-filter-equip {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-clear-filter-equip:hover { background: #ef4444; border-color: #ef4444; color: white; }
+
+/* Table */
+.table-equip thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 12px;
+    border: none;
+}
+
+.table-equip tbody td { padding: 14px 12px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+.table-equip tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+
+/* Units Table */
+.table-units thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    padding: 12px 10px;
+    border: none;
+}
+
+.table-units tbody td { padding: 12px 10px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+.table-units tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+
+/* Action Buttons */
+.btn-action-equip {
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.btn-action-equip:hover { transform: scale(1.05); }
+
+.btn-view-units { color: var(--primary-red); border-color: var(--primary-red); }
+.btn-view-units:hover { background: var(--primary-red); color: white; }
+
+.btn-add-unit { color: #22c55e; border-color: #22c55e; }
+.btn-add-unit:hover { background: #22c55e; color: white; }
+
+.btn-edit-equip { color: #f59e0b; border-color: #f59e0b; }
+.btn-edit-equip:hover { background: #f59e0b; color: white; }
+
+.btn-delete-equip { color: #ef4444; border-color: #ef4444; }
+.btn-delete-equip:hover { background: #ef4444; color: white; }
+
+/* Status Badges */
+.badge-condition { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-condition.good { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-condition.damaged { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+
+.badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-status.available { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-status.borrowed { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; }
+.badge-status.maintenance { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+.badge-status.retired { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
+
+/* Category Badge */
+.badge-category { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; }
+
+/* Available Badge */
+.badge-available { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+
+/* Modal */
+.modal-equip { border-radius: 16px; overflow: hidden; border: none; }
+.modal-equip .modal-header { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; border: none; padding: 20px 24px; }
+.modal-equip .modal-header.header-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.modal-equip .modal-header.header-success { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+.modal-equip .modal-body { padding: 24px; }
+.modal-equip .modal-footer { border-top: 1px solid rgba(0, 0, 0, 0.05); padding: 16px 24px; }
+
+/* Form Controls */
+.form-label-equip { font-weight: 600; font-size: 0.85rem; color: var(--text-dark); margin-bottom: 8px; display: block; }
+
+.form-control-equip,
+.form-select-equip {
+    border: 2px solid #e5e7eb;
+    padding: 10px 14px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.form-control-equip:focus,
+.form-select-equip:focus { border-color: var(--primary-red); box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
+
+.btn-submit-equip {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-submit-equip:hover { color: white; box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3); }
+
+/* Units Legend */
+.units-legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 16px; background: #fafafa; border-radius: 8px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #6b7280; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+.legend-dot.available { background: #22c55e; }
+.legend-dot.borrowed { background: var(--primary-red); }
+.legend-dot.maintenance { background: #f59e0b; }
+.legend-dot.damaged { background: #ef4444; }
+
+/* Condition Toggle */
+.condition-toggle { display: flex; gap: 12px; }
+
+.condition-option-edit {
+    flex: 1;
+    cursor: pointer;
+}
+
+.condition-option-edit input { display: none; }
+
+.condition-option-edit span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.condition-option-edit.good span i { color: #22c55e; }
+.condition-option-edit.damaged span i { color: #ef4444; }
+
+.condition-option-edit.good input:checked + span { border-color: #22c55e; background: rgba(34, 197, 94, 0.1); color: #16a34a; }
+.condition-option-edit.damaged input:checked + span { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+
+/* Responsive */
+@@media (max-width: 991px) {
+    .stat-card-equip { padding: 16px; }
+    .stat-value-equip { font-size: 1.25rem; }
+}
+
+@@media (max-width: 768px) {
+    .filter-row-equip { padding: 12px; }
+    .filter-group-equip { width: 100%; }
+    .filter-select-equip { flex: 1; min-width: 100px; }
+}
+</style>
+
+
 @section Scripts {
 <script>
 let equipmentTable;
+let currentEquipmentId = null;
 
 $(document).ready(function() {
     loadStats();
-    
-    // Initialize DataTable
-    equipmentTable = DataTableConfig.init('#equipmentTable', {
-        ajax: {
-            url: '/Admin/Equipment/GetAll',
-            dataSrc: json => json.success ? json.data : []
-        },
-        columns: [
-            { data: 'equipmentName', render: data => `<strong>${data}</strong>` },
-            { data: 'equipmentCategory', render: data => `<span class="badge bg-secondary">${data}</span>` },
-            { data: 'equipmentQuantity', className: 'text-center' },
-            { data: 'availableStock', className: 'text-center', render: data => `<span class="badge bg-success">${data}</span>` },
-            { data: 'equipmentDateAdded' },
-            {
-                data: 'equipmentId',
-                orderable: false,
-                render: function(data, type, row) {
-                    return `
-                        <div class="btn-action-group">
-                            <button class="btn btn-sm btn-outline-info btn-action btn-view-units" data-id="${data}" data-name="${row.equipmentName}" title="View Units">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-success btn-action btn-add-unit" data-id="${data}" title="Add Unit">
-                                <i class="bi bi-plus"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-primary btn-action btn-edit" data-id="${data}" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger btn-action btn-delete" data-id="${data}" data-name="${row.equipmentName}" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>`;
-                }
-            }
-        ],
-        order: [[0, 'asc']]
-    });
-
-    // View units
-    $('#equipmentTable').on('click', '.btn-view-units', async function() {
-        const id = $(this).data('id');
-        const name = $(this).data('name');
-        $('#viewUnitsTitle').text(name);
-        Loading.show('Loading units...');
-        
-        try {
-            const res = await Api.get(`/Admin/Equipment/Units/${id}`);
-            Loading.hide();
-            
-            if (res.success) {
-                let html = '';
-                res.data.forEach(u => {
-                    const condBadge = u.conditionBool 
-                        ? '<span class="status-badge available">Good</span>' 
-                        : '<span class="status-badge overdue">Damaged</span>';
-                    const statusClass = u.eunitStatus === 'available' ? 'available' : 
-                                       (u.eunitStatus === 'borrowed' ? 'borrowed' : 'maintenance');
-                    html += `<tr class="fade-in">
-                        <td><strong class="text-primary">${u.eunitSerialNo}</strong></td>
-                        <td>${condBadge}</td>
-                        <td><span class="status-badge ${statusClass}">${u.eunitStatus}</span></td>
-                        <td class="hide-mobile">${u.eunitDateAdded}</td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-danger btn-action btn-delete-unit" 
-                                    data-id="${u.eunitId}" data-serial="${u.eunitSerialNo}" 
-                                    ${u.eunitStatus === 'borrowed' ? 'disabled title="Cannot delete borrowed unit"' : ''}>
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>`;
-                });
-                $('#unitsTable tbody').html(html || '<tr><td colspan="5" class="text-center text-muted py-4">No units found</td></tr>');
-                new bootstrap.Modal('#viewUnitsModal').show();
-            } else {
-                Toast.error(res.message);
-            }
-        } catch (error) {
-            Loading.hide();
-            Toast.error('Failed to load units');
-        }
-    });
-
-    // Add unit
-    $('#equipmentTable').on('click', '.btn-add-unit', function() {
-        $('#addUnitEquipmentId').val($(this).data('id'));
-        $('#addUnitForm')[0].reset();
-        new bootstrap.Modal('#addUnitModal').show();
-    });
-
-    // Edit equipment
-    $('#equipmentTable').on('click', '.btn-edit', async function() {
-        const id = $(this).data('id');
-        Loading.show('Loading...');
-        
-        try {
-            const res = await Api.get(`/Admin/Equipment/Get/${id}`);
-            Loading.hide();
-            
-            if (res.success) {
-                $('#editEquipmentId').val(res.data.equipmentId);
-                $('#editName').val(res.data.equipmentName);
-                $('#editCategory').val(res.data.equipmentCategory);
-                $('#editQuantity').val(res.data.equipmentQuantity);
-                new bootstrap.Modal('#editEquipmentModal').show();
-            } else {
-                Toast.error(res.message);
-            }
-        } catch (error) {
-            Loading.hide();
-            Toast.error('Failed to load equipment');
-        }
-    });
-
-    // Delete equipment with SweetAlert2
-    $('#equipmentTable').on('click', '.btn-delete', async function() {
-        const id = $(this).data('id');
-        const name = $(this).data('name');
-        
-        const confirmed = await Confirm.delete(name);
-        if (!confirmed) return;
-        
-        Loading.show('Deleting...');
-        
-        try {
-            const res = await Api.post('/Admin/Equipment/Delete', { equipmentId: id });
-            Loading.hide();
-            
-            if (res.success) {
-                Toast.success('Equipment deleted');
-                equipmentTable.ajax.reload();
-                loadStats();
-            } else {
-                Toast.error(res.message);
-            }
-        } catch (error) {
-            Loading.hide();
-            Toast.error('Failed to delete equipment');
-        }
-    });
-
-    // Delete unit
-    $(document).on('click', '.btn-delete-unit', async function() {
-        const id = $(this).data('id');
-        const serial = $(this).data('serial');
-        
-        const confirmed = await Confirm.delete(`Unit ${serial}`);
-        if (!confirmed) return;
-        
-        Loading.show('Deleting...');
-        
-        try {
-            const res = await Api.post('/Admin/Equipment/DeleteUnit', { unitId: id });
-            Loading.hide();
-            
-            if (res.success) {
-                Toast.success('Unit deleted');
-                $(this).closest('tr').fadeOut(() => $(this).closest('tr').remove());
-                equipmentTable.ajax.reload();
-                loadStats();
-            } else {
-                Toast.error(res.message);
-            }
-        } catch (error) {
-            Loading.hide();
-            Toast.error('Failed to delete unit');
-        }
-    });
-
-    // Form submissions
-    $('#createEquipmentForm').submit(async function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('createEquipBtn');
-        Loading.button(btn, true);
-        
-        try {
-            const res = await $.post('/Admin/Equipment/Create', $(this).serialize());
-            Loading.button(btn, false);
-            
-            if (res.success) {
-                bootstrap.Modal.getInstance('#createEquipmentModal').hide();
-                this.reset();
-                equipmentTable.ajax.reload();
-                loadStats();
-                Toast.success('Equipment created successfully');
-            } else {
-                Toast.error(res.message);
-            }
-        } catch (error) {
-            Loading.button(btn, false);
-            Toast.error('Failed to create equipment');
-        }
-    });
-
-    $('#editEquipmentForm').submit(async function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('editEquipBtn');
-        Loading.button(btn, true);
-        
-        try {
-            const res = await $.post('/Admin/Equipment/Update', $(this).serialize());
-            Loading.button(btn, false);
-            
-            if (res.success) {
-                bootstrap.Modal.getInstance('#editEquipmentModal').hide();
-                equipmentTable.ajax.reload();
-                Toast.success('Equipment updated');
-            } else {
-                Toast.error(res.message);
-            }
-        } catch (error) {
-            Loading.button(btn, false);
-            Toast.error('Failed to update equipment');
-        }
-    });
-
-    $('#addUnitForm').submit(async function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('addUnitBtn');
-        Loading.button(btn, true);
-        
-        try {
-            const res = await $.post('/Admin/Equipment/CreateUnit', $(this).serialize());
-            Loading.button(btn, false);
-            
-            if (res.success) {
-                bootstrap.Modal.getInstance('#addUnitModal').hide();
-                this.reset();
-                equipmentTable.ajax.reload();
-                loadStats();
-                Toast.success('Unit added successfully');
-            } else {
-                Toast.error(res.message);
-            }
-        } catch (error) {
-            Loading.button(btn, false);
-            Toast.error('Failed to add unit');
-        }
-    });
+    initEquipmentTable();
+    setupFilterHandlers();
+    setupFormHandlers();
 });
 
-async function loadStats() {
-    try {
-        const res = await Api.get('/Admin/Equipment/Stats');
+function loadStats() {
+    $.get('/Admin/Equipment/Stats', function(res) {
         if (res.success) {
             $('#statTypes').text(res.data.totalEquipmentTypes);
             $('#statTotal').text(res.data.totalUnits);
@@ -478,15 +660,392 @@ async function loadStats() {
             $('#statBorrowed').text(res.data.borrowedUnits);
             $('#statDamaged').text(res.data.damagedUnits);
         }
-    } catch (error) {
-        console.error('Failed to load stats');
-    }
+    });
+}
+
+function initEquipmentTable() {
+    equipmentTable = $('#equipmentTable').DataTable({
+        ajax: {
+            url: '/Admin/Equipment/GetAll',
+            dataSrc: function(json) {
+                if (json.success && json.data) {
+                    populateCategoryFilter(json.data);
+                    return json.data;
+                }
+                return [];
+            }
+        },
+        responsive: true,
+        pageLength: 10,
+        order: [[0, 'asc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_",
+            emptyTable: '<div class="text-center py-5"><i class="bi bi-box-seam text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No equipment found</p></div>'
+        },
+        columns: [
+            { 
+                data: 'equipmentName',
+                render: function(data) {
+                    return '<strong>' + data + '</strong>';
+                }
+            },
+            { 
+                data: 'equipmentCategory',
+                render: function(data) {
+                    return '<span class="badge-category">' + data + '</span>';
+                }
+            },
+            { 
+                data: 'equipmentQuantity',
+                className: 'text-center'
+            },
+            { 
+                data: 'availableStock',
+                className: 'text-center',
+                render: function(data) {
+                    return '<span class="badge-available">' + data + '</span>';
+                }
+            },
+            {
+                data: null,
+                orderable: false,
+                render: function(data, type, row) {
+                    return '<div class="d-flex gap-1">' +
+                        '<button class="btn btn-sm btn-outline-primary btn-action-equip btn-view-units" data-id="' + row.equipmentId + '" data-name="' + row.equipmentName + '" title="View Units"><i class="bi bi-eye"></i></button>' +
+                        '<button class="btn btn-sm btn-outline-success btn-action-equip btn-add-unit" data-id="' + row.equipmentId + '" title="Add Unit"><i class="bi bi-plus"></i></button>' +
+                        '<button class="btn btn-sm btn-outline-warning btn-action-equip btn-edit-equip" data-id="' + row.equipmentId + '" title="Edit"><i class="bi bi-pencil"></i></button>' +
+                        '<button class="btn btn-sm btn-outline-danger btn-action-equip btn-delete-equip" data-id="' + row.equipmentId + '" data-name="' + row.equipmentName + '" title="Delete"><i class="bi bi-trash"></i></button>' +
+                    '</div>';
+                }
+            }
+        ]
+    });
+}
+
+function populateCategoryFilter(data) {
+    var categories = [...new Set(data.map(function(e) { return e.equipmentCategory; }))].sort();
+    var current = $('#filterCategory').val();
+    $('#filterCategory').empty().append('<option value="">All Categories</option>');
+    categories.forEach(function(c) {
+        $('#filterCategory').append('<option value="' + c + '"' + (c === current ? ' selected' : '') + '>' + c + '</option>');
+    });
+}
+
+function setupFilterHandlers() {
+    $('#filterCategory').on('change', function() {
+        var val = $(this).val();
+        equipmentTable.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
+    });
+    
+    $('#btnClearFilters').on('click', function() {
+        $('#filterCategory').val('');
+        equipmentTable.search('').columns().search('').draw();
+        showToast('Filters cleared', 'info');
+    });
+}
+
+function setupFormHandlers() {
+    // View units
+    $(document).on('click', '.btn-view-units', function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        currentEquipmentId = id;
+        $('#viewUnitsTitle').text(name);
+        loadUnits(id);
+    });
+
+    // Add unit
+    $(document).on('click', '.btn-add-unit', function() {
+        $('#addUnitEquipmentId').val($(this).data('id'));
+        $('#addUnitForm')[0].reset();
+        new bootstrap.Modal('#addUnitModal').show();
+    });
+
+    // Edit equipment
+    $(document).on('click', '.btn-edit-equip', function() {
+        var id = $(this).data('id');
+        $.get('/Admin/Equipment/Get/' + id, function(res) {
+            if (res.success) {
+                $('#editEquipmentId').val(res.data.equipmentId);
+                $('#editName').val(res.data.equipmentName);
+                $('#editCategory').val(res.data.equipmentCategory);
+                $('#editQuantity').val(res.data.equipmentQuantity);
+                new bootstrap.Modal('#editEquipmentModal').show();
+            } else {
+                showToast(res.message, 'error');
+            }
+        });
+    });
+
+    // Delete equipment
+    $(document).on('click', '.btn-delete-equip', function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        
+        Swal.fire({
+            title: 'Delete Equipment?',
+            html: 'Are you sure you want to delete <strong>' + name + '</strong>?<br><small class="text-muted">This will also delete all units.</small>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, delete it',
+            cancelButtonText: 'Cancel'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                $.post('/Admin/Equipment/Delete', { equipmentId: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() }, function(res) {
+                    if (res.success) {
+                        showToast('Equipment deleted', 'success');
+                        equipmentTable.ajax.reload();
+                        loadStats();
+                    } else {
+                        showToast(res.message, 'error');
+                    }
+                });
+            }
+        });
+    });
+
+    // Edit unit
+    $(document).on('click', '.btn-edit-unit', function() {
+        var id = $(this).data('id');
+        $.get('/Admin/Equipment/Unit/' + id, function(res) {
+            if (res.success) {
+                var unit = res.data;
+                $('#editUnitId').val(unit.eunitId);
+                $('#editUnitEquipmentId').val(unit.equipmentId);
+                $('#editUnitSerial').val(unit.eunitSerialNo);
+                $('input[name="Condition"][value="' + unit.eunitCondition + '"]').prop('checked', true);
+                $('#editUnitStatus').val(unit.eunitStatus);
+                
+                // Disable status change if borrowed
+                if (unit.eunitStatus === 'borrowed') {
+                    $('#editUnitStatus').prop('disabled', true);
+                } else {
+                    $('#editUnitStatus').prop('disabled', false);
+                }
+                
+                new bootstrap.Modal('#editUnitModal').show();
+            } else {
+                showToast(res.message, 'error');
+            }
+        });
+    });
+
+    // Delete unit
+    $(document).on('click', '.btn-delete-unit', function() {
+        var id = $(this).data('id');
+        var serial = $(this).data('serial');
+        var $row = $(this).closest('tr');
+        
+        Swal.fire({
+            title: 'Delete Unit?',
+            html: 'Are you sure you want to delete unit <strong>' + serial + '</strong>?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Yes, delete it'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                $.post('/Admin/Equipment/DeleteUnit', { unitId: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() }, function(res) {
+                    if (res.success) {
+                        showToast('Unit deleted', 'success');
+                        $row.fadeOut(function() { $(this).remove(); });
+                        equipmentTable.ajax.reload();
+                        loadStats();
+                    } else {
+                        showToast(res.message, 'error');
+                    }
+                });
+            }
+        });
+    });
+
+    // Form submissions
+    $('#createEquipmentForm').submit(function(e) {
+        e.preventDefault();
+        var $btn = $('#createEquipBtn');
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Creating...');
+        
+        $.post('/Admin/Equipment/Create', $(this).serialize(), function(res) {
+            $btn.prop('disabled', false).html('<i class="bi bi-plus-circle me-1"></i>Create');
+            if (res.success) {
+                bootstrap.Modal.getInstance('#createEquipmentModal').hide();
+                $('#createEquipmentForm')[0].reset();
+                equipmentTable.ajax.reload();
+                loadStats();
+                showToast('Equipment created', 'success');
+            } else {
+                showToast(res.message, 'error');
+            }
+        });
+    });
+
+    $('#editEquipmentForm').submit(function(e) {
+        e.preventDefault();
+        var $btn = $('#editEquipBtn');
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+        
+        $.post('/Admin/Equipment/Update', $(this).serialize(), function(res) {
+            $btn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i>Save Changes');
+            if (res.success) {
+                bootstrap.Modal.getInstance('#editEquipmentModal').hide();
+                equipmentTable.ajax.reload();
+                showToast('Equipment updated', 'success');
+            } else {
+                showToast(res.message, 'error');
+            }
+        });
+    });
+
+    $('#addUnitForm').submit(function(e) {
+        e.preventDefault();
+        var $btn = $('#addUnitBtn');
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Adding...');
+        
+        $.post('/Admin/Equipment/CreateUnit', $(this).serialize(), function(res) {
+            $btn.prop('disabled', false).html('<i class="bi bi-plus-circle me-1"></i>Add Unit');
+            if (res.success) {
+                bootstrap.Modal.getInstance('#addUnitModal').hide();
+                $('#addUnitForm')[0].reset();
+                equipmentTable.ajax.reload();
+                loadStats();
+                showToast('Unit added', 'success');
+            } else {
+                showToast(res.message, 'error');
+            }
+        });
+    });
+
+    $('#editUnitForm').submit(function(e) {
+        e.preventDefault();
+        var $btn = $('#editUnitBtn');
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+        
+        $.post('/Admin/Equipment/UpdateUnit', $(this).serialize(), function(res) {
+            $btn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i>Save Changes');
+            if (res.success) {
+                // Close edit unit modal
+                var editModal = bootstrap.Modal.getInstance(document.getElementById('editUnitModal'));
+                if (editModal) editModal.hide();
+                
+                // Reload units in the view modal if open
+                if (currentEquipmentId) {
+                    // Small delay to let modal close properly
+                    setTimeout(function() {
+                        loadUnitsOnly(currentEquipmentId);
+                    }, 300);
+                }
+                equipmentTable.ajax.reload();
+                loadStats();
+                showToast('Unit updated', 'success');
+            } else {
+                showToast(res.message, 'error');
+            }
+        });
+    });
+    
+    // Clean up modal backdrops when modals are hidden
+    $('#editUnitModal').on('hidden.bs.modal', function() {
+        // Remove extra backdrops (keep one if view units modal is open)
+        var backdrops = $('.modal-backdrop');
+        if (backdrops.length > 1) {
+            backdrops.slice(1).remove();
+        }
+        
+        // If view units modal is not visible, clean up completely
+        if (!$('#viewUnitsModal').hasClass('show')) {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css('padding-right', '');
+        }
+    });
+    
+    // Clean up when view units modal is closed
+    $('#viewUnitsModal').on('hidden.bs.modal', function() {
+        currentEquipmentId = null;
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+    });
+}
+
+function loadUnits(equipmentId) {
+    $('#unitsTable tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-danger" role="status"></div></td></tr>');
+    
+    // Get or create modal instance
+    var viewUnitsModalEl = document.getElementById('viewUnitsModal');
+    var viewUnitsModal = bootstrap.Modal.getInstance(viewUnitsModalEl) || new bootstrap.Modal(viewUnitsModalEl);
+    viewUnitsModal.show();
+    
+    loadUnitsData(equipmentId);
+}
+
+// Reload units data only (without showing modal)
+function loadUnitsOnly(equipmentId) {
+    loadUnitsData(equipmentId);
+}
+
+// Shared function to load units data
+function loadUnitsData(equipmentId) {
+    $.get('/Admin/Equipment/Units/' + equipmentId, function(res) {
+        if (res.success) {
+            var html = '';
+            res.data.forEach(function(u) {
+                var condBadge = u.conditionBool 
+                    ? '<span class="badge-condition good">Good</span>' 
+                    : '<span class="badge-condition damaged">Damaged</span>';
+                var statusBadge = '<span class="badge-status ' + u.eunitStatus + '">' + u.eunitStatus + '</span>';
+                var isBorrowed = u.eunitStatus === 'borrowed';
+                
+                html += '<tr>' +
+                    '<td><strong class="text-danger">' + u.eunitSerialNo + '</strong></td>' +
+                    '<td>' + condBadge + '</td>' +
+                    '<td>' + statusBadge + '</td>' +
+                    '<td>' + u.eunitDateAdded + '</td>' +
+                    '<td>' +
+                        '<div class="d-flex gap-1">' +
+                            '<button class="btn btn-sm btn-outline-warning btn-action-equip btn-edit-unit" data-id="' + u.eunitId + '" title="Edit Unit"><i class="bi bi-pencil"></i></button>' +
+                            '<button class="btn btn-sm btn-outline-danger btn-action-equip btn-delete-unit" data-id="' + u.eunitId + '" data-serial="' + u.eunitSerialNo + '"' + (isBorrowed ? ' disabled title="Cannot delete borrowed unit"' : ' title="Delete"') + '><i class="bi bi-trash"></i></button>' +
+                        '</div>' +
+                    '</td>' +
+                '</tr>';
+            });
+            
+            $('#unitsTable tbody').html(html || '<tr><td colspan="5" class="text-center text-muted py-4">No units found</td></tr>');
+        } else {
+            showToast(res.message, 'error');
+        }
+    });
 }
 
 function refreshData() {
-    Toast.info('Refreshing...');
+    showToast('Refreshing...', 'info');
     equipmentTable.ajax.reload();
     loadStats();
+}
+
+function showToast(message, type) {
+    var bgColors = {
+        success: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        info: 'linear-gradient(135deg, #8b0000, #5c0000)'
+    };
+    
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+            background: bgColors[type] || bgColors.info,
+            borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }
+    }).showToast();
 }
 </script>
 }

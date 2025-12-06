@@ -292,12 +292,14 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
         {
             try
             {
-                // Validate student
+                // Validate student eligibility using database function fn_check_student_eligibility
+                var isEligible = await _studentRepo.CheckEligibilityAsync(request.StudentId);
+                if (!isEligible)
+                    return Json(new { success = false, message = "Student is not eligible to borrow (blocked or not found)" });
+                
                 var student = await _studentRepo.GetByIdAsync(request.StudentId);
                 if (student == null)
                     return Json(new { success = false, message = "Student not found" });
-                if (!student.StudentStatus)
-                    return Json(new { success = false, message = "Student is blocked from borrowing" });
 
                 // Validate unit
                 var unit = await _unitRepo.GetByIdAsync(request.UnitId);
@@ -416,31 +418,23 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
         {
             try
             {
-                var query = @"
-                    SELECT 
-                        (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'borrowed') as active_borrows,
-                        (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'overdue') as overdue_count,
-                        (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'returned') as returned_count,
-                        (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'lost') as lost_count";
+                // Use database function fn_count_borrow_status for each status
+                var activeBorrows = await _borrowRepo.CountByStatusAsync("borrowed");
+                var overdueCount = await _borrowRepo.CountByStatusAsync("overdue");
+                var returnedCount = await _borrowRepo.CountByStatusAsync("returned");
+                var lostCount = await _borrowRepo.CountByStatusAsync("lost");
 
-                var dt = await _db.ExecuteQueryAsync(query);
-                if (dt.Rows.Count > 0)
+                return Json(new
                 {
-                    var row = dt.Rows[0];
-                    return Json(new
+                    success = true,
+                    data = new
                     {
-                        success = true,
-                        data = new
-                        {
-                            ActiveBorrows = Convert.ToInt32(row["active_borrows"]),
-                            OverdueCount = Convert.ToInt32(row["overdue_count"]),
-                            ReturnedToday = Convert.ToInt32(row["returned_count"]), // Total returned (keeping property name for compatibility)
-                            LostCount = Convert.ToInt32(row["lost_count"])
-                        }
-                    });
-                }
-
-                return Json(new { success = false, message = "No stats available" });
+                        ActiveBorrows = activeBorrows,
+                        OverdueCount = overdueCount,
+                        ReturnedToday = returnedCount, // Total returned (keeping property name for compatibility)
+                        LostCount = lostCount
+                    }
+                });
             }
             catch (Exception ex)
             {

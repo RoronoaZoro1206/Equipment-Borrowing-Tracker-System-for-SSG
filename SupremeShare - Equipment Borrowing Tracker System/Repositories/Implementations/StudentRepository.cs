@@ -175,6 +175,20 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Impleme
             return Convert.ToInt32(result) > 0;
         }
 
+        /// <summary>
+        /// Checks if a student is eligible to borrow using database function fn_check_student_eligibility.
+        /// Returns TRUE if student is active, FALSE if blocked or not found.
+        /// </summary>
+        public async Task<bool> CheckEligibilityAsync(int studentId)
+        {
+            InputValidator.ValidateId(studentId, "Student ID");
+
+            string query = "SELECT fn_check_student_eligibility(@id)";
+            var parameters = new NpgsqlParameter[] { new("@id", studentId) };
+            var result = await _db.ExecuteScalarAsync(query, parameters);
+            return Convert.ToBoolean(result);
+        }
+
         private void ValidateStudent(Student student)
         {
             if (string.IsNullOrWhiteSpace(student.StudentIdNumber))

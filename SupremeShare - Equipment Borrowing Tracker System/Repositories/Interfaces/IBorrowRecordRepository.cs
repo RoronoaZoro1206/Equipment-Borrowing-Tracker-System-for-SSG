@@ -14,6 +14,16 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfa
         Task<bool> UpdateAsync(BorrowRecord borrowRecord);
         Task<bool> DeleteAsync(int borrowId);
         Task<bool> ExistsAsync(int borrowId);
+        
+        /// <summary>
+        /// Calculates days overdue using database function fn_calculate_days_overdue.
+        /// </summary>
         Task<int> CalculateDaysOverdueAsync(int borrowId);
+        
+        /// <summary>
+        /// Counts borrow records by status using database function fn_count_borrow_status.
+        /// Valid statuses: 'borrowed', 'returned', 'overdue', 'lost'
+        /// </summary>
+        Task<int> CountByStatusAsync(string status);
     }
 }

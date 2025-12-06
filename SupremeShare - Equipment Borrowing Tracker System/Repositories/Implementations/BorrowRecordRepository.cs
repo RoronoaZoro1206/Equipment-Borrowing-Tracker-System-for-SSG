@@ -178,6 +178,24 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Impleme
             return Convert.ToInt32(result);
         }
 
+        /// <summary>
+        /// Counts borrow records by status using database function fn_count_borrow_status.
+        /// Valid statuses: 'borrowed', 'returned', 'overdue', 'lost'
+        /// </summary>
+        public async Task<int> CountByStatusAsync(string status)
+        {
+            var validStatuses = new[] { "borrowed", "returned", "overdue", "lost" };
+            var normalizedStatus = status?.ToLower() ?? "";
+            
+            if (!validStatuses.Contains(normalizedStatus))
+                throw new ValidationException($"Invalid borrow status. Valid values: {string.Join(", ", validStatuses)}");
+
+            string query = "SELECT fn_count_borrow_status(@status)";
+            var parameters = new NpgsqlParameter[] { new("@status", normalizedStatus) };
+            var result = await _db.ExecuteScalarAsync(query, parameters);
+            return Convert.ToInt32(result);
+        }
+
         private void ValidateBorrowRecord(BorrowRecord record)
         {
             InputValidator.ValidateId(record.TransactionId, "Transaction ID");

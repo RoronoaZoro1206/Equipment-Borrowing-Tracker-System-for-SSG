@@ -245,3 +245,63 @@ BEGIN
     -- Trigger trg_enforce_lost_protocol will handle blocking student and updating unit status
 END;
 $$;
+
+
+-- 7. sp_update_unit_condition
+-- Updates unit condition and automatically adjusts status
+-- If condition is Good and status is maintenance -> set to available
+-- If condition is Damaged and status is available -> set to maintenance
+CREATE OR REPLACE PROCEDURE sp_update_unit_condition(
+    p_unit_id INT,
+    p_condition BOOLEAN,
+    p_user_id INT
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_old_condition BOOLEAN;
+    v_old_status VARCHAR(50);
+    v_new_status VARCHAR(50);
+BEGIN
+    -- Get current unit state
+    SELECT eunit_condition, eunit_status 
+    INTO v_old_condition, v_old_status
+    FROM equipment_unit 
+    WHERE eunit_id = p_unit_id;
+    
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Unit not found';
+    END IF;
+    
+    -- Determine new status based on condition change
+    IF p_condition = TRUE AND v_old_status = 'maintenance' THEN
+        -- Fixed: condition is Good and was in maintenance -> make available
+        v_new_status := 'available';
+    ELSIF p_condition = FALSE AND v_old_status = 'available' THEN
+        -- Damaged: condition is Damaged and was available -> set to maintenance
+        v_new_status := 'maintenance';
+    ELSE
+        -- No status change needed
+        v_new_status := v_old_status;
+    END IF;
+    
+    -- Update the unit
+    UPDATE equipment_unit 
+    SET eunit_condition = p_condition,
+        eunit_status = v_new_status,
+        eunit_last_updated = NOW()
+    WHERE eunit_id = p_unit_id;
+    
+    -- Log the change
+    INSERT INTO audit_log (user_id, audit_action, audit_old_data, audit_new_data, audit_logged_at)
+    VALUES (
+        p_user_id,
+        'Unit condition updated for ID ' || p_unit_id,
+        'Condition: ' || CASE WHEN v_old_condition THEN 'Good' ELSE 'Damaged' END || ', Status: ' || v_old_status,
+        'Condition: ' || CASE WHEN p_condition THEN 'Good' ELSE 'Damaged' END || ', Status: ' || v_new_status,
+        NOW()
+    );
+    
+EXCEPTION WHEN OTHERS THEN 
+    RAISE;
+END;
+$$;

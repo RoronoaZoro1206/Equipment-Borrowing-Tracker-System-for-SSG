@@ -238,12 +238,14 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
         {
             try
             {
-                // Validate student
+                // Validate student eligibility using database function fn_check_student_eligibility
+                var isEligible = await _studentRepo.CheckEligibilityAsync(request.StudentId);
+                if (!isEligible)
+                    return Json(new { success = false, message = "Student is not eligible to borrow (blocked or not found)" });
+                
                 var student = await _studentRepo.GetByIdAsync(request.StudentId);
                 if (student == null)
                     return Json(new { success = false, message = "Student not found" });
-                if (!student.StudentStatus)
-                    return Json(new { success = false, message = "Student is blocked from borrowing" });
 
                 // Validate unit
                 var unit = await _unitRepo.GetByIdAsync(request.UnitId);
@@ -397,34 +399,41 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
         {
             try
             {
-                var query = @"
+                // Use database function fn_count_borrow_status for status counts
+                var activeBorrows = await _borrowRepo.CountByStatusAsync("borrowed");
+                var overdueCount = await _borrowRepo.CountByStatusAsync("overdue");
+                var lostCount = await _borrowRepo.CountByStatusAsync("lost");
+                
+                // These still need direct queries as they have date filters
+                var todayQuery = @"
                     SELECT 
-                        (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'borrowed') as active_borrows,
-                        (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'overdue') as overdue_count,
                         (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'returned' 
                          AND DATE(borrow_date_returned) = CURRENT_DATE) as returned_today,
-                        (SELECT COUNT(*) FROM transaction WHERE DATE(transaction_date_borrowed) = CURRENT_DATE) as borrowed_today,
-                        (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'lost') as lost_count";
+                        (SELECT COUNT(*) FROM transaction WHERE DATE(transaction_date_borrowed) = CURRENT_DATE) as borrowed_today";
 
-                var dt = await _db.ExecuteQueryAsync(query);
+                var dt = await _db.ExecuteQueryAsync(todayQuery);
+                var returnedToday = 0;
+                var borrowedToday = 0;
+                
                 if (dt.Rows.Count > 0)
                 {
                     var row = dt.Rows[0];
-                    return Json(new
-                    {
-                        success = true,
-                        data = new
-                        {
-                            ActiveBorrows = Convert.ToInt32(row["active_borrows"]),
-                            OverdueCount = Convert.ToInt32(row["overdue_count"]),
-                            ReturnedToday = Convert.ToInt32(row["returned_today"]),
-                            BorrowedToday = Convert.ToInt32(row["borrowed_today"]),
-                            LostCount = Convert.ToInt32(row["lost_count"])
-                        }
-                    });
+                    returnedToday = Convert.ToInt32(row["returned_today"]);
+                    borrowedToday = Convert.ToInt32(row["borrowed_today"]);
                 }
 
-                return Json(new { success = false, message = "No stats available" });
+                return Json(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        ActiveBorrows = activeBorrows,
+                        OverdueCount = overdueCount,
+                        ReturnedToday = returnedToday,
+                        BorrowedToday = borrowedToday,
+                        LostCount = lostCount
+                    }
+                });
             }
             catch (Exception ex)
             {

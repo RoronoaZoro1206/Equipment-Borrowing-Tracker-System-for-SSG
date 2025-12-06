@@ -13,5 +13,11 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfa
         Task<bool> UpdateAsync(Student student);
         Task<bool> DeleteAsync(int studentId);
         Task<bool> ExistsAsync(int studentId);
+        
+        /// <summary>
+        /// Checks if a student is eligible to borrow using database function fn_check_student_eligibility.
+        /// Returns TRUE if student is active, FALSE if blocked or not found.
+        /// </summary>
+        Task<bool> CheckEligibilityAsync(int studentId);
     }
 }

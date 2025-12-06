@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Npgsql;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Attributes;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Data;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Models;
@@ -13,6 +14,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
     {
         private readonly IEquipmentRepository _equipmentRepo;
         private readonly IEquipmentUnitRepository _unitRepo;
+        private readonly DatabaseHelper _db;
         private readonly IAuditService _auditService;
         private readonly IDashboardNotificationService _notificationService;
         private readonly ILogger<AdminEquipmentController> _logger;
@@ -20,12 +22,14 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
         public AdminEquipmentController(
             IEquipmentRepository equipmentRepo,
             IEquipmentUnitRepository unitRepo,
+            DatabaseHelper db,
             IAuditService auditService,
             IDashboardNotificationService notificationService,
             ILogger<AdminEquipmentController> logger)
         {
             _equipmentRepo = equipmentRepo;
             _unitRepo = unitRepo;
+            _db = db;
             _auditService = auditService;
             _notificationService = notificationService;
             _logger = logger;
@@ -333,9 +337,29 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 }
 
                 var oldSerial = unit.EunitSerialNo;
+                var oldCondition = unit.EunitCondition;
+                var oldStatus = unit.EunitStatus;
+                
                 unit.EunitSerialNo = request.SerialNo ?? unit.EunitSerialNo;
                 unit.EunitCondition = request.Condition;
-                unit.EunitStatus = request.Status ?? unit.EunitStatus;
+                
+                // Auto-update status based on condition (similar to sp_update_unit_condition logic)
+                // If condition is Good and status is maintenance -> set to available
+                // If condition is Damaged and status is available -> set to maintenance
+                if (request.Condition && oldStatus == "maintenance")
+                {
+                    // Fixed: condition is Good and was in maintenance -> make available
+                    unit.EunitStatus = "available";
+                }
+                else if (!request.Condition && oldStatus == "available")
+                {
+                    // Damaged: condition is Damaged and was available -> set to maintenance
+                    unit.EunitStatus = "maintenance";
+                }
+                else
+                {
+                    unit.EunitStatus = request.Status ?? unit.EunitStatus;
+                }
 
                 var result = await _unitRepo.UpdateAsync(unit);
                 if (result)
@@ -365,22 +389,36 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                     return Json(new { success = false, message = "Unit not found" });
 
                 var oldCondition = unit.EunitCondition;
-                unit.EunitCondition = condition;
-                var result = await _unitRepo.UpdateAsync(unit);
-
-                var conditionText = condition ? "Good" : "Damaged";
+                var oldStatus = unit.EunitStatus;
                 var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
-                _logger.LogInformation("Unit {UnitId} condition updated to {Condition} by user {UserId}", unitId, conditionText, userId);
-
-                if (result)
+                
+                // Call stored procedure sp_update_unit_condition
+                var query = "CALL sp_update_unit_condition(@p_unit_id, @p_condition, @p_user_id)";
+                var parameters = new NpgsqlParameter[]
                 {
-                    await _auditService.LogActionAsync(userId, "UNIT_CONDITION_CHANGED", 
-                        new { Condition = oldCondition ? "Good" : "Damaged" }, 
-                        new { Condition = conditionText });
-                    await _notificationService.NotifyEquipmentStatusChange(unit.EunitSerialNo, unit.EunitSerialNo, conditionText);
-                }
+                    new("@p_unit_id", unitId),
+                    new("@p_condition", condition),
+                    new("@p_user_id", userId)
+                };
+                
+                await _db.ExecuteNonQueryAsync(query, parameters);
+                
+                // Reload unit to get updated status
+                unit = await _unitRepo.GetByIdAsync(unitId);
+                var conditionText = condition ? "Good" : "Damaged";
+                var statusChanged = oldStatus != unit?.EunitStatus;
+                
+                _logger.LogInformation("Unit {UnitId} condition updated to {Condition}, status: {Status} by user {UserId}", 
+                    unitId, conditionText, unit?.EunitStatus, userId);
 
-                return Json(new { success = result, message = $"Condition updated to {conditionText}" });
+                await _notificationService.NotifyEquipmentStatusChange(unit?.EunitSerialNo ?? "", unit?.EunitSerialNo ?? "", conditionText);
+                await _notificationService.NotifyStatsUpdated();
+
+                var message = statusChanged 
+                    ? $"Condition updated to {conditionText}. Status changed to {unit?.EunitStatus}."
+                    : $"Condition updated to {conditionText}";
+                    
+                return Json(new { success = true, message = message });
             }
             catch (Exception ex)
             {
