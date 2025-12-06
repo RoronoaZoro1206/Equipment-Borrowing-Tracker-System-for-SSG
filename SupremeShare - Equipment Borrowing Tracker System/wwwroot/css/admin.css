@@ -2200,3 +2200,62 @@ table thead th:last-child {
     color: var(--white) !important;
     box-shadow: 0 2px 4px rgba(139, 0, 0, 0.2);
 }
+
+
+/* ===========================================
+   Borrow Page - Luxury UI Enhancements
+   =========================================== */
+
+/* SweetAlert2 Wide Popup */
+.swal-wide {
+    width: 480px !important;
+    max-width: 90vw !important;
+}
+
+.swal2-popup .swal2-html-container {
+    text-align: left;
+}
+
+/* DataTables Enhanced Styling */
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+    margin-bottom: 20px;
+}
+
+.dataTables_wrapper .dataTables_length label,
+.dataTables_wrapper .dataTables_filter label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: var(--text-dark);
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    min-width: 250px;
+}
+
+/* Responsive DataTables */
+@media (max-width: 768px) {
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        float: none;
+        text-align: left;
+        margin-bottom: 12px;
+    }
+    
+    .dataTables_wrapper .dataTables_filter input {
+        min-width: 100%;
+        width: 100%;
+    }
+}
+
+/* Code styling for serial numbers */
+code {
+    background: rgba(139, 0, 0, 0.08);
+    color: var(--primary-red);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}

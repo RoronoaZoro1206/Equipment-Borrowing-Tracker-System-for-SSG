@@ -4,13 +4,22 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-arrow-left-right me-2"></i>Transactions</h2>
-        <div>
-            <a href="/SupportAdmin/Transactions/Borrow" class="btn btn-success me-2">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-trans">
+                <i class="bi bi-arrow-left-right"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Transactions</h2>
+                <p class="text-muted mb-0 small">View and manage all borrowing transactions</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="/SupportAdmin/Transactions/Borrow" class="btn btn-action-borrow">
                 <i class="bi bi-box-arrow-up me-1"></i>New Borrow
             </a>
-            <a href="/SupportAdmin/Transactions/Return" class="btn btn-warning">
+            <a href="/SupportAdmin/Transactions/Return" class="btn btn-action-return">
                 <i class="bi bi-box-arrow-in-down me-1"></i>Process Return
             </a>
         </div>
@@ -19,49 +28,93 @@
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <h3 id="statActiveBorrows">-</h3>
-                    <small>Active Borrows</small>
+            <div class="stat-card-trans active-borrows">
+                <div class="stat-icon-trans">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-content-trans">
+                    <span class="stat-value-trans" id="statActiveBorrows">-</span>
+                    <span class="stat-label-trans">Active Borrows</span>
                 </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card bg-danger text-white">
-                <div class="card-body text-center">
-                    <h3 id="statOverdue">-</h3>
-                    <small>Overdue</small>
+            <div class="stat-card-trans overdue">
+                <div class="stat-icon-trans">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="stat-content-trans">
+                    <span class="stat-value-trans" id="statOverdue">-</span>
+                    <span class="stat-label-trans">Overdue</span>
                 </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <h3 id="statReturnedToday">-</h3>
-                    <small>Returned Today</small>
+            <div class="stat-card-trans returned">
+                <div class="stat-icon-trans">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-content-trans">
+                    <span class="stat-value-trans" id="statReturnedToday">-</span>
+                    <span class="stat-label-trans">Returned Today</span>
                 </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h3 id="statBorrowedToday">-</h3>
-                    <small>Borrowed Today</small>
+            <div class="stat-card-trans borrowed">
+                <div class="stat-icon-trans">
+                    <i class="bi bi-box-arrow-up"></i>
+                </div>
+                <div class="stat-content-trans">
+                    <span class="stat-value-trans" id="statBorrowedToday">-</span>
+                    <span class="stat-label-trans">Borrowed Today</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Transactions Table -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-table me-2"></i>Recent Transactions</span>
-            <button class="btn btn-sm btn-light" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+    <div class="trans-card">
+        <div class="trans-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-table"></i>
+                <span>Recent Transactions</span>
+            </div>
+            <button class="btn btn-refresh-trans" id="btnRefresh" title="Refresh">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
         </div>
-        <div class="card-body p-0">
+        <div class="trans-card-body">
+            <!-- Filter Row -->
+            <div class="filter-row-trans mb-3">
+                <div class="filter-group-trans">
+                    <label class="filter-label-trans"><i class="bi bi-funnel me-1"></i>Filters:</label>
+                    <select id="filterStatus" class="filter-select-trans">
+                        <option value="">All Status</option>
+                        <option value="borrowed">Borrowed</option>
+                        <option value="returned">Returned</option>
+                        <option value="overdue">Overdue</option>
+                    </select>
+                    <select id="filterDateRange" class="filter-select-trans">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                    <div class="date-range-inputs" id="customDateRange" style="display: none;">
+                        <input type="date" id="filterDateFrom" class="filter-input-trans" placeholder="From">
+                        <span class="date-separator">to</span>
+                        <input type="date" id="filterDateTo" class="filter-input-trans" placeholder="To">
+                    </div>
+                    <button class="btn btn-clear-filter-trans" id="btnClearFilters" title="Clear Filters">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+            
             <div class="table-responsive">
-                <table class="table table-hover mb-0" id="transactionsTable">
-                    <thead class="table-light">
+                <table class="table table-trans mb-0" id="transactionsTable">
+                    <thead>
                         <tr>
                             <th>Transaction Code</th>
                             <th>Student</th>
@@ -73,7 +126,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="spinner-border text-danger" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="text-muted mt-2 mb-0">Loading transactions...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -83,47 +143,608 @@
 
 <!-- Transaction Details Modal -->
 <div class="modal fade" id="detailsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Transaction Details</h5>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-trans">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Transaction Details</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="detailsContent">
-                Loading...
+                <div class="text-center py-4">
+                    <div class="spinner-border text-danger" role="status"></div>
+                    <p class="text-muted mt-2">Loading details...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
+
+<style>
+/* ===========================================
+   Transactions Page - Red & White Theme
+   =========================================== */
+
+/* Page Icon */
+.page-icon-trans {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+
+/* Action Buttons */
+.btn-action-borrow {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.25);
+}
+
+.btn-action-borrow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.35);
+    color: white;
+}
+
+.btn-action-return {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+}
+
+.btn-action-return:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35);
+    color: white;
+}
+
+/* Stat Cards */
+.stat-card-trans {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+}
+
+.stat-card-trans::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.stat-card-trans.active-borrows::before { background: var(--primary-red); }
+.stat-card-trans.overdue::before { background: #ef4444; }
+.stat-card-trans.returned::before { background: #22c55e; }
+.stat-card-trans.borrowed::before { background: #3b82f6; }
+
+.stat-card-trans:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon-trans {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.stat-card-trans.active-borrows .stat-icon-trans {
+    background: rgba(139, 0, 0, 0.1);
+    color: var(--primary-red);
+}
+
+.stat-card-trans.overdue .stat-icon-trans {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.stat-card-trans.returned .stat-icon-trans {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.stat-card-trans.borrowed .stat-icon-trans {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.stat-content-trans {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value-trans {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1;
+}
+
+.stat-label-trans {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+/* Transaction Card */
+.trans-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.trans-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.trans-card-body {
+    padding: 24px;
+}
+
+/* Refresh Button */
+.btn-refresh-trans {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh-trans:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+/* Filter Row */
+.filter-row-trans {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.filter-group-trans {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-label-trans {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--primary-red);
+    margin: 0;
+    white-space: nowrap;
+}
+
+.filter-select-trans,
+.filter-input-trans {
+    padding: 8px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 130px;
+}
+
+.filter-select-trans:focus,
+.filter-input-trans:focus {
+    border-color: var(--primary-red);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+}
+
+.filter-select-trans:hover,
+.filter-input-trans:hover {
+    border-color: var(--primary-red);
+}
+
+.date-range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-separator {
+    color: #6b7280;
+    font-size: 0.85rem;
+}
+
+.btn-clear-filter-trans {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-clear-filter-trans:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+/* Table Styling */
+.table-trans {
+    margin-bottom: 0;
+}
+
+.table-trans thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 12px;
+    border: none;
+    white-space: nowrap;
+}
+
+.table-trans tbody td {
+    padding: 14px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.table-trans tbody tr:hover {
+    background: rgba(139, 0, 0, 0.03);
+}
+
+/* Transaction Code Link */
+.trans-code-link {
+    color: var(--primary-red);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.trans-code-link:hover {
+    color: #5c0000;
+    text-decoration: underline;
+}
+
+/* Student Cell */
+.student-cell-trans {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-cell-trans strong {
+    color: var(--text-dark);
+}
+
+.student-cell-trans small {
+    color: #6b7280;
+}
+
+/* Status Badges */
+.status-badge-trans {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge-trans.borrowed {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+}
+
+.status-badge-trans.returned {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+}
+
+.status-badge-trans.overdue {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+/* View Button */
+.btn-view-trans {
+    background: transparent;
+    border: 2px solid var(--primary-red);
+    color: var(--primary-red);
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-view-trans:hover {
+    background: var(--primary-red);
+    color: white;
+}
+
+/* Modal Styling */
+.modal-trans {
+    border-radius: 16px;
+    overflow: hidden;
+    border: none;
+}
+
+.modal-trans .modal-header {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 20px 24px;
+}
+
+.modal-trans .modal-body {
+    padding: 24px;
+}
+
+.modal-trans .modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 16px 24px;
+}
+
+/* Details Content */
+.details-section {
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.details-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--primary-red);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(139, 0, 0, 0.1);
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.details-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.details-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.details-value {
+    font-size: 0.95rem;
+    color: var(--text-dark);
+}
+
+/* Items Table in Modal */
+.items-table-modal {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.items-table-modal thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    padding: 12px 10px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.items-table-modal tbody td {
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.items-table-modal tbody tr:hover {
+    background: rgba(139, 0, 0, 0.03);
+}
+
+/* Responsive */
+@@media (max-width: 991px) {
+    .stat-card-trans {
+        padding: 16px;
+    }
+    
+    .stat-value-trans {
+        font-size: 1.5rem;
+    }
+}
+
+@@media (max-width: 768px) {
+    .filter-row-trans {
+        padding: 12px;
+    }
+    
+    .filter-group-trans {
+        width: 100%;
+    }
+    
+    .filter-select-trans {
+        flex: 1;
+        min-width: 100px;
+    }
+    
+    .date-range-inputs {
+        width: 100%;
+    }
+    
+    .filter-input-trans {
+        flex: 1;
+    }
+    
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@@media (max-width: 576px) {
+    .btn-action-borrow,
+    .btn-action-return {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+    
+    .stat-card-trans {
+        padding: 14px;
+    }
+    
+    .stat-icon-trans {
+        width: 44px;
+        height: 44px;
+        font-size: 1rem;
+    }
+    
+    .stat-value-trans {
+        font-size: 1.25rem;
+    }
+}
+</style>
+
+
 @section Scripts {
 <script>
 let transactionsTable;
+let allTransactionsData = [];
 
 $(document).ready(function() {
     loadStats();
-    
-    // Initialize DataTable with DataTableConfig helper
-    transactionsTable = DataTableConfig.init('#transactionsTable', {
+    initTransactionsTable();
+    setupFilterHandlers();
+});
+
+function loadStats() {
+    $.get('/SupportAdmin/Transactions/Stats', function(res) {
+        if (res.success) {
+            $('#statActiveBorrows').text(res.data.activeBorrows);
+            $('#statOverdue').text(res.data.overdueCount);
+            $('#statReturnedToday').text(res.data.returnedToday);
+            $('#statBorrowedToday').text(res.data.borrowedToday);
+        }
+    }).fail(function() {
+        console.error('Failed to load stats');
+    });
+}
+
+function initTransactionsTable() {
+    transactionsTable = $('#transactionsTable').DataTable({
         ajax: {
             url: '/SupportAdmin/Transactions/GetAll',
-            dataSrc: json => json.success ? json.data : []
+            dataSrc: function(json) {
+                if (json.success && json.data) {
+                    allTransactionsData = json.data;
+                    return json.data;
+                }
+                return [];
+            }
+        },
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],
+        order: [[3, 'desc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search transactions...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_ transactions",
+            infoEmpty: "No transactions found",
+            emptyTable: '<div class="text-center py-5"><i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No transactions found</p></div>'
         },
         columns: [
-            { data: 'transactionCode', render: data => `<strong class="text-primary">${data}</strong>` },
+            { 
+                data: 'transactionCode',
+                render: function(data, type, row) {
+                    return '<a href="javascript:void(0)" class="trans-code-link btn-view" data-id="' + row.transactionId + '">' + data + '</a>';
+                }
+            },
             { 
                 data: null,
-                render: row => `<strong>${row.studentIdNumber}</strong><br><small class="text-muted">${row.studentName}</small>`
+                render: function(data, type, row) {
+                    return '<div class="student-cell-trans"><strong>' + row.studentIdNumber + '</strong><small>' + row.studentName + '</small></div>';
+                }
             },
-            { data: 'itemCount', className: 'text-center', render: data => `${data} item(s)` },
-            { data: 'dateBorrowed' },
+            { 
+                data: 'itemCount',
+                className: 'text-center',
+                render: function(data) {
+                    return '<span class="badge bg-secondary">' + data + ' item(s)</span>';
+                }
+            },
+            { 
+                data: 'dateBorrowed',
+                render: function(data) {
+                    return '<span class="text-muted">' + data + '</span>';
+                }
+            },
             { 
                 data: 'statuses',
-                render: data => {
+                render: function(data) {
                     if (!data) return '-';
-                    return data.split(', ').map(s => {
-                        const cls = s === 'borrowed' ? 'borrowed' : s === 'returned' ? 'available' : s === 'overdue' ? 'overdue' : 'maintenance';
-                        return `<span class="status-badge ${cls}">${s}</span>`;
+                    return data.split(', ').map(function(s) {
+                        var cls = s === 'borrowed' ? 'borrowed' : s === 'returned' ? 'returned' : s === 'overdue' ? 'overdue' : 'borrowed';
+                        return '<span class="status-badge-trans ' + cls + '">' + s + '</span>';
                     }).join(' ');
                 }
             },
@@ -131,70 +752,170 @@ $(document).ready(function() {
             {
                 data: 'transactionId',
                 orderable: false,
-                render: data => `<button class="btn btn-sm btn-outline-primary btn-action btn-view" data-id="${data}">
-                                    <i class="bi bi-eye"></i>
-                                </button>`
+                render: function(data) {
+                    return '<button class="btn btn-view-trans btn-view" data-id="' + data + '" title="View Details"><i class="bi bi-eye"></i></button>';
+                }
             }
-        ],
-        order: [[3, 'desc']]
+        ]
     });
+}
 
-    async function loadStats() {
-        try {
-            const res = await Api.get('/SupportAdmin/Transactions/Stats');
-            if (res.success) {
-                $('#statActiveBorrows').text(res.data.activeBorrows);
-                $('#statOverdue').text(res.data.overdueCount);
-                $('#statReturnedToday').text(res.data.returnedToday);
-                $('#statBorrowedToday').text(res.data.borrowedToday);
-            }
-        } catch (error) {
-            console.error('Failed to load stats');
+function setupFilterHandlers() {
+    // Status filter
+    $('#filterStatus').on('change', applyFilters);
+    
+    // Date range filter
+    $('#filterDateRange').on('change', function() {
+        var value = $(this).val();
+        if (value === 'custom') {
+            $('#customDateRange').slideDown();
+        } else {
+            $('#customDateRange').slideUp();
+            applyFilters();
         }
-    }
-
-    $('#btnRefresh').click(function() {
-        Toast.info('Refreshing...');
+    });
+    
+    // Custom date inputs
+    $('#filterDateFrom, #filterDateTo').on('change', applyFilters);
+    
+    // Clear filters
+    $('#btnClearFilters').on('click', function() {
+        $('#filterStatus').val('');
+        $('#filterDateRange').val('');
+        $('#filterDateFrom').val('');
+        $('#filterDateTo').val('');
+        $('#customDateRange').slideUp();
+        transactionsTable.search('').columns().search('').draw();
+        showToast('Filters cleared', 'info');
+    });
+    
+    // Refresh button
+    $('#btnRefresh').on('click', function() {
+        showToast('Refreshing...', 'info');
         loadStats();
         transactionsTable.ajax.reload();
     });
+}
 
-    // View details
-    $(document).on('click', '.btn-view', function() {
-        const id = $(this).data('id');
-        $.get(`/SupportAdmin/Transactions/GetDetails/${id}`, function(res) {
-            if (res.success) {
-                const d = res.data;
-                let itemsHtml = '';
-                d.items.forEach(i => {
-                    const statusCls = i.borrowStatus === 'returned' ? 'bg-success' : 
-                                      i.borrowStatus === 'overdue' ? 'bg-danger' : 'bg-info';
-                    itemsHtml += `<tr>
-                        <td>${i.equipmentName}</td>
-                        <td>${i.serialNo}</td>
-                        <td><span class="badge ${statusCls}">${i.borrowStatus}</span></td>
-                        <td>${new Date(i.borrowDueDate).toLocaleDateString()}</td>
-                        <td>${i.borrowDateReturned ? new Date(i.borrowDateReturned).toLocaleDateString() : '-'}</td>
-                    </tr>`;
-                });
+function applyFilters() {
+    var statusFilter = $('#filterStatus').val();
+    var dateRange = $('#filterDateRange').val();
+    
+    // Clear previous searches
+    transactionsTable.search('').columns().search('');
+    
+    // Apply status filter
+    if (statusFilter) {
+        transactionsTable.column(4).search(statusFilter, false, false);
+    }
+    
+    // Apply date filter (using DataTables search on date column)
+    if (dateRange && dateRange !== 'custom') {
+        var today = new Date();
+        var filterDate = new Date();
+        
+        switch(dateRange) {
+            case 'today':
+                // Search for today's date
+                var todayStr = today.toISOString().split('T')[0];
+                transactionsTable.column(3).search(todayStr.split('-').reverse().join('/').substring(0, 5), false, false);
+                break;
+            case 'week':
+                filterDate.setDate(today.getDate() - 7);
+                break;
+            case 'month':
+                filterDate.setMonth(today.getMonth() - 1);
+                break;
+        }
+    }
+    
+    transactionsTable.draw();
+}
 
-                $('#detailsContent').html(`
-                    <div class="mb-3">
-                        <strong>Transaction Code:</strong> ${d.transactionCode}<br>
-                        <strong>Date Borrowed:</strong> ${new Date(d.transactionDateBorrowed).toLocaleString()}<br>
-                        <strong>Student:</strong> ${d.student.studentIdNumber} - ${d.student.fullName}<br>
-                        <strong>College:</strong> ${d.student.studentCollege}
-                    </div>
-                    <h6>Items:</h6>
-                    <table class="table table-sm">
-                        <thead><tr><th>Equipment</th><th>Serial No</th><th>Status</th><th>Due Date</th><th>Returned</th></tr></thead>
-                        <tbody>${itemsHtml}</tbody>
-                    </table>
-                `);
-                new bootstrap.Modal('#detailsModal').show();
-            }
-        });
+// View transaction details
+$(document).on('click', '.btn-view', function() {
+    var id = $(this).data('id');
+    
+    $('#detailsContent').html('<div class="text-center py-4"><div class="spinner-border text-danger" role="status"></div><p class="text-muted mt-2">Loading details...</p></div>');
+    new bootstrap.Modal('#detailsModal').show();
+    
+    $.get('/SupportAdmin/Transactions/GetDetails/' + id, function(res) {
+        if (res.success) {
+            var d = res.data;
+            var itemsHtml = '';
+            
+            d.items.forEach(function(i) {
+                var statusCls = i.borrowStatus === 'returned' ? 'returned' : 
+                               i.borrowStatus === 'overdue' ? 'overdue' : 'borrowed';
+                itemsHtml += '<tr>' +
+                    '<td><strong>' + i.equipmentName + '</strong></td>' +
+                    '<td><code>' + i.serialNo + '</code></td>' +
+                    '<td><span class="status-badge-trans ' + statusCls + '">' + i.borrowStatus + '</span></td>' +
+                    '<td>' + new Date(i.borrowDueDate).toLocaleDateString() + '</td>' +
+                    '<td>' + (i.borrowDateReturned ? new Date(i.borrowDateReturned).toLocaleDateString() : '<span class="text-muted">-</span>') + '</td>' +
+                '</tr>';
+            });
+
+            $('#detailsContent').html(
+                '<div class="details-section">' +
+                    '<h6 class="details-title"><i class="bi bi-receipt me-2"></i>Transaction Information</h6>' +
+                    '<div class="details-grid">' +
+                        '<div class="details-item">' +
+                            '<span class="details-label">Transaction Code</span>' +
+                            '<span class="details-value fw-bold text-danger">' + d.transactionCode + '</span>' +
+                        '</div>' +
+                        '<div class="details-item">' +
+                            '<span class="details-label">Date Borrowed</span>' +
+                            '<span class="details-value">' + new Date(d.transactionDateBorrowed).toLocaleString() + '</span>' +
+                        '</div>' +
+                        '<div class="details-item">' +
+                            '<span class="details-label">Student</span>' +
+                            '<span class="details-value">' + d.student.studentIdNumber + ' - ' + d.student.fullName + '</span>' +
+                        '</div>' +
+                        '<div class="details-item">' +
+                            '<span class="details-label">College</span>' +
+                            '<span class="details-value">' + (d.student.studentCollege || '-') + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="details-section">' +
+                    '<h6 class="details-title"><i class="bi bi-box-seam me-2"></i>Borrowed Items (' + d.items.length + ')</h6>' +
+                    '<div class="table-responsive">' +
+                        '<table class="items-table-modal">' +
+                            '<thead><tr><th>Equipment</th><th>Serial No</th><th>Status</th><th>Due Date</th><th>Returned</th></tr></thead>' +
+                            '<tbody>' + itemsHtml + '</tbody>' +
+                        '</table>' +
+                    '</div>' +
+                '</div>'
+            );
+        } else {
+            $('#detailsContent').html('<div class="alert alert-danger">Failed to load transaction details.</div>');
+        }
+    }).fail(function() {
+        $('#detailsContent').html('<div class="alert alert-danger">An error occurred. Please try again.</div>');
     });
 });
+
+// Toast notification helper
+function showToast(message, type) {
+    var bgColors = {
+        success: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        info: 'linear-gradient(135deg, #8b0000, #5c0000)'
+    };
+    
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+            background: bgColors[type] || bgColors.info,
+            borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }
+    }).showToast();
+}
 </script>
 }

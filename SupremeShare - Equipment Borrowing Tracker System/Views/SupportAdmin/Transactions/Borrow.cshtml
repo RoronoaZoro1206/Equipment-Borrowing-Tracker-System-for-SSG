@@ -5,43 +5,63 @@
 
 <div class="container-fluid py-4">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-box-arrow-up me-2"></i>Borrow an Item</h2>
-        <a href="/SupportAdmin/Transactions" class="btn btn-outline-secondary">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon">
+                <i class="bi bi-box-arrow-up"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Borrow an Item</h2>
+                <p class="text-muted mb-0 small">Process equipment borrowing transactions</p>
+            </div>
+        </div>
+        <a href="/SupportAdmin/Transactions" class="btn btn-outline-secondary btn-back">
             <i class="bi bi-arrow-left me-1"></i>Back to Transactions
         </a>
     </div>
 
-    <div class="row">
+    <div class="row g-4">
         <!-- Left Panel: Wizard Steps -->
-        <div class="col-md-3">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h6 class="text-uppercase text-muted mb-3">Borrow an Item</h6>
-                    
+        <div class="col-lg-3 col-md-4">
+            <div class="wizard-card">
+                <div class="wizard-header">
+                    <span class="wizard-badge">BORROW AN ITEM</span>
+                </div>
+                <div class="wizard-body">
                     <!-- Step 1 -->
                     <div class="wizard-step active" id="step1Indicator">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="step-circle bg-success text-white me-2">
+                        <div class="step-connector"></div>
+                        <div class="step-content">
+                            <span class="step-circle">
                                 <i class="bi bi-check"></i>
                             </span>
-                            <span class="fw-bold text-success">Borrower Details</span>
+                            <div class="step-info">
+                                <span class="step-title">Borrower Details</span>
+                                <span class="step-desc">Select a student</span>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Step 2 -->
                     <div class="wizard-step" id="step2Indicator">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="step-circle bg-warning text-dark me-2">2</span>
-                            <span>Transaction Details</span>
+                        <div class="step-connector"></div>
+                        <div class="step-content">
+                            <span class="step-circle">2</span>
+                            <div class="step-info">
+                                <span class="step-title">Transaction Details</span>
+                                <span class="step-desc">Add equipment items</span>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Step 3 -->
                     <div class="wizard-step" id="step3Indicator">
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="step-circle bg-secondary text-white me-2">3</span>
-                            <span>Summary</span>
+                        <div class="step-content">
+                            <span class="step-circle">3</span>
+                            <div class="step-info">
+                                <span class="step-title">Summary</span>
+                                <span class="step-desc">Review & confirm</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -49,57 +69,58 @@
         </div>
 
         <!-- Right Panel: Content -->
-        <div class="col-md-9">
+        <div class="col-lg-9 col-md-8">
             <!-- Step 1: Borrower Details (Students Table) -->
-            <div class="step-content" id="step1Content">
-                <div class="card shadow-sm">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-people me-2"></i>Students</span>
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+            <div class="step-content-panel" id="step1Content">
+                <div class="luxury-card">
+                    <div class="luxury-card-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-people-fill"></i>
+                            <span>Select Borrower</span>
+                        </div>
+                        <button class="btn btn-gold btn-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
                             <i class="bi bi-plus-circle me-1"></i>Add Student
                         </button>
                     </div>
-                    <div class="card-body">
-                        <!-- Search and Filter -->
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-filter"></i></span>
-                                    <select id="filterCollege" class="form-select">
-                                        <option value="">All Colleges</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <select id="filterCourse" class="form-select">
+                    <div class="luxury-card-body">
+                        <!-- Filter Row -->
+                        <div class="filter-row mb-3">
+                            <div class="filter-group">
+                                <label class="filter-label"><i class="bi bi-funnel me-1"></i>Filters:</label>
+                                <select id="filterCollege" class="filter-select">
+                                    <option value="">All Colleges</option>
+                                </select>
+                                <select id="filterCourse" class="filter-select">
                                     <option value="">All Courses</option>
                                 </select>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="input-group">
-                                    <input type="text" id="searchStudent" class="form-control" placeholder="Search...">
-                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                </div>
+                                <select id="filterStatus" class="filter-select">
+                                    <option value="">All Status</option>
+                                    <option value="true">Active</option>
+                                    <option value="false">Blocked</option>
+                                </select>
+                                <button class="btn btn-clear-filters" id="btnClearFilters" title="Clear Filters">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
                             </div>
                         </div>
-
-                        <!-- Students Table -->
+                        
+                        <!-- Students Table with DataTables -->
                         <div class="table-responsive">
-                            <table class="table table-hover" id="studentsTable">
+                            <table class="table table-luxury" id="studentsTable">
                                 <thead>
                                     <tr>
                                         <th>Student ID</th>
                                         <th>Full Name</th>
                                         <th>College</th>
                                         <th>Course</th>
-                                        <th>E-mail</th>
-                                        <th>Contact No.</th>
+                                        <th class="d-none d-lg-table-cell">E-mail</th>
+                                        <th class="d-none d-md-table-cell">Contact No.</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- Populated via JS -->
+                                    <!-- Populated via DataTables -->
                                 </tbody>
                             </table>
                         </div>
@@ -108,136 +129,128 @@
             </div>
 
             <!-- Step 2: Transaction Details -->
-            <div class="step-content d-none" id="step2Content">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <i class="bi bi-clipboard-data me-2"></i>Transaction Details
+            <div class="step-content-panel d-none" id="step2Content">
+                <div class="luxury-card">
+                    <div class="luxury-card-header header-primary">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-clipboard-data"></i>
+                            <span>Transaction Details</span>
+                        </div>
+                        <span class="selected-borrower-badge" id="selectedBorrowerBadge">
+                            <i class="bi bi-person-check me-1"></i>
+                            <span id="selectedBorrowerName">-</span>
+                        </span>
                     </div>
-                    <div class="card-body">
+                    <div class="luxury-card-body">
                         <form id="borrowForm">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="StudentId" id="selectedStudentId">
 
                             <!-- Transaction Info Row -->
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-3">
-                                    <label class="form-label">Transaction Code <span class="text-danger">*</span></label>
-                                    <input type="text" id="transactionCode" class="form-control" readonly placeholder="Auto-generated">
+                            <div class="info-grid mb-4">
+                                <div class="info-box">
+                                    <label class="info-label">Transaction Code</label>
+                                    <input type="text" id="transactionCode" class="form-control-luxury" readonly placeholder="Auto-generated">
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Processed by <span class="text-danger">*</span></label>
-                                    <input type="text" id="processedBy" class="form-control" readonly value="@Context.Session.GetString("FullName")">
+                                <div class="info-box">
+                                    <label class="info-label">Processed by</label>
+                                    <input type="text" id="processedBy" class="form-control-luxury" readonly value="@Context.Session.GetString("FullName")">
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Date Borrowed <span class="text-danger">*</span></label>
-                                    <input type="text" id="dateBorrowed" class="form-control" readonly>
+                                <div class="info-box">
+                                    <label class="info-label">Date Borrowed</label>
+                                    <input type="text" id="dateBorrowed" class="form-control-luxury" readonly>
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Last Updated <span class="text-danger">*</span></label>
-                                    <input type="text" id="lastUpdated" class="form-control" readonly>
+                                <div class="info-box">
+                                    <label class="info-label">Last Updated</label>
+                                    <input type="text" id="lastUpdated" class="form-control-luxury" readonly>
                                 </div>
                             </div>
 
                             <!-- Remarks -->
                             <div class="mb-4">
-                                <label class="form-label">Remarks</label>
-                                <textarea id="remarks" name="Remarks" class="form-control" rows="2" placeholder="Optional remarks..."></textarea>
+                                <label class="form-label-luxury">Remarks <span class="text-muted">(Optional)</span></label>
+                                <textarea id="remarks" name="Remarks" class="form-control form-control-luxury-input" rows="2" placeholder="Add any notes about this transaction..."></textarea>
                             </div>
 
-                            <hr>
+                            <div class="section-divider">
+                                <span><i class="bi bi-box-seam me-2"></i>Equipment Selection</span>
+                            </div>
 
-                            <!-- Borrowing Information Section -->
-                            <h6 class="mb-3"><i class="bi bi-box-seam me-2"></i>Borrowing Information</h6>
-                            
+                            <!-- Equipment Selection -->
                             <div class="row g-3 mb-3">
                                 <div class="col-md-4">
-                                    <label class="form-label">Equipment Category <span class="text-danger">*</span></label>
-                                    <select id="equipmentCategory" class="form-select">
+                                    <label class="form-label-luxury">Equipment Category <span class="text-danger">*</span></label>
+                                    <select id="equipmentCategory" class="form-select form-select-luxury">
                                         <option value="">Select Category</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Equipment <span class="text-danger">*</span></label>
-                                    <select id="equipmentSelect" class="form-select" disabled>
+                                    <label class="form-label-luxury">Equipment <span class="text-danger">*</span></label>
+                                    <select id="equipmentSelect" class="form-select form-select-luxury" disabled>
                                         <option value="">Select Equipment</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Current Status <span class="text-danger">*</span></label>
-                                    <select id="currentStatus" class="form-select" disabled>
-                                        <option value="">-</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">Serial No. <span class="text-danger">*</span></label>
-                                    <select id="serialNoSelect" name="UnitId" class="form-select" disabled>
+                                    <label class="form-label-luxury">Serial No. <span class="text-danger">*</span></label>
+                                    <select id="serialNoSelect" name="UnitId" class="form-select form-select-luxury" disabled>
                                         <option value="">Select Serial No.</option>
                                     </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Due Date <span class="text-danger">*</span></label>
-                                    <input type="datetime-local" name="DueDate" id="dueDate" class="form-control" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Quick Due Date</label>
-                                    <div class="btn-group w-100">
-                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-due" data-days="1">1D</button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-due" data-days="3">3D</button>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm btn-due" data-days="7">1W</button>
-                                    </div>
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label class="form-label">Return Condition</label>
-                                    <select id="returnCondition" class="form-select" disabled>
-                                        <option value="">N/A (Not yet returned)</option>
-                                    </select>
+                                <div class="col-md-4">
+                                    <label class="form-label-luxury">Due Date <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" name="DueDate" id="dueDate" class="form-control form-control-luxury-input" required>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Last Updated <span class="text-danger">*</span></label>
-                                    <input type="text" id="itemLastUpdated" class="form-control" readonly>
+                                <div class="col-md-4">
+                                    <label class="form-label-luxury">Quick Due Date</label>
+                                    <div class="quick-date-btns">
+                                        <button type="button" class="btn-quick-date btn-due" data-days="1">1 Day</button>
+                                        <button type="button" class="btn-quick-date btn-due" data-days="3">3 Days</button>
+                                        <button type="button" class="btn-quick-date btn-due" data-days="7">1 Week</button>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <!-- Add Button -->
-                            <div class="mb-4">
-                                <button type="button" id="btnAddItem" class="btn btn-success" disabled>
-                                    <i class="bi bi-plus-circle me-1"></i>Add
-                                </button>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="button" id="btnAddItem" class="btn btn-gold w-100" disabled>
+                                        <i class="bi bi-plus-circle me-1"></i>Add to List
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Items Table -->
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="itemsTable">
-                                    <thead class="table-dark">
-                                        <tr>
-                                            <th>Equipment Category</th>
-                                            <th>Equipment</th>
-                                            <th>Serial No.</th>
-                                            <th>Current Status</th>
-                                            <th>Code</th>
-                                            <th>Return Condition</th>
-                                            <th>Last Updated</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <!-- Items added here -->
-                                    </tbody>
-                                </table>
+                            <div class="items-table-container">
+                                <div class="table-responsive">
+                                    <table class="table table-luxury-dark" id="itemsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Equipment</th>
+                                                <th>Serial No.</th>
+                                                <th>Status</th>
+                                                <th>Due Date</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="empty-row">
+                                                <td colspan="6" class="text-center py-4">
+                                                    <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
+                                                    <p class="text-muted mb-0 mt-2">No items added yet</p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
 
                             <!-- Navigation Buttons -->
-                            <div class="d-flex justify-content-between mt-4">
-                                <button type="button" class="btn btn-secondary" id="btnBackStep1">
+                            <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                                <button type="button" class="btn btn-outline-secondary" id="btnBackStep1">
                                     <i class="bi bi-arrow-left me-1"></i>Back
                                 </button>
-                                <button type="button" class="btn btn-primary" id="btnNextStep3" disabled>
-                                    Next<i class="bi bi-arrow-right ms-1"></i>
+                                <button type="button" class="btn btn-primary btn-next" id="btnNextStep3" disabled>
+                                    Review Summary<i class="bi bi-arrow-right ms-1"></i>
                                 </button>
                             </div>
                         </form>
@@ -246,74 +259,89 @@
             </div>
 
             <!-- Step 3: Summary -->
-            <div class="step-content d-none" id="step3Content">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-success text-white">
-                        <i class="bi bi-check-circle me-2"></i>Summary
+            <div class="step-content-panel d-none" id="step3Content">
+                <div class="luxury-card">
+                    <div class="luxury-card-header header-success">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-check-circle"></i>
+                            <span>Transaction Summary</span>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <!-- Transaction Details Box -->
-                        <div class="summary-box mb-4 p-3 border rounded bg-light">
-                            <h6 class="mb-3 text-muted">Transaction Details</h6>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p class="mb-1"><small class="text-muted">Transaction Code:</small></p>
-                                    <p class="fw-bold" id="sumTransactionCode">Auto-generated</p>
+                    <div class="luxury-card-body">
+                        <!-- Borrower Summary -->
+                        <div class="summary-section">
+                            <h6 class="summary-title"><i class="bi bi-person me-2"></i>Borrower Information</h6>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <span class="summary-label">Student ID</span>
+                                    <span class="summary-value" id="sumStudentId">-</span>
                                 </div>
-                                <div class="col-md-6">
-                                    <p class="mb-1"><small class="text-muted">Last Updated:</small></p>
-                                    <p id="sumLastUpdated">-</p>
+                                <div class="summary-item">
+                                    <span class="summary-label">Full Name</span>
+                                    <span class="summary-value" id="sumFullName">-</span>
                                 </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p class="mb-1"><small class="text-muted">Processed by:</small></p>
-                                    <p id="sumProcessedBy">-</p>
+                                <div class="summary-item">
+                                    <span class="summary-label">College</span>
+                                    <span class="summary-value" id="sumCollege">-</span>
                                 </div>
-                                <div class="col-md-6">
-                                    <p class="mb-1"><small class="text-muted">Remarks:</small></p>
-                                    <p id="sumRemarks">-</p>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p class="mb-1"><small class="text-muted">Date Borrowed:</small></p>
-                                    <p id="sumDateBorrowed">-</p>
+                                <div class="summary-item">
+                                    <span class="summary-label">Course</span>
+                                    <span class="summary-value" id="sumCourse">-</span>
                                 </div>
                             </div>
                         </div>
 
-                        <hr>
+                        <!-- Transaction Summary -->
+                        <div class="summary-section">
+                            <h6 class="summary-title"><i class="bi bi-receipt me-2"></i>Transaction Details</h6>
+                            <div class="summary-grid">
+                                <div class="summary-item">
+                                    <span class="summary-label">Transaction Code</span>
+                                    <span class="summary-value fw-bold" id="sumTransactionCode">Auto-generated</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Processed by</span>
+                                    <span class="summary-value" id="sumProcessedBy">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Date Borrowed</span>
+                                    <span class="summary-value" id="sumDateBorrowed">-</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Remarks</span>
+                                    <span class="summary-value" id="sumRemarks">-</span>
+                                </div>
+                            </div>
+                        </div>
 
-                        <!-- Borrowing Information Table -->
-                        <h6 class="mb-3"><i class="bi bi-box-seam me-2"></i>Borrowing Information</h6>
-                        <div class="table-responsive">
-                            <table class="table table-bordered" id="summaryItemsTable">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Equipment Category</th>
-                                        <th>Equipment</th>
-                                        <th>Serial No.</th>
-                                        <th>Current Status</th>
-                                        <th>Due Date</th>
-                                        <th>Date Returned</th>
-                                        <th>Return Condition</th>
-                                        <th>Last Updated</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Summary items -->
-                                </tbody>
-                            </table>
+                        <!-- Items Summary -->
+                        <div class="summary-section">
+                            <h6 class="summary-title"><i class="bi bi-box-seam me-2"></i>Borrowed Items</h6>
+                            <div class="table-responsive">
+                                <table class="table table-luxury" id="summaryItemsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Equipment</th>
+                                            <th>Serial No.</th>
+                                            <th>Status</th>
+                                            <th>Due Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Summary items -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         <!-- Navigation Buttons -->
-                        <div class="d-flex justify-content-between mt-4">
-                            <button type="button" class="btn btn-secondary" id="btnBackStep2">
+                        <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                            <button type="button" class="btn btn-outline-secondary" id="btnBackStep2">
                                 <i class="bi bi-arrow-left me-1"></i>Back
                             </button>
-                            <button type="button" class="btn btn-success btn-lg" id="btnConfirmBorrow">
-                                <i class="bi bi-check-circle me-1"></i>Submit
+                            <button type="button" class="btn btn-success btn-submit" id="btnConfirmBorrow">
+                                <i class="bi bi-check-circle me-1"></i>Confirm & Submit
                             </button>
                         </div>
                     </div>
@@ -323,12 +351,11 @@
     </div>
 </div>
 
-
 <!-- Add Student Modal -->
 <div class="modal fade" id="addStudentModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-luxury">
+            <div class="modal-header">
                 <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Add New Student</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
@@ -337,43 +364,43 @@
                     @Html.AntiForgeryToken()
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Student ID Number <span class="text-danger">*</span></label>
-                            <input type="text" name="StudentIdNumber" class="form-control" required>
+                            <label class="form-label-luxury">Student ID Number <span class="text-danger">*</span></label>
+                            <input type="text" name="StudentIdNumber" class="form-control form-control-luxury-input" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">College <span class="text-danger">*</span></label>
-                            <input type="text" name="College" class="form-control" required>
+                            <label class="form-label-luxury">College <span class="text-danger">*</span></label>
+                            <input type="text" name="College" class="form-control form-control-luxury-input" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">First Name <span class="text-danger">*</span></label>
-                            <input type="text" name="FirstName" class="form-control" required>
+                            <label class="form-label-luxury">First Name <span class="text-danger">*</span></label>
+                            <input type="text" name="FirstName" class="form-control form-control-luxury-input" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Middle Name</label>
-                            <input type="text" name="MiddleName" class="form-control">
+                            <label class="form-label-luxury">Middle Name</label>
+                            <input type="text" name="MiddleName" class="form-control form-control-luxury-input">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                            <input type="text" name="LastName" class="form-control" required>
+                            <label class="form-label-luxury">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" name="LastName" class="form-control form-control-luxury-input" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Course</label>
-                            <input type="text" name="Course" class="form-control">
+                            <label class="form-label-luxury">Course</label>
+                            <input type="text" name="Course" class="form-control form-control-luxury-input">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="Email" class="form-control">
+                            <label class="form-label-luxury">Email</label>
+                            <input type="email" name="Email" class="form-control form-control-luxury-input">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Contact No.</label>
-                            <input type="text" name="ContactNo" class="form-control">
+                            <label class="form-label-luxury">Contact No.</label>
+                            <input type="text" name="ContactNo" class="form-control form-control-luxury-input">
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="btnSaveStudent">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-gold" id="btnSaveStudent">
                     <i class="bi bi-check-circle me-1"></i>Save Student
                 </button>
             </div>
@@ -383,9 +410,9 @@
 
 <!-- Edit Student Modal -->
 <div class="modal fade" id="editStudentModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-warning">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-luxury">
+            <div class="modal-header header-warning">
                 <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Student Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -395,40 +422,40 @@
                     <input type="hidden" name="StudentId" id="editStudentId">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Student ID Number <span class="text-danger">*</span></label>
-                            <input type="text" name="StudentIdNumber" id="editStudentIdNumber" class="form-control" required>
+                            <label class="form-label-luxury">Student ID Number <span class="text-danger">*</span></label>
+                            <input type="text" name="StudentIdNumber" id="editStudentIdNumber" class="form-control form-control-luxury-input" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">College <span class="text-danger">*</span></label>
-                            <input type="text" name="College" id="editCollege" class="form-control" required>
+                            <label class="form-label-luxury">College <span class="text-danger">*</span></label>
+                            <input type="text" name="College" id="editCollege" class="form-control form-control-luxury-input" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">First Name <span class="text-danger">*</span></label>
-                            <input type="text" name="FirstName" id="editFirstName" class="form-control" required>
+                            <label class="form-label-luxury">First Name <span class="text-danger">*</span></label>
+                            <input type="text" name="FirstName" id="editFirstName" class="form-control form-control-luxury-input" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Middle Name</label>
-                            <input type="text" name="MiddleName" id="editMiddleName" class="form-control">
+                            <label class="form-label-luxury">Middle Name</label>
+                            <input type="text" name="MiddleName" id="editMiddleName" class="form-control form-control-luxury-input">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                            <input type="text" name="LastName" id="editLastName" class="form-control" required>
+                            <label class="form-label-luxury">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" name="LastName" id="editLastName" class="form-control form-control-luxury-input" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Course</label>
-                            <input type="text" name="Course" id="editCourse" class="form-control">
+                            <label class="form-label-luxury">Course</label>
+                            <input type="text" name="Course" id="editCourse" class="form-control form-control-luxury-input">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="Email" id="editEmail" class="form-control">
+                            <label class="form-label-luxury">Email</label>
+                            <input type="email" name="Email" id="editEmail" class="form-control form-control-luxury-input">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Contact No.</label>
-                            <input type="text" name="ContactNo" id="editContactNo" class="form-control">
+                            <label class="form-label-luxury">Contact No.</label>
+                            <input type="text" name="ContactNo" id="editContactNo" class="form-control form-control-luxury-input">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Status</label>
-                            <select name="Status" id="editStatus" class="form-select" disabled>
+                            <label class="form-label-luxury">Status</label>
+                            <select name="Status" id="editStatus" class="form-select form-select-luxury" disabled>
                                 <option value="true">Active</option>
                                 <option value="false">Blocked</option>
                             </select>
@@ -437,7 +464,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-warning" id="btnUpdateStudent">
                     <i class="bi bi-check-circle me-1"></i>Save Changes
                 </button>
@@ -449,57 +476,726 @@
     </div>
 </div>
 
+
 <style>
-.wizard-step .step-circle {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: inline-flex;
+/* ===========================================
+   Luxury Borrow Page Styles
+   =========================================== */
+
+/* Page Header */
+.page-icon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.85rem;
-    font-weight: bold;
-}
-.wizard-step.active .step-circle {
-    background: var(--primary-red) !important;
-}
-.wizard-step.completed .step-circle {
-    background: #22c55e !important;
-}
-#studentsTable tbody tr {
-    cursor: pointer;
-}
-#studentsTable tbody tr:hover {
-    background-color: rgba(139, 0, 0, 0.05);
-}
-#itemsTable tbody tr {
-    cursor: pointer;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
 }
 
-/* Ensure dropdowns are clickable */
-#step2Content .form-select {
+.page-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.btn-back {
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    background: var(--primary-red);
+    color: white;
+    border-color: var(--primary-red);
+}
+
+/* Wizard Card */
+.wizard-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.wizard-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.wizard-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--primary-red);
+}
+
+.wizard-body {
+    padding: 24px;
+}
+
+.wizard-step {
     position: relative;
-    z-index: 10;
+    padding-bottom: 24px;
+}
+
+.wizard-step:last-child {
+    padding-bottom: 0;
+}
+
+.step-connector {
+    position: absolute;
+    left: 19px;
+    top: 40px;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+}
+
+.wizard-step.completed .step-connector {
+    background: linear-gradient(180deg, #22c55e 0%, #e5e7eb 100%);
+}
+
+.wizard-step.active .step-connector {
+    background: linear-gradient(180deg, var(--primary-red) 0%, #e5e7eb 100%);
+}
+
+.step-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    position: relative;
+    z-index: 1;
+}
+
+.step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: #f3f4f6;
+    color: #9ca3af;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.wizard-step.active .step-circle {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+}
+
+.wizard-step.completed .step-circle {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.step-info {
+    display: flex;
+    flex-direction: column;
+    padding-top: 4px;
+}
+
+.step-title {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.wizard-step.active .step-title,
+.wizard-step.completed .step-title {
+    color: var(--text-dark);
+}
+
+.step-desc {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 2px;
+}
+
+/* Filter Row */
+.filter-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    border-radius: 12px;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--primary-red);
+    margin: 0;
+    white-space: nowrap;
+}
+
+.filter-select {
+    padding: 8px 32px 8px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: white;
     cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 140px;
 }
-#step2Content .form-select:not(:disabled) {
-    background-color: #fff;
-    pointer-events: auto !important;
+
+.filter-select:focus {
+    border-color: var(--primary-red);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
 }
-#step2Content .form-select:disabled {
-    background-color: #e9ecef;
+
+.filter-select:hover {
+    border-color: var(--primary-red);
+}
+
+.btn-clear-filters {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-clear-filters:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+/* Luxury Card */
+.luxury-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.luxury-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.luxury-card-header.header-primary {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+}
+
+.luxury-card-header.header-success {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+}
+
+.luxury-card-header i {
+    font-size: 1.1rem;
+}
+
+.luxury-card-body {
+    padding: 24px;
+}
+
+/* Primary Red Button */
+.btn-gold {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+}
+
+.btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4);
+    color: white;
+}
+
+.btn-gold:disabled {
+    background: #d1d5db;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Selected Borrower Badge */
+.selected-borrower-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Luxury Table */
+.table-luxury {
+    margin-bottom: 0;
+}
+
+.table-luxury thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 12px;
+    border: none;
+    white-space: nowrap;
+}
+
+.table-luxury tbody td {
+    padding: 14px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.table-luxury tbody tr:hover {
+    background: rgba(139, 0, 0, 0.03);
+}
+
+.table-luxury-dark thead th {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+}
+
+/* Form Controls */
+.form-label-luxury {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-control-luxury {
+    background: #f8f9fa;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+.form-control-luxury-input,
+.form-select-luxury {
+    border: 2px solid #e5e7eb;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.form-control-luxury-input:focus,
+.form-select-luxury:focus {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.1);
+}
+
+.form-select-luxury:disabled {
+    background: #f3f4f6;
     cursor: not-allowed;
 }
 
-/* Summary box styling */
-.summary-box {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
 }
-.summary-box p {
-    margin-bottom: 0.25rem;
+
+.info-box {
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.info-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Section Divider */
+.section-divider {
+    display: flex;
+    align-items: center;
+    margin: 24px 0;
+    color: var(--primary-red);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(139, 0, 0, 0.2), transparent);
+}
+
+.section-divider span {
+    padding: 0 16px;
+}
+
+/* Quick Date Buttons */
+.quick-date-btns {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-quick-date {
+    flex: 1;
+    padding: 12px 8px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-quick-date:hover {
+    border-color: var(--primary-red);
+    color: var(--primary-red);
+    background: rgba(139, 0, 0, 0.05);
+}
+
+.btn-quick-date.active {
+    border-color: var(--primary-red);
+    background: var(--primary-red);
+    color: white;
+}
+
+/* Items Table Container */
+.items-table-container {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Navigation Buttons */
+.btn-next {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border: none;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.25);
+    transition: all 0.3s ease;
+}
+
+.btn-next:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.35);
+}
+
+.btn-next:disabled {
+    background: #d1d5db;
+    box-shadow: none;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+}
+
+/* Summary Styles */
+.summary-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.summary-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--primary-red);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(139, 0, 0, 0.1);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    margin-bottom: 4px;
+}
+
+.summary-value {
+    font-size: 0.95rem;
+    color: var(--text-dark);
+}
+
+/* Modal Luxury */
+.modal-luxury {
+    border-radius: 16px;
+    overflow: hidden;
+    border: none;
+}
+
+.modal-luxury .modal-header {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 20px 24px;
+}
+
+.modal-luxury .modal-header.header-warning {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+}
+
+.modal-luxury .modal-body {
+    padding: 24px;
+}
+
+.modal-luxury .modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 16px 24px;
+}
+
+/* Status Badges */
+.badge-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-active {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+}
+
+.badge-blocked {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.badge-borrowed {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+/* Action Buttons */
+.btn-action-select {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-action-select:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    color: white;
+}
+
+.btn-action-edit {
+    background: transparent;
+    color: var(--primary-red);
+    border: 2px solid var(--primary-red);
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-action-edit:hover {
+    background: var(--primary-red);
+    color: white;
+}
+
+.btn-action-remove {
+    background: transparent;
+    color: #ef4444;
+    border: 2px solid #ef4444;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-action-remove:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* DataTables Customization */
+.dataTables_wrapper .dataTables_length select {
+    border-radius: 8px;
+    padding: 8px 32px 8px 12px;
+}
+
+.dataTables_wrapper .dataTables_filter input {
+    border-radius: 8px;
+    padding: 8px 16px;
+    border: 2px solid #e5e7eb;
+}
+
+.dataTables_wrapper .dataTables_filter input:focus {
+    border-color: var(--primary-red);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.1);
+}
+
+/* Responsive */
+@@media (max-width: 991px) {
+    .wizard-card {
+        margin-bottom: 24px;
+    }
+    
+    .wizard-body {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        padding: 16px;
+    }
+    
+    .wizard-step {
+        padding-bottom: 0;
+        flex-shrink: 0;
+    }
+    
+    .step-connector {
+        display: none;
+    }
+    
+    .step-info {
+        display: none;
+    }
+}
+
+@@media (max-width: 768px) {
+    .page-title {
+        font-size: 1.25rem;
+    }
+    
+    .luxury-card-body {
+        padding: 16px;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .quick-date-btns {
+        flex-wrap: wrap;
+    }
+    
+    .btn-quick-date {
+        flex: 1 1 calc(33% - 8px);
+    }
+    
+    .filter-row {
+        padding: 12px;
+    }
+    
+    .filter-group {
+        width: 100%;
+    }
+    
+    .filter-select {
+        flex: 1;
+        min-width: 100px;
+    }
+}
+
+@@media (max-width: 576px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .filter-row {
+        padding: 10px;
+    }
+    
+    .filter-label {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .filter-select {
+        min-width: 0;
+        flex: 1 1 calc(50% - 8px);
+    }
 }
 </style>
+
 
 @section Scripts {
 <script>
@@ -509,52 +1205,23 @@ let borrowItems = [];
 let studentsData = [];
 let equipmentData = [];
 let categoriesSet = new Set();
+let studentsDataTable = null;
 
 $(document).ready(function() {
-    console.log('Document ready - initializing Borrow page');
-    
     // Initialize
     loadStudents();
     loadEquipment();
     setDefaultDates();
-    
-    // Debug: Check if dropdowns exist
-    console.log('Equipment Category dropdown exists:', $('#equipmentCategory').length > 0);
-    console.log('Equipment dropdown exists:', $('#equipmentSelect').length > 0);
-    console.log('Serial No dropdown exists:', $('#serialNoSelect').length > 0);
-    
-    // Debug click handlers
-    $('#equipmentCategory').on('click', function() {
-        console.log('Equipment Category clicked');
-    });
-    $('#equipmentSelect').on('click', function() {
-        console.log('Equipment Select clicked, disabled:', $(this).prop('disabled'));
-    });
-    $('#serialNoSelect').on('click', function() {
-        console.log('Serial No clicked, disabled:', $(this).prop('disabled'));
-    });
-    $('#currentStatus').on('click', function() {
-        console.log('Current Status clicked, disabled:', $(this).prop('disabled'));
-    });
 
-    // Search student
-    $('#searchStudent').on('input', filterStudents);
-    $('#filterCollege').change(filterStudents);
-    $('#filterCourse').change(filterStudents);
-
-    // Equipment category change - using on() for better event binding
+    // Equipment category change
     $(document).on('change', '#equipmentCategory', function() {
         const category = $(this).val();
-        console.log('Category selected:', category);
         
-        // Reset dependent dropdowns
         $('#equipmentSelect').empty().append('<option value="">Select Equipment</option>');
-        $('#serialNoSelect').empty().append('<option value="">Select Serial No.</option>').prop('disabled', true).removeAttr('disabled').prop('disabled', true);
-        $('#currentStatus').empty().append('<option value="">-</option>').prop('disabled', true);
+        $('#serialNoSelect').empty().append('<option value="">Select Serial No.</option>').prop('disabled', true);
         
         if (category) {
             const filteredEquipment = equipmentData.filter(e => e.equipmentCategory === category);
-            console.log('Filtered equipment for category', category, ':', filteredEquipment);
             
             if (filteredEquipment.length > 0) {
                 filteredEquipment.forEach(e => {
@@ -562,9 +1229,7 @@ $(document).ready(function() {
                     const disabled = e.availableStock <= 0 ? 'disabled' : '';
                     $('#equipmentSelect').append(`<option value="${e.equipmentId}" data-name="${e.equipmentName}" ${disabled}>${e.equipmentName} ${stockText}</option>`);
                 });
-                // Enable the equipment dropdown
-                $('#equipmentSelect').prop('disabled', false).removeAttr('disabled');
-                console.log('Equipment dropdown enabled');
+                $('#equipmentSelect').prop('disabled', false);
             } else {
                 $('#equipmentSelect').append('<option value="" disabled>No equipment in this category</option>');
                 $('#equipmentSelect').prop('disabled', true);
@@ -578,36 +1243,26 @@ $(document).ready(function() {
     // Equipment change - load units
     $(document).on('change', '#equipmentSelect', function() {
         const equipmentId = $(this).val();
-        console.log('Equipment selected:', equipmentId);
         
-        // Reset dependent dropdowns
         $('#serialNoSelect').empty().append('<option value="">Select Serial No.</option>').prop('disabled', true);
-        $('#currentStatus').empty().append('<option value="">-</option>').prop('disabled', true);
         
         if (equipmentId) {
-            console.log('Loading available units for equipment:', equipmentId);
             $.ajax({
                 url: `/SupportAdmin/Equipment/AvailableUnits/${equipmentId}`,
                 type: 'GET',
                 dataType: 'json',
                 success: function(res) {
-                    console.log('Available units response:', res);
                     if (res.success && res.data && res.data.length > 0) {
                         res.data.forEach(u => {
                             $('#serialNoSelect').append(`<option value="${u.eunitId}" data-serial="${u.eunitSerialNo}" data-condition="${u.condition}">${u.eunitSerialNo} (${u.condition})</option>`);
                         });
-                        // Enable the serial number dropdown
-                        $('#serialNoSelect').prop('disabled', false).removeAttr('disabled');
-                        $('#currentStatus').empty().append('<option value="available" selected>Available</option>');
-                        console.log('Serial No dropdown enabled');
+                        $('#serialNoSelect').prop('disabled', false);
                     } else {
                         $('#serialNoSelect').append('<option value="" disabled>No available units</option>');
-                        console.log('No available units for this equipment');
                     }
                 },
-                error: function(xhr, status, error) {
-                    console.error('Error loading units:', error);
-                    console.error('XHR status:', xhr.status);
+                error: function() {
+                    showToast('Error loading units', 'error');
                 }
             });
         }
@@ -616,18 +1271,18 @@ $(document).ready(function() {
 
     // Serial number change
     $(document).on('change', '#serialNoSelect', function() {
-        console.log('Serial selected:', $(this).val());
         checkAddItemEnabled();
-        const now = new Date().toLocaleString();
-        $('#itemLastUpdated').val(now);
     });
 
     // Quick due date buttons
     $('.btn-due').click(function() {
+        $('.btn-due').removeClass('active');
+        $(this).addClass('active');
         const days = $(this).data('days');
         const due = new Date();
         due.setDate(due.getDate() + days);
         $('#dueDate').val(due.toISOString().slice(0, 16));
+        checkAddItemEnabled();
     });
 
     // Add item to table
@@ -638,7 +1293,7 @@ $(document).ready(function() {
     $('#btnNextStep3').click(() => goToStep(3));
     $('#btnBackStep2').click(() => goToStep(2));
 
-    // Confirm borrow
+    // Confirm borrow with SweetAlert2
     $('#btnConfirmBorrow').click(confirmBorrow);
 
     // Save new student
@@ -655,117 +1310,190 @@ function loadStudents() {
     $.get('/SupportAdmin/Students/GetAll', function(res) {
         if (res.success) {
             studentsData = res.data;
-            
-            // Populate filters
-            const colleges = [...new Set(res.data.map(s => s.studentCollege).filter(c => c))];
-            const courses = [...new Set(res.data.map(s => s.studentCourse).filter(c => c))];
-            
-            colleges.forEach(c => $('#filterCollege').append(`<option value="${c}">${c}</option>`));
-            courses.forEach(c => $('#filterCourse').append(`<option value="${c}">${c}</option>`));
-            
-            renderStudentsTable(studentsData);
+            populateFilterDropdowns(studentsData);
+            initStudentsDataTable(studentsData);
+            setupFilterHandlers();
         }
     });
 }
 
-function filterStudents() {
-    const search = $('#searchStudent').val().toLowerCase();
-    const college = $('#filterCollege').val();
-    const course = $('#filterCourse').val();
+function populateFilterDropdowns(data) {
+    // Get unique colleges and courses
+    const colleges = [...new Set(data.map(s => s.studentCollege).filter(c => c))].sort();
+    const courses = [...new Set(data.map(s => s.studentCourse).filter(c => c))].sort();
     
-    let filtered = studentsData.filter(s => {
-        const matchSearch = !search || 
-            s.studentIdNumber.toLowerCase().includes(search) || 
-            s.fullName.toLowerCase().includes(search);
-        const matchCollege = !college || s.studentCollege === college;
-        const matchCourse = !course || s.studentCourse === course;
-        return matchSearch && matchCollege && matchCourse;
+    // Populate college dropdown
+    $('#filterCollege').empty().append('<option value="">All Colleges</option>');
+    colleges.forEach(c => {
+        $('#filterCollege').append(`<option value="${c}">${c}</option>`);
     });
     
-    renderStudentsTable(filtered);
-}
-
-function renderStudentsTable(data) {
-    let html = '';
-    data.forEach(s => {
-        const statusBadge = s.studentStatus 
-            ? '<span class="badge bg-success">Active</span>' 
-            : '<span class="badge bg-danger">Blocked</span>';
-        
-        // Choose button - only enabled for active students
-        const chooseBtn = s.studentStatus 
-            ? `<button class="btn btn-sm btn-success btn-choose-student me-1" data-id="${s.studentId}" title="Select as Borrower">
-                   <i class="bi bi-check2-square"></i>
-               </button>`
-            : `<button class="btn btn-sm btn-secondary me-1" disabled title="Student is blocked">
-                   <i class="bi bi-check2-square"></i>
-               </button>`;
-        
-        // Edit button - always available
-        const editBtn = `<button class="btn btn-sm btn-outline-warning btn-edit-student" data-id="${s.studentId}" title="Edit Student">
-                            <i class="bi bi-pencil"></i>
-                         </button>`;
-        
-        html += `<tr data-id="${s.studentId}" class="${!s.studentStatus ? 'table-danger' : ''}">
-            <td>${s.studentIdNumber}</td>
-            <td>${s.fullName}</td>
-            <td>${s.studentCollege || '-'}</td>
-            <td>${s.studentCourse || '-'}</td>
-            <td>${s.studentEmail || '-'}</td>
-            <td>${s.studentContactNo || '-'}</td>
-            <td>${statusBadge}</td>
-            <td>
-                <div class="btn-group btn-group-sm">
-                    ${chooseBtn}
-                    ${editBtn}
-                </div>
-            </td>
-        </tr>`;
-    });
-    $('#studentsTable tbody').html(html || '<tr><td colspan="8" class="text-center text-muted">No students found</td></tr>');
-    
-    // Choose button - directly select student and go to step 2
-    $('.btn-choose-student').click(function(e) {
-        e.stopPropagation();
-        const studentId = $(this).data('id');
-        chooseStudent(studentId);
-    });
-    
-    // Edit button - open modal with student details
-    $('.btn-edit-student').click(function(e) {
-        e.stopPropagation();
-        const studentId = $(this).data('id');
-        openStudentModal(studentId);
+    // Populate course dropdown
+    $('#filterCourse').empty().append('<option value="">All Courses</option>');
+    courses.forEach(c => {
+        $('#filterCourse').append(`<option value="${c}">${c}</option>`);
     });
 }
 
-// Choose student directly (without opening modal)
+function setupFilterHandlers() {
+    // Filter change handlers
+    $('#filterCollege, #filterCourse, #filterStatus').on('change', applyFilters);
+    
+    // Clear filters button
+    $('#btnClearFilters').on('click', function() {
+        $('#filterCollege').val('');
+        $('#filterCourse').val('');
+        $('#filterStatus').val('');
+        applyFilters();
+        showToast('Filters cleared', 'info');
+    });
+}
+
+function applyFilters() {
+    const collegeFilter = $('#filterCollege').val();
+    const courseFilter = $('#filterCourse').val();
+    const statusFilter = $('#filterStatus').val();
+    
+    // Filter the data
+    let filteredData = studentsData.filter(s => {
+        const matchCollege = !collegeFilter || s.studentCollege === collegeFilter;
+        const matchCourse = !courseFilter || s.studentCourse === courseFilter;
+        const matchStatus = statusFilter === '' || s.studentStatus.toString() === statusFilter;
+        return matchCollege && matchCourse && matchStatus;
+    });
+    
+    // Reinitialize DataTable with filtered data
+    initStudentsDataTable(filteredData);
+    
+    // Update course dropdown based on selected college
+    if (collegeFilter) {
+        const coursesInCollege = [...new Set(
+            studentsData
+                .filter(s => s.studentCollege === collegeFilter)
+                .map(s => s.studentCourse)
+                .filter(c => c)
+        )].sort();
+        
+        const currentCourse = $('#filterCourse').val();
+        $('#filterCourse').empty().append('<option value="">All Courses</option>');
+        coursesInCollege.forEach(c => {
+            $('#filterCourse').append(`<option value="${c}" ${c === currentCourse ? 'selected' : ''}>${c}</option>`);
+        });
+    }
+}
+
+function initStudentsDataTable(data) {
+    // Destroy existing DataTable if exists
+    if (studentsDataTable) {
+        studentsDataTable.destroy();
+        $('#studentsTable tbody').empty();
+    }
+
+    studentsDataTable = $('#studentsTable').DataTable({
+        data: data,
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
+        order: [[1, 'asc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search students...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_ students",
+            infoEmpty: "No students found",
+            emptyTable: '<div class="text-center py-4"><i class="bi bi-people text-muted" style="font-size: 2.5rem;"></i><p class="text-muted mt-2 mb-0">No students found</p></div>'
+        },
+        columns: [
+            { data: 'studentIdNumber' },
+            { data: 'fullName' },
+            { data: 'studentCollege', defaultContent: '-' },
+            { data: 'studentCourse', defaultContent: '-' },
+            { 
+                data: 'studentEmail', 
+                defaultContent: '-',
+                className: 'd-none d-lg-table-cell'
+            },
+            { 
+                data: 'studentContactNo', 
+                defaultContent: '-',
+                className: 'd-none d-md-table-cell'
+            },
+            { 
+                data: 'studentStatus',
+                render: function(data) {
+                    return data 
+                        ? '<span class="badge-status badge-active">Active</span>' 
+                        : '<span class="badge-status badge-blocked">Blocked</span>';
+                }
+            },
+            { 
+                data: null,
+                orderable: false,
+                render: function(data, type, row) {
+                    const selectBtn = row.studentStatus 
+                        ? `<button class="btn btn-action-select btn-sm btn-choose-student" data-id="${row.studentId}" title="Select as Borrower">
+                               <i class="bi bi-check2-square"></i>
+                           </button>`
+                        : `<button class="btn btn-secondary btn-sm" disabled title="Student is blocked">
+                               <i class="bi bi-check2-square"></i>
+                           </button>`;
+                    
+                    const editBtn = `<button class="btn btn-action-edit btn-sm btn-edit-student ms-1" data-id="${row.studentId}" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                     </button>`;
+                    
+                    return `<div class="d-flex">${selectBtn}${editBtn}</div>`;
+                }
+            }
+        ],
+        drawCallback: function() {
+            // Rebind click events after each draw
+            $('.btn-choose-student').off('click').on('click', function(e) {
+                e.stopPropagation();
+                const studentId = $(this).data('id');
+                chooseStudent(studentId);
+            });
+            
+            $('.btn-edit-student').off('click').on('click', function(e) {
+                e.stopPropagation();
+                const studentId = $(this).data('id');
+                openStudentModal(studentId);
+            });
+        }
+    });
+}
+
 function chooseStudent(studentId) {
     const student = studentsData.find(s => s.studentId === studentId);
     
     if (!student) {
-        alert('Student not found');
+        showToast('Student not found', 'error');
         return;
     }
     
     if (!student.studentStatus) {
-        alert('Cannot select blocked student. Please contact an administrator.');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Student Blocked',
+            text: 'Cannot select blocked student. Please contact an administrator.',
+            confirmButtonColor: 'var(--primary-red)'
+        });
         return;
     }
     
     selectedStudent = student;
     $('#selectedStudentId').val(student.studentId);
+    $('#selectedBorrowerName').text(student.fullName);
     
     // Update summary fields
     $('#sumStudentId').text(student.studentIdNumber);
     $('#sumFullName').text(student.fullName);
     $('#sumCollege').text(student.studentCollege || '-');
     $('#sumCourse').text(student.studentCourse || '-');
-    $('#sumEmail').text(student.studentEmail || '-');
-    $('#sumContact').text(student.studentContactNo || '-');
     
-    // Go to step 2
     goToStep(2);
+    
+    showToast(`Selected: ${student.fullName}`, 'success');
 }
 
 function openStudentModal(studentId) {
@@ -782,7 +1510,6 @@ function openStudentModal(studentId) {
     $('#editContactNo').val(student.studentContactNo);
     $('#editStatus').val(student.studentStatus.toString());
     
-    // Disable select button if blocked
     $('#btnSelectStudent').prop('disabled', !student.studentStatus);
     
     new bootstrap.Modal('#editStudentModal').show();
@@ -793,74 +1520,52 @@ function selectStudentFromModal() {
     const student = studentsData.find(s => s.studentId === studentId);
     
     if (!student || !student.studentStatus) {
-        alert('Cannot select blocked student');
+        showToast('Cannot select blocked student', 'error');
         return;
     }
     
     selectedStudent = student;
     $('#selectedStudentId').val(student.studentId);
+    $('#selectedBorrowerName').text(student.fullName);
     
-    // Update summary
     $('#sumStudentId').text(student.studentIdNumber);
     $('#sumFullName').text(student.fullName);
     $('#sumCollege').text(student.studentCollege || '-');
     $('#sumCourse').text(student.studentCourse || '-');
-    $('#sumEmail').text(student.studentEmail || '-');
-    $('#sumContact').text(student.studentContactNo || '-');
     
     bootstrap.Modal.getInstance('#editStudentModal').hide();
     goToStep(2);
+    
+    showToast(`Selected: ${student.fullName}`, 'success');
 }
 
 function loadEquipment() {
-    console.log('Loading equipment...');
     $.ajax({
         url: '/SupportAdmin/Equipment/GetAll',
         type: 'GET',
         dataType: 'json',
         success: function(res) {
-            console.log('Equipment API response:', res);
             if (res.success && res.data) {
                 equipmentData = res.data;
                 
-                // Clear existing options first
                 $('#equipmentCategory').empty().append('<option value="">Select Category</option>');
                 categoriesSet.clear();
                 
-                // Get unique categories from equipment with available stock
                 res.data.forEach(e => {
-                    if (e.availableStock > 0 && e.equipmentCategory) {
+                    if (e.equipmentCategory) {
                         categoriesSet.add(e.equipmentCategory);
                     }
                 });
                 
-                // Also include categories even if no stock (for display purposes)
-                if (categoriesSet.size === 0) {
-                    res.data.forEach(e => {
-                        if (e.equipmentCategory) {
-                            categoriesSet.add(e.equipmentCategory);
-                        }
-                    });
-                }
-                
-                // Populate dropdown
                 categoriesSet.forEach(c => {
                     $('#equipmentCategory').append(`<option value="${c}">${c}</option>`);
                 });
                 
-                // Ensure dropdown is enabled and remove any disabled state
-                $('#equipmentCategory').prop('disabled', false).removeAttr('disabled');
-                
-                console.log('Categories loaded:', Array.from(categoriesSet));
-                console.log('Equipment Category dropdown options:', $('#equipmentCategory option').length);
-            } else {
-                console.error('Failed to load equipment:', res.message);
+                $('#equipmentCategory').prop('disabled', false);
             }
         },
-        error: function(xhr, status, error) {
-            console.error('Equipment API error:', error);
-            console.error('XHR status:', xhr.status);
-            console.error('Response:', xhr.responseText);
+        error: function() {
+            showToast('Error loading equipment', 'error');
         }
     });
 }
@@ -884,16 +1589,19 @@ function checkAddItemEnabled() {
 
 function addItemToTable() {
     const category = $('#equipmentCategory option:selected').text();
-    const equipment = $('#equipmentSelect option:selected').text();
     const equipmentName = $('#equipmentSelect option:selected').data('name');
     const serial = $('#serialNoSelect option:selected').data('serial');
     const unitId = $('#serialNoSelect').val();
     const dueDate = $('#dueDate').val();
-    const now = new Date().toLocaleString();
     
     // Check if already added
     if (borrowItems.find(i => i.unitId === unitId)) {
-        alert('This item is already added');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Duplicate Item',
+            text: 'This item is already added to the list.',
+            confirmButtonColor: 'var(--primary-red)'
+        });
         return;
     }
     
@@ -905,25 +1613,78 @@ function addItemToTable() {
         dueDate: dueDate
     });
     
-    const html = `<tr data-unit-id="${unitId}">
-        <td>${category}</td>
-        <td>${equipmentName}</td>
-        <td>${serial}</td>
-        <td><span class="badge bg-warning">Borrowed</span></td>
-        <td>-</td>
-        <td>N/A</td>
-        <td>${now}</td>
-    </tr>`;
-    
-    $('#itemsTable tbody').append(html);
+    renderItemsTable();
     
     // Reset form
     $('#equipmentCategory').val('');
     $('#equipmentSelect').empty().append('<option value="">Select Equipment</option>').prop('disabled', true);
     $('#serialNoSelect').empty().append('<option value="">Select Serial No.</option>').prop('disabled', true);
-    $('#currentStatus').empty().append('<option value="">-</option>');
+    $('.btn-due').removeClass('active');
     
     checkNextEnabled();
+    showToast('Item added successfully', 'success');
+}
+
+function renderItemsTable() {
+    if (borrowItems.length === 0) {
+        $('#itemsTable tbody').html(`
+            <tr class="empty-row">
+                <td colspan="6" class="text-center py-4">
+                    <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
+                    <p class="text-muted mb-0 mt-2">No items added yet</p>
+                </td>
+            </tr>
+        `);
+        return;
+    }
+    
+    let html = '';
+    borrowItems.forEach((item, index) => {
+        const dueDate = new Date(item.dueDate).toLocaleString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+        
+        html += `<tr data-index="${index}">
+            <td>${item.category}</td>
+            <td><strong>${item.equipmentName}</strong></td>
+            <td><code>${item.serial}</code></td>
+            <td><span class="badge-status badge-borrowed">Borrowed</span></td>
+            <td>${dueDate}</td>
+            <td>
+                <button class="btn btn-action-remove btn-sm btn-remove-item" data-index="${index}" title="Remove">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>`;
+    });
+    
+    $('#itemsTable tbody').html(html);
+    
+    // Bind remove button
+    $('.btn-remove-item').off('click').on('click', function() {
+        const index = $(this).data('index');
+        removeItem(index);
+    });
+}
+
+function removeItem(index) {
+    Swal.fire({
+        title: 'Remove Item?',
+        text: 'Are you sure you want to remove this item from the list?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Yes, remove it',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            borrowItems.splice(index, 1);
+            renderItemsTable();
+            checkNextEnabled();
+            showToast('Item removed', 'info');
+        }
+    });
 }
 
 function checkNextEnabled() {
@@ -931,7 +1692,7 @@ function checkNextEnabled() {
 }
 
 function goToStep(step) {
-    $('.step-content').addClass('d-none');
+    $('.step-content-panel').addClass('d-none');
     $(`#step${step}Content`).removeClass('d-none');
     
     // Update indicators
@@ -945,32 +1706,28 @@ function goToStep(step) {
     if (step === 3) {
         populateSummary();
     }
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function populateSummary() {
     $('#sumProcessedBy').text($('#processedBy').val());
     $('#sumDateBorrowed').text($('#dateBorrowed').val());
-    $('#sumLastUpdated').text($('#lastUpdated').val());
     $('#sumRemarks').text($('#remarks').val() || '-');
     
     let html = '';
     borrowItems.forEach(item => {
         const dueDate = new Date(item.dueDate).toLocaleString('en-US', {
-            year: 'numeric', month: '2-digit', day: '2-digit'
-        });
-        const lastUpdated = new Date().toLocaleString('en-US', {
-            year: 'numeric', month: '2-digit', day: '2-digit'
+            year: 'numeric', month: 'short', day: 'numeric'
         });
         
         html += `<tr>
             <td>${item.category}</td>
-            <td>${item.equipmentName}</td>
-            <td>${item.serial}</td>
-            <td><span class="badge bg-warning text-dark">Borrowed</span></td>
+            <td><strong>${item.equipmentName}</strong></td>
+            <td><code>${item.serial}</code></td>
+            <td><span class="badge-status badge-borrowed">Borrowed</span></td>
             <td>${dueDate}</td>
-            <td>N/A</td>
-            <td>N/A</td>
-            <td>${lastUpdated}</td>
         </tr>`;
     });
     $('#summaryItemsTable tbody').html(html);
@@ -978,15 +1735,60 @@ function populateSummary() {
 
 function confirmBorrow() {
     if (!selectedStudent || borrowItems.length === 0) {
-        alert('Please select a student and add at least one item');
+        Swal.fire({
+            icon: 'warning',
+            title: 'Incomplete',
+            text: 'Please select a student and add at least one item.',
+            confirmButtonColor: 'var(--primary-red)'
+        });
         return;
     }
     
-    if (!confirm('Confirm this borrow transaction?')) return;
+    // Build items list for confirmation
+    let itemsList = borrowItems.map(item => `• ${item.equipmentName} (${item.serial})`).join('<br>');
     
-    // Process each item
+    Swal.fire({
+        title: 'Confirm Borrow Transaction',
+        html: `
+            <div class="text-start">
+                <p class="mb-2"><strong>Borrower:</strong> ${selectedStudent.fullName}</p>
+                <p class="mb-2"><strong>Student ID:</strong> ${selectedStudent.studentIdNumber}</p>
+                <p class="mb-2"><strong>Items (${borrowItems.length}):</strong></p>
+                <div class="ps-3 text-muted small">${itemsList}</div>
+            </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#22c55e',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: '<i class="bi bi-check-circle me-1"></i> Confirm & Submit',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+        customClass: {
+            popup: 'swal-wide'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            processBorrow();
+        }
+    });
+}
+
+function processBorrow() {
+    // Show loading
+    Swal.fire({
+        title: 'Processing...',
+        html: 'Please wait while we process your transaction.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
     let processed = 0;
     let transactionCode = '';
+    let hasError = false;
     
     borrowItems.forEach((item, index) => {
         const formData = new FormData();
@@ -1008,12 +1810,37 @@ function confirmBorrow() {
                 }
                 
                 if (processed === borrowItems.length) {
-                    alert(`Success! Transaction Code: ${transactionCode}\n${borrowItems.length} item(s) borrowed.`);
-                    window.location.href = '/SupportAdmin/Transactions';
+                    if (!hasError) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Transaction Successful!',
+                            html: `
+                                <div class="text-center">
+                                    <p class="mb-2">Transaction Code:</p>
+                                    <h4 class="text-success fw-bold">${transactionCode}</h4>
+                                    <p class="text-muted small mt-3">${borrowItems.length} item(s) borrowed successfully</p>
+                                </div>
+                            `,
+                            confirmButtonColor: '#22c55e',
+                            confirmButtonText: 'View Transactions'
+                        }).then(() => {
+                            window.location.href = '/SupportAdmin/Transactions';
+                        });
+                    }
                 }
             },
             error: function() {
-                alert('Error processing borrow');
+                hasError = true;
+                processed++;
+                
+                if (processed === borrowItems.length) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred while processing the transaction. Please try again.',
+                        confirmButtonColor: 'var(--primary-red)'
+                    });
+                }
             }
         });
     });
@@ -1021,29 +1848,99 @@ function confirmBorrow() {
 
 function saveNewStudent() {
     const form = $('#addStudentForm');
+    
+    Swal.fire({
+        title: 'Saving...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+    
     $.post('/SupportAdmin/Students/Create', form.serialize(), function(res) {
         if (res.success) {
-            alert('Student added successfully');
+            Swal.fire({
+                icon: 'success',
+                title: 'Student Added',
+                text: 'The student has been added successfully.',
+                confirmButtonColor: '#22c55e'
+            });
             bootstrap.Modal.getInstance('#addStudentModal').hide();
             form[0].reset();
             loadStudents();
         } else {
-            alert('Error: ' + res.message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: res.message || 'Failed to add student.',
+                confirmButtonColor: 'var(--primary-red)'
+            });
         }
+    }).fail(function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred. Please try again.',
+            confirmButtonColor: 'var(--primary-red)'
+        });
     });
 }
 
 function updateStudent() {
     const form = $('#editStudentForm');
+    
+    Swal.fire({
+        title: 'Saving...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+    
     $.post('/SupportAdmin/Students/Update', form.serialize(), function(res) {
         if (res.success) {
-            alert('Student updated successfully');
+            Swal.fire({
+                icon: 'success',
+                title: 'Student Updated',
+                text: 'The student information has been updated.',
+                confirmButtonColor: '#22c55e'
+            });
             bootstrap.Modal.getInstance('#editStudentModal').hide();
             loadStudents();
         } else {
-            alert('Error: ' + res.message);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: res.message || 'Failed to update student.',
+                confirmButtonColor: 'var(--primary-red)'
+            });
         }
+    }).fail(function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred. Please try again.',
+            confirmButtonColor: 'var(--primary-red)'
+        });
     });
+}
+
+// Toast notification helper
+function showToast(message, type = 'info') {
+    const bgColors = {
+        success: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        info: 'linear-gradient(135deg, #8b0000, #5c0000)'
+    };
+    
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+            background: bgColors[type] || bgColors.info,
+            borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }
+    }).showToast();
 }
 </script>
 }

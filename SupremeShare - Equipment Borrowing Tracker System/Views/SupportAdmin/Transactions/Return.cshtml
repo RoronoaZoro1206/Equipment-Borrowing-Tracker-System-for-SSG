@@ -4,40 +4,79 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-box-arrow-in-down me-2"></i>Process Return</h2>
-        <a href="/SupportAdmin/Transactions" class="btn btn-outline-secondary">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-return">
+                <i class="bi bi-box-arrow-in-down"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Process Return</h2>
+                <p class="text-muted mb-0 small">Process equipment return transactions</p>
+            </div>
+        </div>
+        <a href="/SupportAdmin/Transactions" class="btn btn-outline-danger btn-back">
             <i class="bi bi-arrow-left me-1"></i>Back to Transactions
         </a>
     </div>
 
-    <div class="row">
-        <!-- Search & Active Borrows -->
-        <div class="col-md-8">
+    <div class="row g-4">
+        <!-- Left Panel: Search & Active Borrows -->
+        <div class="col-lg-8">
             <!-- Search by Transaction Code -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-warning text-dark">
-                    <i class="bi bi-search me-2"></i>Find Transaction
+            <div class="return-card mb-4">
+                <div class="return-card-header header-search">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-search"></i>
+                        <span>Find Transaction</span>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-upc-scan"></i></span>
-                        <input type="text" id="searchCode" class="form-control" placeholder="Enter Transaction Code (e.g., TR-20251130-...)">
-                        <button class="btn btn-warning" id="btnSearch">Search</button>
+                <div class="return-card-body">
+                    <div class="search-box-return">
+                        <div class="search-icon-box">
+                            <i class="bi bi-upc-scan"></i>
+                        </div>
+                        <input type="text" id="searchCode" class="search-input-return" placeholder="Enter Transaction Code (e.g., TR-20251130-...)">
+                        <button class="btn btn-search-primary" id="btnSearch">
+                            <i class="bi bi-search me-1"></i>Search
+                        </button>
                     </div>
                 </div>
             </div>
 
             <!-- Active Borrows List -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
-                    <span><i class="bi bi-clock-history me-2"></i>Active Borrows (Pending Return)</span>
-                    <button class="btn btn-sm btn-light" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i></button>
+            <div class="return-card">
+                <div class="return-card-header header-primary">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Active Borrows (Pending Return)</span>
+                    </div>
+                    <button class="btn btn-refresh-white" id="btnRefresh" title="Refresh">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
                 </div>
-                <div class="card-body p-0">
+                <div class="return-card-body">
+                    <!-- Filter Row -->
+                    <div class="filter-row-return mb-3">
+                        <div class="filter-group-return">
+                            <label class="filter-label-return"><i class="bi bi-funnel me-1"></i>Filter:</label>
+                            <select id="filterEquipment" class="filter-select-return">
+                                <option value="">All Equipment</option>
+                            </select>
+                            <select id="filterBorrowStatus" class="filter-select-return">
+                                <option value="">All Status</option>
+                                <option value="borrowed">Borrowed</option>
+                                <option value="overdue">Overdue</option>
+                            </select>
+                            <button class="btn btn-clear-filter-return" id="btnClearBorrowFilters" title="Clear">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="activeBorrowsTable">
-                            <thead class="table-light">
+                        <table class="table table-return mb-0" id="activeBorrowsTable">
+                            <thead>
                                 <tr>
                                     <th>Student</th>
                                     <th>Equipment</th>
@@ -48,7 +87,14 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="spinner-border text-danger" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                        <p class="text-muted mt-2 mb-0">Loading active borrows...</p>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -56,246 +102,1029 @@
             </div>
         </div>
 
-        <!-- Return Form Panel -->
-        <div class="col-md-4">
-            <div class="card shadow-sm" id="returnPanel" style="display: none;">
-                <div class="card-header bg-success text-white">
-                    <i class="bi bi-check-circle me-2"></i>Process Return
+        <!-- Right Panel: Return Form -->
+        <div class="col-lg-4">
+            <!-- Return Form Panel -->
+            <div class="return-card sticky-top-panel" id="returnPanel" style="display: none;">
+                <div class="return-card-header header-success">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle"></i>
+                        <span>Process Return</span>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="return-card-body">
                     <form id="returnForm">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="BorrowId" id="returnBorrowId">
 
-                        <div class="mb-3">
-                            <label class="form-label">Transaction Code</label>
-                            <input type="text" id="returnCode" class="form-control" readonly>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Student</label>
-                            <input type="text" id="returnStudent" class="form-control" readonly>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Equipment</label>
-                            <input type="text" id="returnEquipment" class="form-control" readonly>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Serial Number</label>
-                            <input type="text" id="returnSerial" class="form-control" readonly>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Due Date</label>
-                            <input type="text" id="returnDueDate" class="form-control" readonly>
-                        </div>
-
-                        <div class="mb-3" id="overdueAlert" style="display: none;">
-                            <div class="alert alert-danger mb-0">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                <strong>OVERDUE!</strong> <span id="overdueDays"></span> days late
+                        <div class="return-info-list">
+                            <div class="return-info-row">
+                                <label>Transaction Code</label>
+                                <span id="returnCode" class="fw-bold text-danger">-</span>
+                            </div>
+                            <div class="return-info-row">
+                                <label>Student</label>
+                                <span id="returnStudent">-</span>
+                            </div>
+                            <div class="return-info-row">
+                                <label>Equipment</label>
+                                <span id="returnEquipment" class="fw-bold">-</span>
+                            </div>
+                            <div class="return-info-row">
+                                <label>Serial Number</label>
+                                <code id="returnSerial">-</code>
+                            </div>
+                            <div class="return-info-row">
+                                <label>Due Date</label>
+                                <span id="returnDueDate">-</span>
                             </div>
                         </div>
 
-                        <hr>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Return Condition *</label>
-                            <div class="d-grid gap-2">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="Condition" id="conditionGood" value="true" checked>
-                                    <label class="form-check-label text-success" for="conditionGood">
-                                        <i class="bi bi-check-circle-fill me-1"></i>Good Condition
-                                    </label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="Condition" id="conditionDamaged" value="false">
-                                    <label class="form-check-label text-danger" for="conditionDamaged">
-                                        <i class="bi bi-x-circle-fill me-1"></i>Damaged
-                                    </label>
-                                </div>
+                        <!-- Overdue Alert -->
+                        <div class="overdue-alert-box" id="overdueAlert" style="display: none;">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div>
+                                <strong>OVERDUE</strong>
+                                <span><span id="overdueDays">0</span> days late</span>
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="bi bi-check2-all me-2"></i>Confirm Return
-                            </button>
-                        </div>
+                        <hr class="my-3">
+
+                        <label class="form-label fw-bold mb-3">Return Condition <span class="text-danger">*</span></label>
                         
-                        <!-- Note: Support Admin cannot mark items as lost -->
-                        <div class="alert alert-secondary mt-3 mb-0">
-                            <small><i class="bi bi-info-circle me-1"></i>To mark an item as lost, please contact an Administrator.</small>
+                        <div class="condition-buttons">
+                            <label class="condition-btn good">
+                                <input type="radio" name="Condition" value="true" checked>
+                                <div class="condition-content">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    <span>Good Condition</span>
+                                </div>
+                            </label>
+                            <label class="condition-btn damaged">
+                                <input type="radio" name="Condition" value="false">
+                                <div class="condition-content">
+                                    <i class="bi bi-x-circle-fill"></i>
+                                    <span>Damaged</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-confirm-return w-100 mt-4">
+                            <i class="bi bi-check2-all me-2"></i>Confirm Return
+                        </button>
+                        
+                        <div class="info-note-box mt-3">
+                            <i class="bi bi-info-circle me-1"></i>
+                            To mark an item as lost, please contact an Administrator.
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- Instructions -->
-            <div class="card shadow-sm mt-3">
-                <div class="card-header bg-secondary text-white">
-                    <i class="bi bi-info-circle me-2"></i>Instructions
+            <!-- Instructions Panel -->
+            <div class="return-card" id="instructionsPanel">
+                <div class="return-card-header header-primary">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-lightbulb"></i>
+                        <span>Instructions</span>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <ol class="mb-0 small">
-                        <li>Search by transaction code OR select from active borrows list</li>
-                        <li>Verify the equipment being returned</li>
-                        <li>Inspect and select the return condition</li>
-                        <li>Click "Confirm Return" to complete</li>
-                    </ol>
+                <div class="return-card-body">
+                    <div class="instruction-steps">
+                        <div class="instruction-step">
+                            <span class="step-num">1</span>
+                            <span>Search by transaction code OR select from active borrows list</span>
+                        </div>
+                        <div class="instruction-step">
+                            <span class="step-num">2</span>
+                            <span>Verify the equipment being returned</span>
+                        </div>
+                        <div class="instruction-step">
+                            <span class="step-num">3</span>
+                            <span>Inspect and select the return condition</span>
+                        </div>
+                        <div class="instruction-step">
+                            <span class="step-num">4</span>
+                            <span>Click "Confirm Return" to complete</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-boxes mt-4">
+                        <div class="stat-box">
+                            <span class="stat-value" id="totalPending">-</span>
+                            <span class="stat-label">Pending</span>
+                        </div>
+                        <div class="stat-box overdue">
+                            <span class="stat-value" id="totalOverdue">-</span>
+                            <span class="stat-label">Overdue</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+
+<style>
+/* ===========================================
+   Process Return - Red & White Theme
+   =========================================== */
+
+/* Page Icon */
+.page-icon-return {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+
+.btn-back:hover {
+    background: var(--primary-red);
+    color: white;
+    border-color: var(--primary-red);
+}
+
+/* Return Card */
+.return-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.return-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.return-card-header.header-primary {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+}
+
+.return-card-header.header-search {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #7a0000 100%);
+    color: white;
+}
+
+.return-card-header.header-success {
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: white;
+}
+
+.return-card-body {
+    padding: 24px;
+}
+
+/* Filter Row */
+.filter-row-return {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.filter-group-return {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.filter-label-return {
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: var(--primary-red);
+    margin: 0;
+    white-space: nowrap;
+}
+
+.filter-select-return {
+    padding: 6px 28px 6px 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.filter-select-return:focus {
+    border-color: var(--primary-red);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+}
+
+.filter-select-return:hover {
+    border-color: var(--primary-red);
+}
+
+.btn-clear-filter-return {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.btn-clear-filter-return:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+/* Search Box */
+.search-box-return {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 8px;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.search-box-return:focus-within {
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.1);
+}
+
+.search-icon-box {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.search-input-return {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 12px;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.btn-search-primary {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-search-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+    color: white;
+}
+
+/* Refresh Button */
+.btn-refresh-white {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh-white:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(180deg);
+}
+
+/* Table Styling */
+.table-return {
+    margin-bottom: 0;
+}
+
+.table-return thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 12px;
+    border: none;
+    white-space: nowrap;
+}
+
+.table-return tbody td {
+    padding: 14px 12px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.table-return tbody tr:hover {
+    background: rgba(139, 0, 0, 0.03);
+}
+
+/* Sticky Panel */
+.sticky-top-panel {
+    position: sticky;
+    top: 80px;
+}
+
+/* Return Info List */
+.return-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.return-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-radius: 10px;
+    border-left: 4px solid var(--primary-red);
+}
+
+.return-info-row label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin: 0;
+}
+
+.return-info-row span,
+.return-info-row code {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+}
+
+/* Overdue Alert */
+.overdue-alert-box {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 2px solid #fca5a5;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    color: #dc2626;
+}
+
+.overdue-alert-box i {
+    font-size: 1.5rem;
+}
+
+.overdue-alert-box div {
+    display: flex;
+    flex-direction: column;
+}
+
+.overdue-alert-box strong {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.overdue-alert-box span {
+    font-size: 0.9rem;
+}
+
+/* Condition Buttons */
+.condition-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.condition-btn {
+    cursor: pointer;
+    margin: 0;
+}
+
+.condition-btn input {
+    display: none;
+}
+
+.condition-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 16px;
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    background: white;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.condition-content i {
+    font-size: 1.75rem;
+}
+
+.condition-content span {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.condition-btn.good .condition-content i { color: #22c55e; }
+.condition-btn.damaged .condition-content i { color: #ef4444; }
+
+.condition-btn.good input:checked + .condition-content {
+    border-color: #22c55e;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    color: #16a34a;
+}
+
+.condition-btn.damaged input:checked + .condition-content {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    color: #dc2626;
+}
+
+/* Confirm Return Button */
+.btn-confirm-return {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    border: none;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-confirm-return:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+    color: white;
+}
+
+/* Info Note */
+.info-note-box {
+    padding: 12px 16px;
+    background: #fafafa;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    color: #6b7280;
+    text-align: center;
+}
+
+/* Instruction Steps */
+.instruction-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.instruction-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.step-num {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.instruction-step span:last-child {
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    padding-top: 4px;
+}
+
+/* Stats Boxes */
+.stats-boxes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.stat-box {
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid rgba(139, 0, 0, 0.1);
+}
+
+.stat-box.overdue {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border-color: #fca5a5;
+}
+
+.stat-value {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-red);
+}
+
+.stat-box.overdue .stat-value {
+    color: #dc2626;
+}
+
+.stat-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+}
+
+/* Return Button in Table */
+.btn-return-table {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.btn-return-table:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+    color: white;
+}
+
+/* Status Badges */
+.badge-borrowed {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-overdue {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* Student Info */
+.student-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.student-cell strong {
+    color: var(--text-dark);
+}
+
+.student-cell small {
+    color: #6b7280;
+}
+
+/* Due Date Cell */
+.due-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.due-cell .overdue-text {
+    font-size: 0.75rem;
+    color: #dc2626;
+    font-weight: 600;
+}
+
+/* Responsive */
+@@media (max-width: 991px) {
+    .sticky-top-panel {
+        position: static;
+    }
+}
+
+@@media (max-width: 768px) {
+    .search-box-return {
+        flex-wrap: wrap;
+    }
+    
+    .search-input-return {
+        flex: 1 1 100%;
+        order: 2;
+    }
+    
+    .btn-search-primary {
+        flex: 1;
+        order: 3;
+    }
+    
+    .condition-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-row-return {
+        padding: 10px;
+    }
+    
+    .filter-group-return {
+        width: 100%;
+    }
+    
+    .filter-select-return {
+        flex: 1;
+        min-width: 100px;
+    }
+}
+</style>
+
+
 @section Scripts {
 <script>
 let activeBorrowsTable;
 
-$(document).ready(function() {
-    // Initialize DataTable with DataTableConfig helper
-    activeBorrowsTable = DataTableConfig.init('#activeBorrowsTable', {
-        ajax: {
-            url: '/SupportAdmin/Transactions/GetActiveBorrows',
-            dataSrc: json => json.success ? json.data : []
-        },
-        columns: [
-            { 
-                data: null,
-                render: row => `<strong>${row.studentIdNumber}</strong><br><small class="text-muted">${row.studentName}</small>`
-            },
-            { data: 'equipmentName' },
-            { data: 'serialNo', render: data => `<strong class="text-primary">${data}</strong>` },
-            { 
-                data: null,
-                render: row => {
-                    const overdueText = row.daysOverdue > 0 ? `<br><small class="text-danger">${row.daysOverdue} days overdue</small>` : '';
-                    return `${row.dueDate}${overdueText}`;
-                }
-            },
-            { 
-                data: 'status',
-                render: data => `<span class="status-badge ${data === 'overdue' ? 'overdue' : 'borrowed'}">${data}</span>`
-            },
-            {
-                data: null,
-                orderable: false,
-                render: row => `
-                    <button class="btn btn-sm btn-success btn-action btn-select-return" 
-                            data-id="${row.borrowId}"
-                            data-code="${row.transactionCode}"
-                            data-student="${row.studentIdNumber} - ${row.studentName}"
-                            data-equipment="${row.equipmentName}"
-                            data-serial="${row.serialNo}"
-                            data-due="${row.dueDate}"
-                            data-overdue="${row.daysOverdue}">
-                        <i class="bi bi-arrow-return-left"></i> Return
-                    </button>`
-            }
-        ],
-        order: [[3, 'asc']] // Sort by due date
-    });
+let allBorrowsData = [];
 
-    // Refresh
-    $('#btnRefresh').click(() => {
-        Toast.info('Refreshing...');
+$(document).ready(function() {
+    initActiveBorrowsTable();
+
+    // Refresh button
+    $('#btnRefresh').click(function() {
+        showToast('Refreshing...', 'info');
         activeBorrowsTable.ajax.reload();
     });
 
     // Select item for return
     $(document).on('click', '.btn-select-return', function() {
-        const data = $(this).data();
-        $('#returnBorrowId').val(data.id);
-        $('#returnCode').val(data.code);
-        $('#returnStudent').val(data.student);
-        $('#returnEquipment').val(data.equipment);
-        $('#returnSerial').val(data.serial);
-        $('#returnDueDate').val(data.due);
-
-        if (data.overdue > 0) {
-            $('#overdueAlert').show();
-            $('#overdueDays').text(data.overdue);
-        } else {
-            $('#overdueAlert').hide();
-        }
-
-        $('#returnPanel').slideDown();
-        $('html, body').animate({ scrollTop: $('#returnPanel').offset().top - 100 }, 300);
+        selectItemForReturn($(this).data());
     });
 
     // Search by code
     $('#btnSearch').click(searchByCode);
-    $('#searchCode').keypress(function(e) { if (e.which === 13) { e.preventDefault(); searchByCode(); }});
-
-    function searchByCode() {
-        const code = $('#searchCode').val().trim();
-        if (!code) return;
-
-        $.get(`/SupportAdmin/Transactions/SearchByCode?code=${encodeURIComponent(code)}`, function(res) {
-            if (res.success && res.data.items) {
-                // Find first unreturned item
-                const unreturned = res.data.items.find(i => i.borrowStatus === 'borrowed' || i.borrowStatus === 'overdue');
-                if (unreturned) {
-                    $('#returnBorrowId').val(unreturned.borrowId);
-                    $('#returnCode').val(res.data.transactionCode);
-                    $('#returnStudent').val(`${res.data.student.studentIdNumber} - ${res.data.student.fullName}`);
-                    $('#returnEquipment').val(unreturned.equipmentName);
-                    $('#returnSerial').val(unreturned.serialNo);
-                    $('#returnDueDate').val(new Date(unreturned.borrowDueDate).toLocaleDateString());
-
-                    if (unreturned.daysOverdue > 0) {
-                        $('#overdueAlert').show();
-                        $('#overdueDays').text(unreturned.daysOverdue);
-                    } else {
-                        $('#overdueAlert').hide();
-                    }
-
-                    $('#returnPanel').slideDown();
-                } else {
-                    alert('All items in this transaction have been returned.');
-                }
-            } else {
-                alert(res.message || 'Transaction not found');
-            }
-        });
-    }
-
-    // Submit return with SweetAlert2
-    $('#returnForm').submit(async function(e) {
-        e.preventDefault();
-        const condition = $('input[name="Condition"]:checked').val() === 'true';
-        const conditionText = condition ? 'Good' : 'Damaged';
-        const equipment = $('#returnEquipment').val();
-
-        const confirmed = await Confirm.action(
-            'Confirm Return',
-            `Return <strong>${equipment}</strong> in <strong class="${condition ? 'text-success' : 'text-danger'}">${conditionText}</strong> condition?`,
-            '<i class="bi bi-check2-all me-1"></i>Confirm Return',
-            'question'
-        );
-        
-        if (!confirmed) return;
-
-        Loading.show('Processing return...');
-        
-        try {
-            const res = await $.post('/SupportAdmin/Transactions/ProcessReturn', $(this).serialize());
-            Loading.hide();
-            
-            if (res.success) {
-                await Result.success('Return Processed', res.message);
-                window.location.reload();
-            } else {
-                Toast.error(res.message);
-            }
-        } catch (error) {
-            Loading.hide();
-            Toast.error('Failed to process return');
+    $('#searchCode').keypress(function(e) { 
+        if (e.which === 13) { 
+            e.preventDefault(); 
+            searchByCode(); 
         }
     });
+
+    // Submit return form
+    $('#returnForm').submit(function(e) {
+        e.preventDefault();
+        confirmReturn();
+    });
+    
+    // Filter handlers
+    $('#filterEquipment, #filterBorrowStatus').on('change', applyBorrowFilters);
+    
+    // Clear filters
+    $('#btnClearBorrowFilters').on('click', function() {
+        $('#filterEquipment').val('');
+        $('#filterBorrowStatus').val('');
+        applyBorrowFilters();
+        showToast('Filters cleared', 'info');
+    });
 });
+
+function initActiveBorrowsTable() {
+    activeBorrowsTable = $('#activeBorrowsTable').DataTable({
+        ajax: {
+            url: '/SupportAdmin/Transactions/GetActiveBorrows',
+            dataSrc: function(json) {
+                if (json.success && json.data) {
+                    allBorrowsData = json.data;
+                    updateStats(json.data);
+                    populateBorrowFilters(json.data);
+                    return json.data;
+                }
+                return [];
+            }
+        },
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50], [5, 10, 25, 50]],
+        order: [[3, 'asc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_",
+            infoEmpty: "No active borrows",
+            emptyTable: '<div class="text-center py-5"><i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No active borrows found</p></div>'
+        },
+        columns: [
+            { 
+                data: null,
+                render: function(data, type, row) {
+                    return '<div class="student-cell"><strong>' + row.studentIdNumber + '</strong><small>' + row.studentName + '</small></div>';
+                }
+            },
+            { 
+                data: 'equipmentName',
+                render: function(data) {
+                    return '<strong>' + data + '</strong>';
+                }
+            },
+            { 
+                data: 'serialNo', 
+                render: function(data) {
+                    return '<code>' + data + '</code>';
+                }
+            },
+            { 
+                data: null,
+                render: function(data, type, row) {
+                    var html = '<div class="due-cell"><span>' + row.dueDate + '</span>';
+                    if (row.daysOverdue > 0) {
+                        html += '<span class="overdue-text"><i class="bi bi-exclamation-circle me-1"></i>' + row.daysOverdue + ' days overdue</span>';
+                    }
+                    html += '</div>';
+                    return html;
+                }
+            },
+            { 
+                data: 'status',
+                render: function(data) {
+                    var isOverdue = data === 'overdue';
+                    return '<span class="badge-' + (isOverdue ? 'overdue' : 'borrowed') + '">' + data + '</span>';
+                }
+            },
+            {
+                data: null,
+                orderable: false,
+                render: function(data, type, row) {
+                    return '<button class="btn btn-return-table btn-select-return" ' +
+                           'data-id="' + row.borrowId + '" ' +
+                           'data-code="' + row.transactionCode + '" ' +
+                           'data-student="' + row.studentIdNumber + ' - ' + row.studentName + '" ' +
+                           'data-equipment="' + row.equipmentName + '" ' +
+                           'data-serial="' + row.serialNo + '" ' +
+                           'data-due="' + row.dueDate + '" ' +
+                           'data-overdue="' + row.daysOverdue + '">' +
+                           '<i class="bi bi-arrow-return-left me-1"></i>Return</button>';
+                }
+            }
+        ]
+    });
+}
+
+function updateStats(data) {
+    var total = data.length;
+    var overdue = data.filter(function(item) { return item.daysOverdue > 0; }).length;
+    $('#totalPending').text(total);
+    $('#totalOverdue').text(overdue);
+}
+
+function populateBorrowFilters(data) {
+    // Get unique equipment names
+    var equipments = [...new Set(data.map(function(item) { return item.equipmentName; }))].sort();
+    
+    // Populate equipment dropdown
+    var currentEquipment = $('#filterEquipment').val();
+    $('#filterEquipment').empty().append('<option value="">All Equipment</option>');
+    equipments.forEach(function(e) {
+        $('#filterEquipment').append('<option value="' + e + '"' + (e === currentEquipment ? ' selected' : '') + '>' + e + '</option>');
+    });
+}
+
+function applyBorrowFilters() {
+    var equipmentFilter = $('#filterEquipment').val();
+    var statusFilter = $('#filterBorrowStatus').val();
+    
+    // Clear and redraw with custom search
+    activeBorrowsTable.search('').columns().search('');
+    
+    // Apply equipment filter
+    if (equipmentFilter) {
+        activeBorrowsTable.column(1).search('^' + equipmentFilter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', true, false);
+    }
+    
+    // Apply status filter
+    if (statusFilter) {
+        activeBorrowsTable.column(4).search('^' + statusFilter + '$', true, false);
+    }
+    
+    activeBorrowsTable.draw();
+}
+
+function selectItemForReturn(data) {
+    $('#returnBorrowId').val(data.id);
+    $('#returnCode').text(data.code);
+    $('#returnStudent').text(data.student);
+    $('#returnEquipment').text(data.equipment);
+    $('#returnSerial').text(data.serial);
+    $('#returnDueDate').text(data.due);
+
+    if (data.overdue > 0) {
+        $('#overdueAlert').slideDown();
+        $('#overdueDays').text(data.overdue);
+    } else {
+        $('#overdueAlert').slideUp();
+    }
+
+    $('input[name="Condition"][value="true"]').prop('checked', true);
+
+    $('#instructionsPanel').slideUp();
+    $('#returnPanel').slideDown();
+    
+    if ($(window).width() < 992) {
+        $('html, body').animate({ scrollTop: $('#returnPanel').offset().top - 100 }, 300);
+    }
+    
+    showToast('Selected: ' + data.equipment, 'success');
+}
+
+function searchByCode() {
+    var code = $('#searchCode').val().trim();
+    if (!code) {
+        showToast('Please enter a transaction code', 'warning');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Searching...',
+        allowOutsideClick: false,
+        didOpen: function() { Swal.showLoading(); }
+    });
+
+    $.get('/SupportAdmin/Transactions/SearchByCode?code=' + encodeURIComponent(code), function(res) {
+        Swal.close();
+        
+        if (res.success && res.data.items) {
+            var unreturned = res.data.items.find(function(i) { 
+                return i.borrowStatus === 'borrowed' || i.borrowStatus === 'overdue'; 
+            });
+            if (unreturned) {
+                selectItemForReturn({
+                    id: unreturned.borrowId,
+                    code: res.data.transactionCode,
+                    student: res.data.student.studentIdNumber + ' - ' + res.data.student.fullName,
+                    equipment: unreturned.equipmentName,
+                    serial: unreturned.serialNo,
+                    due: new Date(unreturned.borrowDueDate).toLocaleDateString(),
+                    overdue: unreturned.daysOverdue || 0
+                });
+            } else {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'All Returned',
+                    text: 'All items in this transaction have been returned.',
+                    confirmButtonColor: '#8b0000'
+                });
+            }
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Not Found',
+                text: res.message || 'Transaction not found',
+                confirmButtonColor: '#8b0000'
+            });
+        }
+    }).fail(function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to search. Please try again.',
+            confirmButtonColor: '#8b0000'
+        });
+    });
+}
+
+function confirmReturn() {
+    var condition = $('input[name="Condition"]:checked').val() === 'true';
+    var conditionText = condition ? 'Good Condition' : 'Damaged';
+    var conditionClass = condition ? 'text-success' : 'text-danger';
+    var equipment = $('#returnEquipment').text();
+    var serial = $('#returnSerial').text();
+
+    Swal.fire({
+        title: 'Confirm Return',
+        html: '<div class="text-start">' +
+              '<div class="mb-3 p-3 bg-light rounded">' +
+              '<p class="mb-1"><strong>Equipment:</strong> ' + equipment + '</p>' +
+              '<p class="mb-0"><strong>Serial:</strong> <code>' + serial + '</code></p>' +
+              '</div>' +
+              '<p class="mb-0">Return in <strong class="' + conditionClass + '">' + conditionText + '</strong>?</p>' +
+              '</div>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#22c55e',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: '<i class="bi bi-check2-all me-1"></i>Confirm Return',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            processReturn();
+        }
+    });
+}
+
+function processReturn() {
+    Swal.fire({
+        title: 'Processing...',
+        html: 'Please wait while we process the return.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: function() { Swal.showLoading(); }
+    });
+
+    $.post('/SupportAdmin/Transactions/ProcessReturn', $('#returnForm').serialize(), function(res) {
+        if (res.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Return Processed!',
+                html: '<div class="text-center"><p class="mb-2">' + (res.message || 'The item has been returned successfully.') + '</p>' +
+                      '<div class="mt-3"><i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i></div></div>',
+                confirmButtonColor: '#22c55e',
+                confirmButtonText: 'Continue'
+            }).then(function() {
+                $('#returnPanel').slideUp();
+                $('#instructionsPanel').slideDown();
+                $('#searchCode').val('');
+                activeBorrowsTable.ajax.reload();
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: res.message || 'Failed to process return.',
+                confirmButtonColor: '#8b0000'
+            });
+        }
+    }).fail(function() {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred. Please try again.',
+            confirmButtonColor: '#8b0000'
+        });
+    });
+}
+
+function showToast(message, type) {
+    var bgColors = {
+        success: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        info: 'linear-gradient(135deg, #8b0000, #5c0000)'
+    };
+    
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+            background: bgColors[type] || bgColors.info,
+            borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }
+    }).showToast();
+}
 </script>
 }
