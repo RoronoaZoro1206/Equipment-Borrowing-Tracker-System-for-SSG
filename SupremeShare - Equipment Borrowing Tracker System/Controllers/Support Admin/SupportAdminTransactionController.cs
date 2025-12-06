@@ -75,6 +75,9 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
         {
             try
             {
+                // Auto-update overdue statuses before fetching
+                await UpdateOverdueStatusesInternal();
+
                 var query = @"
                     SELECT t.transaction_id, t.transaction_code, t.transaction_date_borrowed,
                            s.student_id_number, s.student_first_name, s.student_last_name,
@@ -248,6 +251,9 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
         {
             try
             {
+                // Auto-update overdue statuses before fetching
+                await UpdateOverdueStatusesInternal();
+
                 var query = @"
                     SELECT b.borrow_id, b.borrow_status, b.borrow_due_date,
                            t.transaction_code, t.transaction_date_borrowed,
@@ -401,7 +407,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
         {
             try
             {
-                await _db.ExecuteNonQueryAsync("CALL sp_update_overdue_statuses()");
+                await UpdateOverdueStatusesInternal();
                 _logger.LogInformation("Overdue records updated by support admin");
                 return Json(new { success = true, message = "Overdue records updated" });
             }
@@ -412,17 +418,53 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
             }
         }
 
+        /// <summary>
+        /// Internal method to update overdue statuses - called automatically before fetching data
+        /// </summary>
+        private async Task UpdateOverdueStatusesInternal()
+        {
+            try
+            {
+                await _db.ExecuteNonQueryAsync("CALL sp_update_overdue_statuses()");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to update overdue statuses");
+                // Don't throw - this is a background operation
+            }
+        }
+
         // GET: SupportAdmin/Transactions/Stats
         [HttpGet("Stats")]
         public async Task<IActionResult> GetStats()
         {
             try
             {
+                // Auto-update overdue statuses before fetching stats
+                await UpdateOverdueStatusesInternal();
+
                 // Use database function fn_count_borrow_status for each status
                 var activeBorrows = await _borrowRepo.CountByStatusAsync("borrowed");
                 var overdueCount = await _borrowRepo.CountByStatusAsync("overdue");
-                var returnedCount = await _borrowRepo.CountByStatusAsync("returned");
                 var lostCount = await _borrowRepo.CountByStatusAsync("lost");
+
+                // Get today's stats
+                var todayQuery = @"
+                    SELECT 
+                        (SELECT COUNT(*) FROM borrow_record WHERE borrow_status = 'returned' 
+                         AND DATE(borrow_date_returned) = CURRENT_DATE) as returned_today,
+                        (SELECT COUNT(*) FROM transaction WHERE DATE(transaction_date_borrowed) = CURRENT_DATE) as borrowed_today";
+
+                var dt = await _db.ExecuteQueryAsync(todayQuery);
+                var returnedToday = 0;
+                var borrowedToday = 0;
+                
+                if (dt.Rows.Count > 0)
+                {
+                    var row = dt.Rows[0];
+                    returnedToday = Convert.ToInt32(row["returned_today"]);
+                    borrowedToday = Convert.ToInt32(row["borrowed_today"]);
+                }
 
                 return Json(new
                 {
@@ -431,7 +473,8 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
                     {
                         ActiveBorrows = activeBorrows,
                         OverdueCount = overdueCount,
-                        ReturnedToday = returnedCount, // Total returned (keeping property name for compatibility)
+                        ReturnedToday = returnedToday,
+                        BorrowedToday = borrowedToday,
                         LostCount = lostCount
                     }
                 });

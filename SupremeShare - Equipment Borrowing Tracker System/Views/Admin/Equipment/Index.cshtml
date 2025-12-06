@@ -640,16 +640,68 @@
 
 
 @section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 <script>
 let equipmentTable;
 let currentEquipmentId = null;
+let signalRConnection;
 
 $(document).ready(function() {
     loadStats();
     initEquipmentTable();
     setupFilterHandlers();
     setupFormHandlers();
+    initSignalR();
 });
+
+// Initialize SignalR for real-time updates
+function initSignalR() {
+    signalRConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/dashboard")
+        .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+        .build();
+
+    // Listen for stats updates
+    signalRConnection.on("StatsUpdated", function() {
+        console.log("SignalR: Stats updated - refreshing equipment data");
+        loadStats();
+        if (equipmentTable) {
+            equipmentTable.ajax.reload(null, false);
+        }
+    });
+
+    // Listen for equipment status changes
+    signalRConnection.on("EquipmentStatusChanged", function(data) {
+        console.log("SignalR: Equipment status changed", data);
+        showToast('Equipment updated: ' + data.equipmentName, 'info');
+        loadStats();
+        if (equipmentTable) {
+            equipmentTable.ajax.reload(null, false);
+        }
+    });
+
+    // Listen for overdue alerts (affects borrowed count)
+    signalRConnection.on("OverdueAlert", function(count) {
+        if (count > 0) {
+            showToast('⚠️ ' + count + ' item(s) are now overdue!', 'warning');
+        }
+        loadStats();
+    });
+
+    // Start connection
+    signalRConnection.start()
+        .then(function() {
+            console.log("SignalR connected for real-time equipment updates");
+        })
+        .catch(function(err) {
+            console.error("SignalR connection error:", err);
+        });
+
+    signalRConnection.onreconnected(function() {
+        console.log("SignalR reconnected");
+        loadStats();
+    });
+}
 
 function loadStats() {
     $.get('/Admin/Equipment/Stats', function(res) {

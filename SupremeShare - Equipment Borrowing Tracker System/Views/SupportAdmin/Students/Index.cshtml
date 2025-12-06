@@ -4,21 +4,95 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-people me-2"></i>Student Records</h2>
-        <span class="badge bg-secondary fs-6"><i class="bi bi-eye me-1"></i>View Only</span>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-stu">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Student Records</h2>
+                <p class="text-muted mb-0 small">View student information and borrowing eligibility</p>
+            </div>
+        </div>
+        <span class="badge-view-only">
+            <i class="bi bi-eye me-1"></i>View Only
+        </span>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-stu total">
+                <div class="stat-icon-stu"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-content-stu">
+                    <span class="stat-value-stu" id="statTotal">-</span>
+                    <span class="stat-label-stu">Total Students</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-stu active">
+                <div class="stat-icon-stu"><i class="bi bi-person-check-fill"></i></div>
+                <div class="stat-content-stu">
+                    <span class="stat-value-stu" id="statActive">-</span>
+                    <span class="stat-label-stu">Active</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-stu blocked">
+                <div class="stat-icon-stu"><i class="bi bi-person-x-fill"></i></div>
+                <div class="stat-content-stu">
+                    <span class="stat-value-stu" id="statBlocked">-</span>
+                    <span class="stat-label-stu">Blocked</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-stu colleges">
+                <div class="stat-icon-stu"><i class="bi bi-building"></i></div>
+                <div class="stat-content-stu">
+                    <span class="stat-value-stu" id="statColleges">-</span>
+                    <span class="stat-label-stu">Colleges</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Students Table -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-table me-2"></i>Student List</span>
-            <button class="btn btn-sm btn-light" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+    <div class="stu-card">
+        <div class="stu-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-list-ul"></i>
+                <span>Student Records</span>
+            </div>
+            <button class="btn btn-refresh-stu" id="btnRefresh">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
         </div>
-        <div class="card-body p-0">
+        <div class="stu-card-body">
+            <!-- Filter Row -->
+            <div class="filter-row-stu mb-3">
+                <div class="filter-group-stu">
+                    <label class="filter-label-stu"><i class="bi bi-funnel me-1"></i>Filters:</label>
+                    <select id="filterCollege" class="filter-select-stu">
+                        <option value="">All Colleges</option>
+                    </select>
+                    <select id="filterStatus" class="filter-select-stu">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Blocked">Blocked</option>
+                    </select>
+                    <button class="btn btn-clear-filter-stu" id="btnClearFilters" title="Clear Filters">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="table-responsive">
-                <table class="table table-hover mb-0" id="studentsTable">
-                    <thead class="table-light">
+                <table class="table table-stu mb-0" id="studentsTable">
+                    <thead>
                         <tr>
                             <th>Student ID</th>
                             <th>Full Name</th>
@@ -26,11 +100,16 @@
                             <th>Course</th>
                             <th>Contact</th>
                             <th>Status</th>
-                            <th>Date Added</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="spinner-border text-danger" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Loading students...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -38,92 +117,546 @@
     </div>
 
     <!-- Info Note -->
-    <div class="alert alert-info mt-3">
+    <div class="info-note-stu mt-3">
         <i class="bi bi-info-circle me-2"></i>
-        <strong>Note:</strong> To add, edit, or manage student records, please contact an Administrator.
+        <span><strong>Note:</strong> To add, edit, or manage student records, please contact an Administrator.</span>
     </div>
 </div>
 
-<!-- Student Details Modal -->
-<div class="modal fade" id="detailsModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title"><i class="bi bi-person me-2"></i>Student Details</h5>
+<!-- View Student Modal -->
+<div class="modal fade" id="viewStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-stu">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-person-badge me-2"></i>Student Details</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="detailsContent">
-                Loading...
+            <div class="modal-body">
+                <div class="student-profile-card">
+                    <div class="student-avatar">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <h4 class="student-profile-name" id="viewFullName">-</h4>
+                    <span class="student-profile-id" id="viewIdNumber">-</span>
+                    <span class="badge-status-stu" id="viewStatus">-</span>
+                </div>
+                <div class="student-details-grid">
+                    <div class="student-detail-item">
+                        <i class="bi bi-building"></i>
+                        <div>
+                            <span class="detail-label">College</span>
+                            <span class="detail-value" id="viewCollege">-</span>
+                        </div>
+                    </div>
+                    <div class="student-detail-item">
+                        <i class="bi bi-book"></i>
+                        <div>
+                            <span class="detail-label">Course</span>
+                            <span class="detail-value" id="viewCourse">-</span>
+                        </div>
+                    </div>
+                    <div class="student-detail-item">
+                        <i class="bi bi-envelope"></i>
+                        <div>
+                            <span class="detail-label">Email</span>
+                            <span class="detail-value" id="viewEmail">-</span>
+                        </div>
+                    </div>
+                    <div class="student-detail-item">
+                        <i class="bi bi-telephone"></i>
+                        <div>
+                            <span class="detail-label">Contact</span>
+                            <span class="detail-value" id="viewContact">-</span>
+                        </div>
+                    </div>
+                    <div class="student-detail-item">
+                        <i class="bi bi-calendar-plus"></i>
+                        <div>
+                            <span class="detail-label">Date Added</span>
+                            <span class="detail-value" id="viewDateAdded">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
+
+<style>
+/* ===========================================
+   Students Page (Support Admin) - Red & White Theme
+   =========================================== */
+
+/* Page Icon */
+.page-icon-stu {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+
+/* View Only Badge */
+.badge-view-only {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.25);
+}
+
+/* Stat Cards */
+.stat-card-stu {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-stu::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.stat-card-stu.total::before { background: var(--primary-red); }
+.stat-card-stu.active::before { background: #22c55e; }
+.stat-card-stu.blocked::before { background: #ef4444; }
+.stat-card-stu.colleges::before { background: #3b82f6; }
+
+.stat-card-stu:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon-stu {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.stat-card-stu.total .stat-icon-stu { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
+.stat-card-stu.active .stat-icon-stu { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.stat-card-stu.blocked .stat-icon-stu { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.stat-card-stu.colleges .stat-icon-stu { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+.stat-content-stu { display: flex; flex-direction: column; }
+.stat-value-stu { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label-stu { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+
+/* Student Card */
+.stu-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.stu-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.stu-card-body { padding: 24px; }
+
+.btn-refresh-stu {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh-stu:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+
+/* Filter Row */
+.filter-row-stu {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.filter-group-stu { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.filter-label-stu { font-weight: 600; font-size: 0.85rem; color: var(--primary-red); margin: 0; }
+
+.filter-select-stu {
+    padding: 8px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: white;
+    transition: all 0.3s ease;
+    min-width: 140px;
+}
+
+.filter-select-stu:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
+
+.btn-clear-filter-stu {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-clear-filter-stu:hover { background: #ef4444; border-color: #ef4444; color: white; }
+
+/* Table */
+.table-stu thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 12px;
+    border: none;
+}
+
+.table-stu tbody td { padding: 14px 12px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+.table-stu tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+
+/* Status Badges */
+.badge-status-stu { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-status-stu.active { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-status-stu.blocked { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+
+/* Action Button */
+.btn-view-stu {
+    background: transparent;
+    border: 2px solid var(--primary-red);
+    color: var(--primary-red);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-view-stu:hover {
+    background: var(--primary-red);
+    color: white;
+}
+
+/* Info Note */
+.info-note-stu {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border: 1px solid #93c5fd;
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: #1e40af;
+    display: flex;
+    align-items: center;
+}
+
+.info-note-stu i {
+    font-size: 1.2rem;
+}
+
+/* Modal */
+.modal-stu { border-radius: 16px; overflow: hidden; border: none; }
+.modal-stu .modal-header { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; border: none; padding: 20px 24px; }
+.modal-stu .modal-body { padding: 24px; }
+.modal-stu .modal-footer { border-top: 1px solid rgba(0, 0, 0, 0.05); padding: 16px 24px; }
+
+/* Student Profile Card */
+.student-profile-card {
+    text-align: center;
+    padding: 24px;
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.student-avatar {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    color: white;
+    font-size: 2.5rem;
+}
+
+.student-profile-name {
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.student-profile-id {
+    display: block;
+    color: var(--primary-red);
+    font-weight: 600;
+    font-family: monospace;
+    margin-bottom: 12px;
+}
+
+/* Student Details Grid */
+.student-details-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.student-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-radius: 8px;
+}
+
+.student-detail-item i {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.student-detail-item div { display: flex; flex-direction: column; }
+.detail-label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; }
+.detail-value { font-weight: 600; color: var(--text-dark); }
+
+/* Responsive */
+@@media (max-width: 991px) {
+    .stat-card-stu { padding: 16px; }
+    .stat-value-stu { font-size: 1.25rem; }
+}
+
+@@media (max-width: 768px) {
+    .filter-row-stu { padding: 12px; }
+    .filter-group-stu { width: 100%; }
+    .filter-select-stu { flex: 1; min-width: 100px; }
+}
+</style>
+
+
 @section Scripts {
 <script>
 let studentsTable;
+let allStudentsData = [];
 
 $(document).ready(function() {
-    // Initialize DataTable with DataTableConfig helper
-    studentsTable = DataTableConfig.init('#studentsTable', {
+    initStudentsTable();
+    setupFilterHandlers();
+});
+
+function initStudentsTable() {
+    studentsTable = $('#studentsTable').DataTable({
         ajax: {
             url: '/SupportAdmin/Students/GetAll',
-            dataSrc: json => json.success ? json.data : []
+            dataSrc: function(json) {
+                if (json.success && json.data) {
+                    allStudentsData = json.data;
+                    populateFilters(json.data);
+                    updateStats(json.data);
+                    return json.data;
+                }
+                return [];
+            }
+        },
+        responsive: true,
+        pageLength: 10,
+        order: [[0, 'asc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search students...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_ students",
+            emptyTable: '<div class="text-center py-5"><i class="bi bi-people text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No students found</p></div>'
         },
         columns: [
-            { data: 'studentIdNumber', render: data => `<strong class="text-primary">${data}</strong>` },
-            { data: 'fullName' },
-            { data: 'studentCollege' },
-            { data: 'studentCourse', defaultContent: '<span class="text-muted">-</span>' },
-            { data: null, render: row => row.studentContactNo || row.studentEmail || '<span class="text-muted">-</span>' },
+            { 
+                data: 'studentIdNumber',
+                render: function(data) {
+                    return '<strong class="text-danger">' + data + '</strong>';
+                }
+            },
+            { 
+                data: 'fullName',
+                render: function(data) {
+                    return '<strong>' + data + '</strong>';
+                }
+            },
+            { 
+                data: 'studentCollege',
+                render: function(data) {
+                    return '<span class="badge bg-secondary">' + (data || '-') + '</span>';
+                }
+            },
+            { 
+                data: 'studentCourse',
+                render: function(data) {
+                    return data || '<span class="text-muted">-</span>';
+                }
+            },
+            { 
+                data: null,
+                render: function(data, type, row) {
+                    var contact = row.studentContactNo || row.studentEmail;
+                    return contact ? '<small>' + contact + '</small>' : '<span class="text-muted">-</span>';
+                }
+            },
             { 
                 data: 'studentStatus',
-                render: data => `<span class="status-badge ${data ? 'available' : 'overdue'}">${data ? 'Active' : 'Blocked'}</span>`
+                render: function(data) {
+                    var statusClass = data ? 'active' : 'blocked';
+                    var statusText = data ? 'Active' : 'Blocked';
+                    return '<span class="badge-status-stu ' + statusClass + '">' + statusText + '</span>';
+                }
             },
-            { data: 'studentDateAdded' }
-        ],
-        order: [[0, 'asc']]
-    });
-
-    $('#btnRefresh').click(() => studentsTable.ajax.reload());
-
-    // View details - click on row
-    $('#studentsTable tbody').on('click', 'tr', async function() {
-        const data = studentsTable.row(this).data();
-        if (!data) return;
-        
-        Loading.show('Loading student details...');
-        
-        try {
-            const res = await Api.get(`/SupportAdmin/Students/Get/${data.studentId}`);
-            Loading.hide();
-            
-            if (res.success) {
-                const s = res.data;
-                const statusCls = s.studentStatus ? 'text-success' : 'text-danger';
-                const statusText = s.studentStatus ? 'Active' : 'Blocked';
-                
-                $('#detailsContent').html(`
-                    <table class="table table-sm">
-                        <tr><td><strong>Student ID:</strong></td><td>${s.studentIdNumber}</td></tr>
-                        <tr><td><strong>Full Name:</strong></td><td>${s.studentFirstName} ${s.studentMiddleName || ''} ${s.studentLastName} ${s.studentSuffix || ''}</td></tr>
-                        <tr><td><strong>College:</strong></td><td>${s.studentCollege}</td></tr>
-                        <tr><td><strong>Course:</strong></td><td>${s.studentCourse || '-'}</td></tr>
-                        <tr><td><strong>Email:</strong></td><td>${s.studentEmail || '-'}</td></tr>
-                        <tr><td><strong>Contact No:</strong></td><td>${s.studentContactNo || '-'}</td></tr>
-                        <tr><td><strong>Status:</strong></td><td class="${statusCls}"><strong>${statusText}</strong></td></tr>
-                        <tr><td><strong>Date Added:</strong></td><td>${new Date(s.studentDateAdded).toLocaleDateString()}</td></tr>
-                    </table>
-                `);
-                new bootstrap.Modal('#detailsModal').show();
-            } else {
-                Toast.error(res.message);
+            {
+                data: null,
+                orderable: false,
+                render: function(data, type, row) {
+                    return '<button class="btn btn-view-stu btn-view-student" data-id="' + row.studentId + '"><i class="bi bi-eye me-1"></i>View</button>';
+                }
             }
-        } catch (error) {
-            Loading.hide();
-            Toast.error('Failed to load student details');
+        ]
+    });
+}
+
+function populateFilters(data) {
+    var colleges = [...new Set(data.map(function(s) { return s.studentCollege; }).filter(Boolean))].sort();
+    var $collegeSelect = $('#filterCollege');
+    $collegeSelect.find('option:not(:first)').remove();
+    colleges.forEach(function(c) {
+        $collegeSelect.append('<option value="' + c + '">' + c + '</option>');
+    });
+}
+
+function updateStats(data) {
+    var total = data.length;
+    var active = data.filter(function(s) { return s.studentStatus === true; }).length;
+    var blocked = data.filter(function(s) { return s.studentStatus === false; }).length;
+    var colleges = [...new Set(data.map(function(s) { return s.studentCollege; }).filter(Boolean))].length;
+    
+    $('#statTotal').text(total);
+    $('#statActive').text(active);
+    $('#statBlocked').text(blocked);
+    $('#statColleges').text(colleges);
+}
+
+function setupFilterHandlers() {
+    $('#filterCollege').on('change', function() {
+        var val = $(this).val();
+        studentsTable.column(2).search(val ? val : '', false, false).draw();
+    });
+    
+    $('#filterStatus').on('change', function() {
+        var val = $(this).val();
+        studentsTable.column(5).search(val ? val : '', false, false).draw();
+    });
+    
+    $('#btnClearFilters').on('click', function() {
+        $('#filterCollege').val('');
+        $('#filterStatus').val('');
+        studentsTable.search('').columns().search('').draw();
+        showToast('Filters cleared', 'info');
+    });
+    
+    $('#btnRefresh').on('click', function() {
+        showToast('Refreshing...', 'info');
+        studentsTable.ajax.reload();
+    });
+}
+
+// View student details
+$(document).on('click', '.btn-view-student', function() {
+    var id = $(this).data('id');
+    
+    $.get('/SupportAdmin/Students/Get/' + id, function(res) {
+        if (res.success) {
+            var s = res.data;
+            var statusClass = s.studentStatus ? 'active' : 'blocked';
+            var statusText = s.studentStatus ? 'Active' : 'Blocked';
+            
+            $('#viewFullName').text(s.fullName);
+            $('#viewIdNumber').text(s.studentIdNumber);
+            $('#viewStatus').removeClass('active blocked').addClass(statusClass).text(statusText);
+            $('#viewCollege').text(s.studentCollege || '-');
+            $('#viewCourse').text(s.studentCourse || '-');
+            $('#viewEmail').text(s.studentEmail || '-');
+            $('#viewContact').text(s.studentContactNo || '-');
+            $('#viewDateAdded').text(s.studentDateAdded ? new Date(s.studentDateAdded).toLocaleDateString() : '-');
+            
+            new bootstrap.Modal('#viewStudentModal').show();
+        } else {
+            showToast(res.message || 'Failed to load student details', 'error');
         }
+    }).fail(function() {
+        showToast('Failed to load student details', 'error');
     });
 });
+
+function showToast(message, type) {
+    var bgColors = {
+        success: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        info: 'linear-gradient(135deg, #8b0000, #5c0000)'
+    };
+    
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+            background: bgColors[type] || bgColors.info,
+            borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }
+    }).showToast();
+}
 </script>
 }

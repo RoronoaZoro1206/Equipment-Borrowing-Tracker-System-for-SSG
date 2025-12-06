@@ -25,5 +25,15 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfa
         /// Valid statuses: 'borrowed', 'returned', 'overdue', 'lost'
         /// </summary>
         Task<int> CountByStatusAsync(string status);
+
+        /// <summary>
+        /// Process borrow using sp_process_borrow_transaction (auto-selects available unit by equipment type)
+        /// </summary>
+        Task ProcessBorrowByEquipmentAsync(int studentId, int userId, int equipmentId, DateTime dueDate);
+
+        /// <summary>
+        /// Process return using sp_process_return_transaction (VARCHAR condition: 'Good' or 'Damaged')
+        /// </summary>
+        Task ProcessReturnWithConditionAsync(int borrowId, string condition);
     }
 }

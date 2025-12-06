@@ -4,155 +4,595 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-journal-text me-2"></i>Audit Log</h2>
-        <a href="/Admin/Reports" class="btn btn-outline-secondary">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-audit">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Audit Log</h2>
+                <p class="text-muted mb-0 small">Track all system activities and changes</p>
+            </div>
+        </div>
+        <a href="/Admin/Reports" class="btn btn-back-audit">
             <i class="bi bi-arrow-left me-1"></i>Back to Reports
         </a>
     </div>
 
-    <!-- Filters -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Filter by Action</label>
-                    <select id="actionFilter" class="form-select">
-                        <option value="">All Actions</option>
-                        <option value="BORROW">Borrow Transactions</option>
-                        <option value="RETURN">Return Transactions</option>
-                        <option value="Status Changed">Status Changes</option>
-                        <option value="USER">User Actions</option>
-                        <option value="STUDENT">Student Actions</option>
-                        <option value="EQUIPMENT">Equipment Actions</option>
-                        <option value="lost">Lost Items</option>
-                    </select>
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-audit total">
+                <div class="stat-icon-audit"><i class="bi bi-journal-bookmark-fill"></i></div>
+                <div class="stat-content-audit">
+                    <span class="stat-value-audit" id="statTotal">-</span>
+                    <span class="stat-label-audit">Total Entries</span>
                 </div>
-                <div class="col-md-4">
-                    <label class="form-label">Page Size</label>
-                    <select id="pageSize" class="form-select">
-                        <option value="25">25 per page</option>
-                        <option value="50" selected>50 per page</option>
-                        <option value="100">100 per page</option>
-                    </select>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-audit today">
+                <div class="stat-icon-audit"><i class="bi bi-calendar-check"></i></div>
+                <div class="stat-content-audit">
+                    <span class="stat-value-audit" id="statToday">-</span>
+                    <span class="stat-label-audit">Today's Entries</span>
                 </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button class="btn btn-primary w-100" onclick="loadAuditLogs(1)">
-                        <i class="bi bi-funnel me-1"></i>Apply Filter
-                    </button>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-audit users">
+                <div class="stat-icon-audit"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-content-audit">
+                    <span class="stat-value-audit" id="statUsers">-</span>
+                    <span class="stat-label-audit">Active Users</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-audit actions">
+                <div class="stat-icon-audit"><i class="bi bi-lightning-fill"></i></div>
+                <div class="stat-content-audit">
+                    <span class="stat-value-audit" id="statActions">-</span>
+                    <span class="stat-label-audit">Action Types</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Audit Log Table -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-table me-2"></i>Audit Trail</span>
-            <div>
-                <span class="badge bg-secondary me-2" id="totalCount">0 records</span>
-                <button class="btn btn-sm btn-light" onclick="loadAuditLogs(currentPage)">
-                    <i class="bi bi-arrow-clockwise"></i>
+    <div class="audit-card">
+        <div class="audit-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-table"></i>
+                <span>Audit Trail</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light text-dark" id="totalCount">0 records</span>
+                <button class="btn btn-refresh-audit" onclick="refreshData()">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
                 </button>
             </div>
         </div>
-        <div class="card-body p-0">
+        <div class="audit-card-body">
+            <!-- Filter Row -->
+            <div class="filter-row-audit mb-3">
+                <div class="filter-group-audit">
+                    <label class="filter-label-audit"><i class="bi bi-funnel me-1"></i>Filters:</label>
+                    <select id="filterAction" class="filter-select-audit">
+                        <option value="">All Actions</option>
+                        <option value="LOGIN">Login</option>
+                        <option value="LOGOUT">Logout</option>
+                        <option value="BORROW">Borrow</option>
+                        <option value="RETURN">Return</option>
+                        <option value="LOST">Lost Items</option>
+                        <option value="USER">User Actions</option>
+                        <option value="STUDENT">Student Actions</option>
+                        <option value="EQUIPMENT">Equipment Actions</option>
+                        <option value="UNIT">Unit Actions</option>
+                    </select>
+                    <select id="filterUser" class="filter-select-audit">
+                        <option value="">All Users</option>
+                    </select>
+                    <button class="btn btn-clear-filter-audit" id="btnClearFilters" title="Clear Filters">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="table-responsive">
-                <table class="table table-hover table-sm mb-0" id="auditTable">
-                    <thead class="table-light">
+                <table class="table table-audit mb-0" id="auditTable">
+                    <thead>
                         <tr>
-                            <th style="width: 150px;">Timestamp</th>
-                            <th style="width: 120px;">User</th>
+                            <th style="width: 160px;">Timestamp</th>
+                            <th style="width: 140px;">User</th>
                             <th>Action</th>
-                            <th style="width: 150px;">Old Value</th>
-                            <th style="width: 150px;">New Value</th>
+                            <th>Old Value</th>
+                            <th>New Value</th>
+                            <th style="width: 80px;">Details</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="spinner-border text-danger" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Loading audit logs...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
-        <div class="card-footer">
-            <nav>
-                <ul class="pagination pagination-sm mb-0 justify-content-center" id="pagination"></ul>
-            </nav>
         </div>
     </div>
 </div>
 
 <!-- Detail Modal -->
 <div class="modal fade" id="detailModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-audit">
+            <div class="modal-header">
                 <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Audit Entry Details</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" id="detailContent"></div>
+            <div class="modal-body">
+                <div class="audit-detail-grid">
+                    <div class="audit-detail-item">
+                        <div class="audit-detail-icon"><i class="bi bi-clock"></i></div>
+                        <div class="audit-detail-content">
+                            <span class="audit-detail-label">Timestamp</span>
+                            <span class="audit-detail-value" id="detailTimestamp">-</span>
+                        </div>
+                    </div>
+                    <div class="audit-detail-item">
+                        <div class="audit-detail-icon"><i class="bi bi-person"></i></div>
+                        <div class="audit-detail-content">
+                            <span class="audit-detail-label">User</span>
+                            <span class="audit-detail-value" id="detailUser">-</span>
+                        </div>
+                    </div>
+                    <div class="audit-detail-item full-width">
+                        <div class="audit-detail-icon"><i class="bi bi-lightning"></i></div>
+                        <div class="audit-detail-content">
+                            <span class="audit-detail-label">Action</span>
+                            <span class="audit-detail-value" id="detailAction">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="audit-data-section mt-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="audit-data-card old">
+                                <div class="audit-data-header">
+                                    <i class="bi bi-arrow-left-circle me-2"></i>Old Value
+                                </div>
+                                <div class="audit-data-body">
+                                    <pre id="detailOldData">-</pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="audit-data-card new">
+                                <div class="audit-data-header">
+                                    <i class="bi bi-arrow-right-circle me-2"></i>New Value
+                                </div>
+                                <div class="audit-data-body">
+                                    <pre id="detailNewData">-</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
 
+
+<style>
+/* ===========================================
+   Audit Log - Red & White Luxury Theme
+   =========================================== */
+
+/* Page Icon */
+.page-icon-audit {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+
+/* Back Button */
+.btn-back-audit {
+    background: white;
+    color: var(--primary-red);
+    border: 2px solid var(--primary-red);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-back-audit:hover {
+    background: var(--primary-red);
+    color: white;
+}
+
+/* Stat Cards */
+.stat-card-audit {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-audit::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.stat-card-audit.total::before { background: var(--primary-red); }
+.stat-card-audit.today::before { background: #3b82f6; }
+.stat-card-audit.users::before { background: #22c55e; }
+.stat-card-audit.actions::before { background: #f59e0b; }
+
+.stat-card-audit:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon-audit {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.stat-card-audit.total .stat-icon-audit { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
+.stat-card-audit.today .stat-icon-audit { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.stat-card-audit.users .stat-icon-audit { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.stat-card-audit.actions .stat-icon-audit { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+.stat-content-audit { display: flex; flex-direction: column; }
+.stat-value-audit { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label-audit { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+
+/* Audit Card */
+.audit-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.audit-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.audit-card-body { padding: 24px; }
+
+.btn-refresh-audit {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh-audit:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+
+/* Filter Row */
+.filter-row-audit {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.filter-group-audit { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.filter-label-audit { font-weight: 600; font-size: 0.85rem; color: var(--primary-red); margin: 0; }
+
+.filter-select-audit {
+    padding: 8px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: white;
+    transition: all 0.3s ease;
+    min-width: 140px;
+}
+
+.filter-select-audit:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
+
+.btn-clear-filter-audit {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-clear-filter-audit:hover { background: #ef4444; border-color: #ef4444; color: white; }
+
+/* Table */
+.table-audit thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 12px;
+    border: none;
+}
+
+.table-audit tbody td { padding: 12px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); font-size: 0.85rem; }
+.table-audit tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+
+/* Action Badges */
+.badge-action { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-action.login { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-action.logout { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
+.badge-action.borrow { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
+.badge-action.return { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-action.lost { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+.badge-action.user { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; }
+.badge-action.student { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+.badge-action.equipment { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; }
+.badge-action.unit { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); color: white; }
+.badge-action.default { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; }
+
+/* Data Preview */
+.data-preview { font-family: monospace; font-size: 0.75rem; color: #6b7280; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.data-preview.old { color: #ef4444; }
+.data-preview.new { color: #22c55e; }
+
+/* View Button */
+.btn-view-audit {
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    border: 2px solid var(--primary-red);
+    color: var(--primary-red);
+    background: transparent;
+    font-size: 0.75rem;
+}
+
+.btn-view-audit:hover { background: var(--primary-red); color: white; }
+
+/* Modal */
+.modal-audit { border-radius: 16px; overflow: hidden; border: none; }
+.modal-audit .modal-header { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; border: none; padding: 20px 24px; }
+.modal-audit .modal-body { padding: 24px; }
+.modal-audit .modal-footer { border-top: 1px solid rgba(0, 0, 0, 0.05); padding: 16px 24px; }
+
+/* Audit Detail Grid */
+.audit-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.audit-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: #fafafa;
+    border-radius: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.audit-detail-item.full-width { grid-column: span 2; }
+
+.audit-detail-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+}
+
+.audit-detail-content { display: flex; flex-direction: column; }
+.audit-detail-label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+.audit-detail-value { font-weight: 600; color: var(--text-dark); }
+
+/* Audit Data Cards */
+.audit-data-card {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.audit-data-header {
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.audit-data-card.old .audit-data-header { background: rgba(239, 68, 68, 0.1); color: #dc2626; }
+.audit-data-card.new .audit-data-header { background: rgba(34, 197, 94, 0.1); color: #16a34a; }
+
+.audit-data-body {
+    padding: 16px;
+    background: #fafafa;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.audit-data-body pre {
+    margin: 0;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+    color: var(--text-dark);
+}
+
+/* Responsive */
+@@media (max-width: 991px) {
+    .stat-card-audit { padding: 16px; }
+    .stat-value-audit { font-size: 1.25rem; }
+}
+
+@@media (max-width: 768px) {
+    .filter-row-audit { padding: 12px; }
+    .filter-group-audit { width: 100%; }
+    .filter-select-audit { flex: 1; min-width: 100px; }
+    .audit-detail-grid { grid-template-columns: 1fr; }
+    .audit-detail-item.full-width { grid-column: span 1; }
+}
+</style>
+
+
 @section Scripts {
 <script>
-let currentPage = 1;
+let auditTable;
+let allAuditData = [];
 
 $(document).ready(function() {
-    loadAuditLogs(1);
-
-    // Listen for SignalR updates via global client
+    initAuditTable();
+    setupFilterHandlers();
+    setupModalCleanup();
+    
+    // Listen for SignalR updates
     document.addEventListener('signalr:update', function(e) {
         if (e.detail.type === 'audit' || e.detail.type === 'all' || e.detail.type === 'stats') {
-            if (currentPage === 1) {
-                loadAuditLogs(1);
-            }
+            refreshData();
         }
     });
 });
 
-function loadAuditLogs(page) {
-    currentPage = page;
-    const action = $('#actionFilter').val();
-    const pageSize = $('#pageSize').val();
-
-    $.get(`/Admin/AuditLog/GetLogs?page=${page}&pageSize=${pageSize}&action=${encodeURIComponent(action)}`, function(res) {
-        if (res.success) {
-            renderTable(res.data);
-            renderPagination(res.pagination);
-            $('#totalCount').text(`${res.pagination.totalCount} records`);
-        }
+function initAuditTable() {
+    auditTable = $('#auditTable').DataTable({
+        ajax: {
+            url: '/Admin/Reports/GetAuditLogs?pageSize=500',
+            dataSrc: function(json) {
+                if (json.success && json.data) {
+                    allAuditData = json.data;
+                    updateStats(json.data);
+                    populateUserFilter(json.data);
+                    $('#totalCount').text(json.pagination.totalCount + ' records');
+                    return json.data;
+                }
+                return [];
+            }
+        },
+        responsive: true,
+        pageLength: 25,
+        order: [[0, 'desc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_",
+            emptyTable: '<div class="text-center py-5"><i class="bi bi-journal-x text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No audit logs found</p></div>'
+        },
+        columns: [
+            { 
+                data: 'loggedAt',
+                render: function(data) {
+                    return '<small class="text-muted">' + data + '</small>';
+                }
+            },
+            { 
+                data: null,
+                render: function(data, type, row) {
+                    return '<div><strong>' + (row.username || 'System') + '</strong>' +
+                           (row.userFullName ? '<br><small class="text-muted">' + row.userFullName + '</small>' : '') + '</div>';
+                }
+            },
+            { 
+                data: 'action',
+                render: function(data) {
+                    var actionClass = getActionClass(data);
+                    return '<span class="badge-action ' + actionClass + '">' + truncate(data, 30) + '</span>';
+                }
+            },
+            { 
+                data: 'oldData',
+                render: function(data) {
+                    return '<span class="data-preview old" title="' + escapeHtml(data || '-') + '">' + truncate(data, 30) + '</span>';
+                }
+            },
+            { 
+                data: 'newData',
+                render: function(data) {
+                    return '<span class="data-preview new" title="' + escapeHtml(data || '-') + '">' + truncate(data, 30) + '</span>';
+                }
+            },
+            {
+                data: null,
+                orderable: false,
+                render: function(data, type, row) {
+                    return '<button class="btn btn-view-audit" data-id="' + row.auditId + '" ' +
+                           'data-timestamp="' + row.loggedAt + '" ' +
+                           'data-user="' + (row.username || 'System') + ' ' + (row.userFullName || '') + '" ' +
+                           'data-action="' + escapeHtml(row.action) + '" ' +
+                           'data-old="' + escapeHtml(row.oldData || '-') + '" ' +
+                           'data-new="' + escapeHtml(row.newData || '-') + '">' +
+                           '<i class="bi bi-eye"></i></button>';
+                }
+            }
+        ]
     });
-}
-
-function renderTable(data) {
-    let html = '';
-    data.forEach(item => {
-        const actionClass = getActionClass(item.action);
-        html += `<tr class="audit-row" data-id="${item.auditId}" style="cursor: pointer;">
-            <td><small>${item.loggedAt}</small></td>
-            <td>
-                <strong>${item.username || 'System'}</strong>
-                <br><small class="text-muted">${item.userFullName || ''}</small>
-            </td>
-            <td><span class="badge ${actionClass}">${truncate(item.action, 50)}</span></td>
-            <td><small class="text-muted">${truncate(item.oldData || '-', 30)}</small></td>
-            <td><small class="text-success">${truncate(item.newData || '-', 30)}</small></td>
-        </tr>`;
-    });
-    $('#auditTable tbody').html(html || '<tr><td colspan="5" class="text-center text-muted">No audit logs found</td></tr>');
 }
 
 function getActionClass(action) {
-    if (!action) return 'bg-secondary';
+    if (!action) return 'default';
     action = action.toLowerCase();
-    if (action.includes('borrow')) return 'bg-info';
-    if (action.includes('return')) return 'bg-success';
-    if (action.includes('lost')) return 'bg-danger';
-    if (action.includes('status')) return 'bg-warning text-dark';
-    if (action.includes('user')) return 'bg-primary';
-    return 'bg-secondary';
+    if (action.includes('login')) return 'login';
+    if (action.includes('logout')) return 'logout';
+    if (action.includes('borrow')) return 'borrow';
+    if (action.includes('return')) return 'return';
+    if (action.includes('lost')) return 'lost';
+    if (action.includes('user')) return 'user';
+    if (action.includes('student')) return 'student';
+    if (action.includes('equipment')) return 'equipment';
+    if (action.includes('unit')) return 'unit';
+    return 'default';
 }
 
 function truncate(str, len) {
@@ -160,57 +600,103 @@ function truncate(str, len) {
     return str.length > len ? str.substring(0, len) + '...' : str;
 }
 
-function renderPagination(pagination) {
-    let html = '';
-    const { page, totalPages } = pagination;
-
-    // Previous
-    html += `<li class="page-item ${page === 1 ? 'disabled' : ''}">
-        <a class="page-link" href="#" onclick="loadAuditLogs(${page - 1}); return false;">Previous</a>
-    </li>`;
-
-    // Page numbers
-    const startPage = Math.max(1, page - 2);
-    const endPage = Math.min(totalPages, page + 2);
-
-    if (startPage > 1) {
-        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadAuditLogs(1); return false;">1</a></li>`;
-        if (startPage > 2) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-        html += `<li class="page-item ${i === page ? 'active' : ''}">
-            <a class="page-link" href="#" onclick="loadAuditLogs(${i}); return false;">${i}</a>
-        </li>`;
-    }
-
-    if (endPage < totalPages) {
-        if (endPage < totalPages - 1) html += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
-        html += `<li class="page-item"><a class="page-link" href="#" onclick="loadAuditLogs(${totalPages}); return false;">${totalPages}</a></li>`;
-    }
-
-    // Next
-    html += `<li class="page-item ${page === totalPages ? 'disabled' : ''}">
-        <a class="page-link" href="#" onclick="loadAuditLogs(${page + 1}); return false;">Next</a>
-    </li>`;
-
-    $('#pagination').html(html);
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// Click row to see details
-$(document).on('click', '.audit-row', function() {
-    const row = $(this);
-    const cells = row.find('td');
-    $('#detailContent').html(`
-        <table class="table table-sm">
-            <tr><td><strong>Timestamp:</strong></td><td>${cells.eq(0).text()}</td></tr>
-            <tr><td><strong>User:</strong></td><td>${cells.eq(1).html()}</td></tr>
-            <tr><td><strong>Action:</strong></td><td>${cells.eq(2).html()}</td></tr>
-            <tr><td><strong>Old Value:</strong></td><td><pre class="mb-0">${cells.eq(3).text()}</pre></td></tr>
-            <tr><td><strong>New Value:</strong></td><td><pre class="mb-0">${cells.eq(4).text()}</pre></td></tr>
-        </table>
-    `);
-    new bootstrap.Modal('#detailModal').show();
-});
+function updateStats(data) {
+    var total = data.length;
+    var today = new Date().toISOString().split('T')[0];
+    var todayCount = data.filter(function(d) { return d.loggedAt.startsWith(today); }).length;
+    var users = [...new Set(data.map(function(d) { return d.username; }).filter(Boolean))].length;
+    var actions = [...new Set(data.map(function(d) { return d.action; }))].length;
+    
+    $('#statTotal').text(total);
+    $('#statToday').text(todayCount);
+    $('#statUsers').text(users);
+    $('#statActions').text(actions);
+}
+
+function populateUserFilter(data) {
+    var users = [...new Set(data.map(function(d) { return d.username; }).filter(Boolean))].sort();
+    var current = $('#filterUser').val();
+    $('#filterUser').empty().append('<option value="">All Users</option>');
+    users.forEach(function(u) {
+        $('#filterUser').append('<option value="' + u + '"' + (u === current ? ' selected' : '') + '>' + u + '</option>');
+    });
+}
+
+function setupFilterHandlers() {
+    $('#filterAction').on('change', function() {
+        var val = $(this).val();
+        auditTable.column(2).search(val ? val : '', false, false).draw();
+    });
+    
+    $('#filterUser').on('change', function() {
+        var val = $(this).val();
+        auditTable.column(1).search(val ? val : '', false, false).draw();
+    });
+    
+    $('#btnClearFilters').on('click', function() {
+        $('#filterAction, #filterUser').val('');
+        auditTable.search('').columns().search('').draw();
+        showToast('Filters cleared', 'info');
+    });
+    
+    // View details
+    $(document).on('click', '.btn-view-audit', function() {
+        var data = $(this).data();
+        $('#detailTimestamp').text(data.timestamp);
+        $('#detailUser').text(data.user);
+        $('#detailAction').html('<span class="badge-action ' + getActionClass(data.action) + '">' + data.action + '</span>');
+        $('#detailOldData').text(formatJson(data.old));
+        $('#detailNewData').text(formatJson(data.new));
+        new bootstrap.Modal('#detailModal').show();
+    });
+}
+
+function formatJson(str) {
+    if (!str || str === '-') return '-';
+    try {
+        var obj = JSON.parse(str);
+        return JSON.stringify(obj, null, 2);
+    } catch (e) {
+        return str;
+    }
+}
+
+function setupModalCleanup() {
+    $('#detailModal').on('hidden.bs.modal', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+    });
+}
+
+function refreshData() {
+    showToast('Refreshing...', 'info');
+    auditTable.ajax.reload();
+}
+
+function showToast(message, type) {
+    var bgColors = {
+        success: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        info: 'linear-gradient(135deg, #8b0000, #5c0000)'
+    };
+    
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+            background: bgColors[type] || bgColors.info,
+            borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }
+    }).showToast();
+}
 </script>
 }

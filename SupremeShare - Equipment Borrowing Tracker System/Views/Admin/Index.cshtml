@@ -167,7 +167,7 @@
         function setupSignalR() {
             const connection = new signalR.HubConnectionBuilder()
                 .withUrl("/hubs/dashboard")
-                .withAutomaticReconnect()
+                .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
                 .build();
 
             connection.on("StatsUpdated", function() {
@@ -178,6 +178,21 @@
             connection.on("NewTransaction", function(data) {
                 addActivityItem(data);
                 loadDashboardStats();
+            });
+
+            // Handle overdue alerts with toast notification
+            connection.on("OverdueAlert", function(count) {
+                if (count > 0) {
+                    Toastify({
+                        text: "⚠️ " + count + " item(s) are now overdue!",
+                        duration: 5000,
+                        gravity: "top",
+                        position: "right",
+                        style: { background: "linear-gradient(135deg, #ef4444, #dc2626)" }
+                    }).showToast();
+                }
+                loadDashboardStats();
+                loadChartData();
             });
 
             connection.start().catch(err => console.error('SignalR Error:', err));

@@ -4,68 +4,107 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-box-seam me-2"></i>Equipment Inventory</h2>
-        <span class="badge bg-secondary fs-6"><i class="bi bi-eye me-1"></i>View Only</span>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-equip">
+                <i class="bi bi-box-seam-fill"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Equipment Inventory</h2>
+                <p class="text-muted mb-0 small">View equipment and unit availability</p>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <div class="connection-badge" id="connectionBadge">
+                <i class="bi bi-wifi"></i>
+                <span>Live</span>
+            </div>
+            <span class="badge-view-only">
+                <i class="bi bi-eye me-1"></i>View Only
+            </span>
+        </div>
     </div>
 
-    <!-- Stats Cards -->
+    <!-- Stats Cards - Red/White Theme -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h3 id="statTotalTypes">-</h3>
-                    <small>Equipment Types</small>
+            <div class="stat-card-equip">
+                <div class="stat-icon-equip types">
+                    <i class="bi bi-grid-3x3-gap-fill"></i>
+                </div>
+                <div class="stat-content-equip">
+                    <span class="stat-value-equip" id="statTotalTypes">-</span>
+                    <span class="stat-label-equip">Equipment Types</span>
                 </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <h3 id="statAvailable">-</h3>
-                    <small>Available Units</small>
+            <div class="stat-card-equip">
+                <div class="stat-icon-equip available">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div class="stat-content-equip">
+                    <span class="stat-value-equip" id="statAvailable">-</span>
+                    <span class="stat-label-equip">Available Units</span>
                 </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <h3 id="statBorrowed">-</h3>
-                    <small>Borrowed Units</small>
+            <div class="stat-card-equip">
+                <div class="stat-icon-equip borrowed">
+                    <i class="bi bi-arrow-up-right-circle-fill"></i>
+                </div>
+                <div class="stat-content-equip">
+                    <span class="stat-value-equip" id="statBorrowed">-</span>
+                    <span class="stat-label-equip">Borrowed Units</span>
                 </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="card bg-warning text-dark">
-                <div class="card-body text-center">
-                    <h3 id="statMaintenance">-</h3>
-                    <small>In Maintenance</small>
+            <div class="stat-card-equip">
+                <div class="stat-icon-equip maintenance">
+                    <i class="bi bi-tools"></i>
+                </div>
+                <div class="stat-content-equip">
+                    <span class="stat-value-equip" id="statMaintenance">-</span>
+                    <span class="stat-label-equip">In Maintenance</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Equipment Table -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-table me-2"></i>Equipment List</span>
-            <button class="btn btn-sm btn-light" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i> Refresh</button>
+    <div class="equip-card">
+        <div class="equip-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-list-ul"></i>
+                <span>Equipment List</span>
+            </div>
+            <button class="btn btn-refresh-equip" id="btnRefresh">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
         </div>
-        <div class="card-body p-0">
+        <div class="equip-card-body">
             <div class="table-responsive">
-                <table class="table table-hover mb-0" id="equipmentTable">
-                    <thead class="table-light">
+                <table class="table table-equip mb-0" id="equipmentTable">
+                    <thead>
                         <tr>
                             <th>Equipment Name</th>
                             <th>Category</th>
-                            <th>Total Units</th>
-                            <th>Available</th>
+                            <th class="text-center">Total Units</th>
+                            <th class="text-center">Available</th>
                             <th>Date Added</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="spinner-border text-danger" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Loading equipment...</p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -75,15 +114,21 @@
 
 <!-- Units Modal -->
 <div class="modal fade" id="unitsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-equip">
+            <div class="modal-header">
                 <h5 class="modal-title"><i class="bi bi-list-ul me-2"></i>Equipment Units - <span id="modalEquipmentName"></span></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+                <div class="units-legend mb-3">
+                    <span class="legend-item"><span class="legend-dot available"></span> Available</span>
+                    <span class="legend-item"><span class="legend-dot borrowed"></span> Borrowed</span>
+                    <span class="legend-item"><span class="legend-dot maintenance"></span> Maintenance</span>
+                    <span class="legend-item"><span class="legend-dot lost"></span> Lost</span>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-sm" id="unitsTable">
+                    <table class="table table-units mb-0" id="unitsTable">
                         <thead>
                             <tr>
                                 <th>Serial No</th>
@@ -97,134 +142,163 @@
                     </table>
                 </div>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
 
+<form id="tokenForm">@Html.AntiForgeryToken()</form>
+
+<style>
+.page-icon-equip { width: 56px; height: 56px; background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25); }
+.connection-badge { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.connection-badge.disconnected { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+.badge-view-only { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+.stat-card-equip { background: white; border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); border: 1px solid rgba(139, 0, 0, 0.08); transition: all 0.3s ease; position: relative; overflow: hidden; }
+.stat-card-equip::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary-red); }
+.stat-card-equip:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(139, 0, 0, 0.12); }
+.stat-icon-equip { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+.stat-icon-equip.types { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
+.stat-icon-equip.available { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.stat-icon-equip.borrowed { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
+.stat-icon-equip.maintenance { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.stat-content-equip { display: flex; flex-direction: column; }
+.stat-value-equip { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label-equip { font-size: 0.8rem; color: #6b7280; margin-top: 4px; }
+.equip-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); overflow: hidden; border: 1px solid rgba(139, 0, 0, 0.08); }
+.equip-card-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; font-weight: 600; }
+.equip-card-body { padding: 24px; }
+.btn-refresh-equip { background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; transition: all 0.3s ease; }
+.btn-refresh-equip:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+.table-equip thead th { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 14px 12px; border: none; }
+.table-equip tbody td { padding: 14px 12px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+.table-equip tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+.table-units thead th { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; padding: 12px 10px; border: none; }
+.table-units tbody td { padding: 12px 10px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+.units-legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 16px; background: linear-gradient(135deg, #fafafa 0%, #fff 100%); border-radius: 10px; border: 1px solid rgba(139, 0, 0, 0.08); }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #6b7280; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+.legend-dot.available { background: #22c55e; }
+.legend-dot.borrowed { background: var(--primary-red); }
+.legend-dot.maintenance { background: #f59e0b; }
+.legend-dot.lost { background: #1f2937; }
+.badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-status.available { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-status.borrowed { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; }
+.badge-status.maintenance { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+.badge-status.lost { background: linear-gradient(135deg, #1f2937 0%, #111827 100%); color: white; }
+.badge-condition { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-condition.good { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-condition.damaged { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+.badge-category { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.badge-available { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+.badge-available.has-stock { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-available.no-stock { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+.btn-view-units { background: transparent; border: 2px solid var(--primary-red); color: var(--primary-red); padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; transition: all 0.3s ease; }
+.btn-view-units:hover { background: var(--primary-red); color: white; }
+.modal-equip { border-radius: 16px; overflow: hidden; border: none; }
+.modal-equip .modal-header { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; border: none; padding: 20px 24px; }
+.modal-equip .modal-body { padding: 24px; }
+.modal-equip .modal-footer { border-top: 1px solid rgba(0, 0, 0, 0.05); padding: 16px 24px; }
+@@media (max-width: 991px) { .stat-card-equip { padding: 16px; } .stat-value-equip { font-size: 1.5rem; } .stat-icon-equip { width: 44px; height: 44px; font-size: 1.1rem; } }
+@@media (max-width: 576px) { .page-icon-equip { width: 48px; height: 48px; font-size: 1.25rem; } .stat-card-equip { padding: 14px; } .stat-value-equip { font-size: 1.25rem; } }
+</style>
+
 @section Scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 <script>
 let equipmentTable;
+let signalRConnection;
 
 $(document).ready(function() {
     loadStats();
-    
-    // Initialize DataTable with DataTableConfig helper
-    equipmentTable = DataTableConfig.init('#equipmentTable', {
-        ajax: {
-            url: '/SupportAdmin/Equipment/GetAll',
-            dataSrc: json => json.success ? json.data : []
-        },
-        columns: [
-            { data: 'equipmentName', render: data => `<strong>${data}</strong>` },
-            { data: 'equipmentCategory', render: data => `<span class="badge bg-secondary">${data}</span>` },
-            { data: 'equipmentQuantity', className: 'text-center' },
-            { 
-                data: 'availableStock', 
-                className: 'text-center',
-                render: data => `<span class="badge ${data > 0 ? 'bg-success' : 'bg-danger'}">${data}</span>`
-            },
-            { data: 'equipmentDateAdded' },
-            {
-                data: 'equipmentId',
-                orderable: false,
-                render: (data, type, row) => `
-                    <button class="btn btn-sm btn-outline-primary btn-action btn-view-units" 
-                            data-id="${data}" data-name="${row.equipmentName}">
-                        <i class="bi bi-eye"></i> View Units
-                    </button>`
-            }
-        ],
-        order: [[0, 'asc']]
-    });
+    initEquipmentTable();
+    initSignalR();
+    $('#btnRefresh').click(function() { showToast('Refreshing...', 'info'); loadStats(); equipmentTable.ajax.reload(); });
+});
 
-    async function loadStats() {
-        try {
-            const res = await Api.get('/SupportAdmin/Equipment/Stats');
-            if (res.success) {
-                $('#statTotalTypes').text(res.data.totalEquipmentTypes);
-                $('#statAvailable').text(res.data.availableUnits);
-                $('#statBorrowed').text(res.data.borrowedUnits);
-                $('#statMaintenance').text(res.data.maintenanceUnits);
-            }
-        } catch (error) {
-            console.error('Failed to load stats');
+function initSignalR() {
+    signalRConnection = new signalR.HubConnectionBuilder().withUrl("/hubs/dashboard").withAutomaticReconnect([0, 2000, 5000, 10000, 30000]).build();
+    signalRConnection.on("StatsUpdated", function() { loadStats(); if (equipmentTable) equipmentTable.ajax.reload(null, false); });
+    signalRConnection.on("EquipmentStatusChanged", function(data) { showToast('Equipment updated: ' + data.equipmentName, 'info'); loadStats(); if (equipmentTable) equipmentTable.ajax.reload(null, false); });
+    signalRConnection.on("OverdueAlert", function(count) { if (count > 0) showToast('Warning: ' + count + ' item(s) are now overdue!', 'warning'); loadStats(); });
+    signalRConnection.start().then(function() { updateConnectionBadge(true); }).catch(function(err) { updateConnectionBadge(false); });
+    signalRConnection.onreconnecting(function() { updateConnectionBadge(false); });
+    signalRConnection.onreconnected(function() { updateConnectionBadge(true); loadStats(); });
+    signalRConnection.onclose(function() { updateConnectionBadge(false); });
+}
+
+function updateConnectionBadge(connected) {
+    var badge = document.getElementById('connectionBadge');
+    if (connected) { badge.className = 'connection-badge'; badge.innerHTML = '<i class="bi bi-wifi"></i><span>Live</span>'; }
+    else { badge.className = 'connection-badge disconnected'; badge.innerHTML = '<i class="bi bi-wifi-off"></i><span>Offline</span>'; }
+}
+
+function loadStats() {
+    $.get('/SupportAdmin/Equipment/Stats', function(res) {
+        if (res.success) {
+            $('#statTotalTypes').text(res.data.totalEquipmentTypes);
+            $('#statAvailable').text(res.data.availableUnits);
+            $('#statBorrowed').text(res.data.borrowedUnits);
+            $('#statMaintenance').text(res.data.maintenanceUnits);
         }
-    }
-
-    $('#btnRefresh').click(function() {
-        Toast.info('Refreshing...');
-        loadStats();
-        equipmentTable.ajax.reload();
     });
+}
 
-    // View units
-    $(document).on('click', '.btn-view-units', function() {
-        const equipmentId = $(this).data('id');
-        const equipmentName = $(this).data('name');
-        $('#modalEquipmentName').text(equipmentName);
-
-        $.get(`/SupportAdmin/Equipment/Units/${equipmentId}`, function(res) {
-            if (res.success) {
-                let html = '';
-                res.data.forEach(u => {
-                    const conditionCls = u.conditionBool ? 'text-success' : 'text-danger';
-                    const conditionIcon = u.conditionBool ? 'bi-check-circle-fill' : 'bi-x-circle-fill';
-                    
-                    let statusCls = 'bg-secondary';
-                    if (u.eunitStatus === 'available') statusCls = 'bg-success';
-                    else if (u.eunitStatus === 'borrowed') statusCls = 'bg-info';
-                    else if (u.eunitStatus === 'maintenance') statusCls = 'bg-warning';
-                    else if (u.eunitStatus === 'lost') statusCls = 'bg-dark';
-
-                    // Support Admin can only change to available/maintenance for non-borrowed/lost items
-                    let actionHtml = '-';
-                    if (u.eunitStatus !== 'borrowed' && u.eunitStatus !== 'lost') {
-                        actionHtml = `
-                            <select class="form-select form-select-sm status-select" data-id="${u.eunitId}" style="width: auto;">
-                                <option value="available" ${u.eunitStatus === 'available' ? 'selected' : ''}>Available</option>
-                                <option value="maintenance" ${u.eunitStatus === 'maintenance' ? 'selected' : ''}>Maintenance</option>
-                            </select>`;
-                    }
-
-                    html += `<tr>
-                        <td><strong>${u.eunitSerialNo}</strong></td>
-                        <td class="${conditionCls}"><i class="bi ${conditionIcon}"></i> ${u.condition}</td>
-                        <td><span class="badge ${statusCls}">${u.eunitStatus}</span></td>
-                        <td>${u.eunitDateAdded}</td>
-                        <td>${actionHtml}</td>
-                    </tr>`;
-                });
-                $('#unitsTable tbody').html(html || '<tr><td colspan="5" class="text-center text-muted">No units found</td></tr>');
-                new bootstrap.Modal('#unitsModal').show();
-            }
-        });
+function initEquipmentTable() {
+    equipmentTable = $('#equipmentTable').DataTable({
+        ajax: { url: '/SupportAdmin/Equipment/GetAll', dataSrc: function(json) { return json.success ? json.data : []; } },
+        responsive: true, pageLength: 10, order: [[0, 'asc']],
+        language: { search: "", searchPlaceholder: "Search...", lengthMenu: "Show _MENU_ entries", info: "Showing _START_ to _END_ of _TOTAL_ entries", emptyTable: '<div class="text-center py-5"><i class="bi bi-box-seam text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No equipment found</p></div>' },
+        columns: [
+            { data: 'equipmentName', render: function(data) { return '<strong>' + data + '</strong>'; } },
+            { data: 'equipmentCategory', render: function(data) { return '<span class="badge-category">' + data + '</span>'; } },
+            { data: 'equipmentQuantity', className: 'text-center' },
+            { data: 'availableStock', className: 'text-center', render: function(data) { return '<span class="badge-available ' + (data > 0 ? 'has-stock' : 'no-stock') + '">' + data + '</span>'; } },
+            { data: 'equipmentDateAdded', render: function(data) { return '<small class="text-muted">' + data + '</small>'; } },
+            { data: 'equipmentId', orderable: false, render: function(data, type, row) { return '<button class="btn btn-view-units" data-id="' + data + '" data-name="' + row.equipmentName + '"><i class="bi bi-eye me-1"></i>View Units</button>'; } }
+        ]
     });
+}
 
-    // Update unit status (limited)
-    $(document).on('change', '.status-select', function() {
-        const unitId = $(this).data('id');
-        const status = $(this).val();
-        const $select = $(this);
-
-        $.post('/SupportAdmin/Equipment/UpdateUnitStatus', {
-            unitId: unitId,
-            status: status,
-            __RequestVerificationToken: $('#tokenForm input[name="__RequestVerificationToken"]').val()
-        }, function(res) {
-            if (res.success) {
-                // Update badge
-                const $badge = $select.closest('tr').find('.badge');
-                $badge.removeClass('bg-success bg-warning bg-secondary').addClass(status === 'available' ? 'bg-success' : 'bg-warning');
-                $badge.text(status);
-                loadStats();
-            } else {
-                alert('Error: ' + res.message);
-                // Revert selection
-                location.reload();
-            }
-        });
+$(document).on('click', '.btn-view-units', function() {
+    var equipmentId = $(this).data('id');
+    var equipmentName = $(this).data('name');
+    $('#modalEquipmentName').text(equipmentName);
+    $('#unitsTable tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-danger" role="status"></div></td></tr>');
+    new bootstrap.Modal('#unitsModal').show();
+    $.get('/SupportAdmin/Equipment/Units/' + equipmentId, function(res) {
+        if (res.success) {
+            var html = '';
+            res.data.forEach(function(u) {
+                var conditionBadge = u.conditionBool ? '<span class="badge-condition good"><i class="bi bi-check-circle-fill me-1"></i>Good</span>' : '<span class="badge-condition damaged"><i class="bi bi-x-circle-fill me-1"></i>Damaged</span>';
+                var statusBadge = '<span class="badge-status ' + u.eunitStatus + '">' + u.eunitStatus + '</span>';
+                var actionHtml = '<span class="text-muted">-</span>';
+                if (u.eunitStatus !== 'borrowed' && u.eunitStatus !== 'lost') {
+                    actionHtml = '<select class="form-select form-select-sm status-select" data-id="' + u.eunitId + '" style="width: auto;"><option value="available"' + (u.eunitStatus === 'available' ? ' selected' : '') + '>Available</option><option value="maintenance"' + (u.eunitStatus === 'maintenance' ? ' selected' : '') + '>Maintenance</option></select>';
+                }
+                html += '<tr><td><strong class="text-danger">' + u.eunitSerialNo + '</strong></td><td>' + conditionBadge + '</td><td>' + statusBadge + '</td><td><small>' + u.eunitDateAdded + '</small></td><td>' + actionHtml + '</td></tr>';
+            });
+            $('#unitsTable tbody').html(html || '<tr><td colspan="5" class="text-center text-muted py-4">No units found</td></tr>');
+        }
     });
 });
+
+$(document).on('change', '.status-select', function() {
+    var unitId = $(this).data('id');
+    var status = $(this).val();
+    var select = $(this);
+    $.post('/SupportAdmin/Equipment/UpdateUnitStatus', { unitId: unitId, status: status, __RequestVerificationToken: $('#tokenForm input[name="__RequestVerificationToken"]').val() }, function(res) {
+        if (res.success) { showToast('Unit status updated', 'success'); var badge = select.closest('tr').find('.badge-status'); badge.removeClass('available maintenance').addClass(status).text(status); loadStats(); }
+        else { showToast('Error: ' + res.message, 'error'); }
+    });
+});
+
+function showToast(message, type) {
+    var bgColors = { success: 'linear-gradient(135deg, #22c55e, #16a34a)', error: 'linear-gradient(135deg, #ef4444, #dc2626)', warning: 'linear-gradient(135deg, #f59e0b, #d97706)', info: 'linear-gradient(135deg, #8b0000, #5c0000)' };
+    Toastify({ text: message, duration: 3000, gravity: "top", position: "right", style: { background: bgColors[type] || bgColors.info, borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }).showToast();
+}
 </script>
-<form id="tokenForm">@Html.AntiForgeryToken()</form>
 }

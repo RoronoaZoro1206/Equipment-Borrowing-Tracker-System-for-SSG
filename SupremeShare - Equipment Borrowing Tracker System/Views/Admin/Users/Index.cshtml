@@ -4,88 +4,174 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-people-fill me-2"></i>User Management</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-user">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">User Management</h2>
+                <p class="text-muted mb-0 small">Manage system users and access control</p>
+            </div>
+        </div>
+        <button class="btn btn-add-user" data-bs-toggle="modal" data-bs-target="#createUserModal">
             <i class="bi bi-plus-lg me-1"></i>Add User
         </button>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <table class="table table-striped table-hover" id="usersTable" style="width:100%">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Username</th>
-                        <th>Full Name</th>
-                        <th>Role</th>
-                        <th>Position</th>
-                        <th>Email</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-user total">
+                <div class="stat-icon-user"><i class="bi bi-people-fill"></i></div>
+                <div class="stat-content-user">
+                    <span class="stat-value-user" id="statTotal">-</span>
+                    <span class="stat-label-user">Total Users</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-user active">
+                <div class="stat-icon-user"><i class="bi bi-person-check-fill"></i></div>
+                <div class="stat-content-user">
+                    <span class="stat-value-user" id="statActive">-</span>
+                    <span class="stat-label-user">Active</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-user admins">
+                <div class="stat-icon-user"><i class="bi bi-shield-fill-check"></i></div>
+                <div class="stat-content-user">
+                    <span class="stat-value-user" id="statAdmins">-</span>
+                    <span class="stat-label-user">Admins</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-user support">
+                <div class="stat-icon-user"><i class="bi bi-headset"></i></div>
+                <div class="stat-content-user">
+                    <span class="stat-value-user" id="statSupport">-</span>
+                    <span class="stat-label-user">Support Admin</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="user-card">
+        <div class="user-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-list-ul"></i>
+                <span>User Accounts</span>
+            </div>
+            <button class="btn btn-refresh-user" onclick="refreshData()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+            </button>
+        </div>
+        <div class="user-card-body">
+            <!-- Filter Row -->
+            <div class="filter-row-user mb-3">
+                <div class="filter-group-user">
+                    <label class="filter-label-user"><i class="bi bi-funnel me-1"></i>Filters:</label>
+                    <select id="filterRole" class="filter-select-user">
+                        <option value="">All Roles</option>
+                        <option value="admin">Admin</option>
+                        <option value="support_admin">Support Admin</option>
+                    </select>
+                    <select id="filterStatus" class="filter-select-user">
+                        <option value="">All Status</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                    <button class="btn btn-clear-filter-user" id="btnClearFilters" title="Clear Filters">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-user mb-0" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Role</th>
+                            <th>Position</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <div class="spinner-border text-danger" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Loading users...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Create User Modal -->
 <div class="modal fade" id="createUserModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-user">
             <form id="createUserForm">
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-person-plus"></i> Add New User</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Add New User</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Username <span class="text-danger">*</span></label>
-                            <input type="text" name="Username" class="form-control" required placeholder="Enter username">
+                            <label class="form-label-user">Username <span class="text-danger">*</span></label>
+                            <input type="text" name="Username" class="form-control-user" required placeholder="Enter username">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Password <span class="text-danger">*</span></label>
-                            <input type="password" name="Password" class="form-control" required minlength="8" placeholder="Min. 8 characters">
+                            <label class="form-label-user">Password <span class="text-danger">*</span></label>
+                            <input type="password" name="Password" class="form-control-user" required minlength="8" placeholder="Min. 8 characters">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">First Name <span class="text-danger">*</span></label>
-                            <input type="text" name="FirstName" class="form-control" required placeholder="Enter first name">
+                            <label class="form-label-user">First Name <span class="text-danger">*</span></label>
+                            <input type="text" name="FirstName" class="form-control-user" required placeholder="Enter first name">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
-                            <input type="text" name="LastName" class="form-control" required placeholder="Enter last name">
+                            <label class="form-label-user">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" name="LastName" class="form-control-user" required placeholder="Enter last name">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Role</label>
-                            <select name="Role" class="form-select">
+                            <label class="form-label-user">Role <span class="text-danger">*</span></label>
+                            <select name="Role" class="form-select-user">
                                 <option value="support_admin">Support Admin</option>
                                 <option value="admin">Admin</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Position</label>
-                            <input type="text" name="Position" class="form-control" value="Support Staff" placeholder="e.g., Support Staff">
+                            <label class="form-label-user">Position</label>
+                            <input type="text" name="Position" class="form-control-user" value="Support Staff" placeholder="e.g., Support Staff">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="Email" class="form-control" placeholder="user@example.com">
+                            <label class="form-label-user">Email</label>
+                            <input type="email" name="Email" class="form-control-user" placeholder="user@example.com">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Contact No</label>
-                            <input type="text" name="ContactNo" class="form-control" placeholder="09XX XXX XXXX">
+                            <label class="form-label-user">Contact No</label>
+                            <input type="text" name="ContactNo" class="form-control-user" placeholder="09XX-XXX-XXXX">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-lg me-1"></i>Cancel
-                    </button>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-submit-user" id="createBtn">
                         <i class="bi bi-plus-circle me-1"></i>Create User
                     </button>
                 </div>
@@ -96,56 +182,54 @@
 
 <!-- Edit User Modal -->
 <div class="modal fade" id="editUserModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-user">
             <form id="editUserForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="UserId" id="editUserId">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title"><i class="bi bi-pencil-square"></i> Edit User</h5>
+                <div class="modal-header header-warning">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit User</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Username</label>
-                            <input type="text" name="Username" id="editUsername" class="form-control">
+                            <label class="form-label-user">Username</label>
+                            <input type="text" name="Username" id="editUsername" class="form-control-user">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Role</label>
-                            <select name="Role" id="editRole" class="form-select">
+                            <label class="form-label-user">Role</label>
+                            <select name="Role" id="editRole" class="form-select-user">
                                 <option value="support_admin">Support Admin</option>
                                 <option value="admin">Admin</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">First Name</label>
-                            <input type="text" name="FirstName" id="editFirstName" class="form-control">
+                            <label class="form-label-user">First Name</label>
+                            <input type="text" name="FirstName" id="editFirstName" class="form-control-user">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Last Name</label>
-                            <input type="text" name="LastName" id="editLastName" class="form-control">
+                            <label class="form-label-user">Last Name</label>
+                            <input type="text" name="LastName" id="editLastName" class="form-control-user">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Position</label>
-                            <input type="text" name="Position" id="editPosition" class="form-control">
+                            <label class="form-label-user">Position</label>
+                            <input type="text" name="Position" id="editPosition" class="form-control-user">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Email</label>
-                            <input type="email" name="Email" id="editEmail" class="form-control">
+                            <label class="form-label-user">Email</label>
+                            <input type="email" name="Email" id="editEmail" class="form-control-user">
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Contact No</label>
-                            <input type="text" name="ContactNo" id="editContactNo" class="form-control">
+                            <label class="form-label-user">Contact No</label>
+                            <input type="text" name="ContactNo" id="editContactNo" class="form-control-user">
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-lg me-1"></i>Cancel
-                    </button>
-                    <button type="submit" class="btn btn-warning">
-                        <i class="bi bi-check-lg me-1"></i>Save Changes
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="editBtn">
+                        <i class="bi bi-check-circle me-1"></i>Save Changes
                     </button>
                 </div>
             </form>
@@ -155,24 +239,27 @@
 
 <!-- Reset Password Modal -->
 <div class="modal fade" id="resetPasswordModal" tabindex="-1">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-user">
             <form id="resetPasswordForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="userId" id="resetUserId">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title"><i class="bi bi-key"></i> Reset Password</h5>
+                <div class="modal-header header-warning">
+                    <h5 class="modal-title"><i class="bi bi-key me-2"></i>Reset Password</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <label class="form-label">New Password <span class="text-danger">*</span></label>
-                    <input type="password" name="newPassword" class="form-control" required minlength="8" placeholder="Min. 8 characters">
-                    <small class="text-muted">Password must be at least 8 characters long.</small>
+                    <div class="reset-password-info mb-3">
+                        <i class="bi bi-info-circle text-warning me-2"></i>
+                        <span>Enter a new password for this user. Password must be at least 8 characters.</span>
+                    </div>
+                    <label class="form-label-user">New Password <span class="text-danger">*</span></label>
+                    <input type="password" name="newPassword" class="form-control-user" required minlength="8" placeholder="Enter new password">
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning">
-                        <i class="bi bi-arrow-repeat me-1"></i>Reset
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="resetBtn">
+                        <i class="bi bi-arrow-repeat me-1"></i>Reset Password
                     </button>
                 </div>
             </form>
@@ -180,66 +267,416 @@
     </div>
 </div>
 
+
+<style>
+/* ===========================================
+   User Management - Red & White Theme
+   =========================================== */
+
+/* Page Icon */
+.page-icon-user {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+
+/* Add Button */
+.btn-add-user {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.25);
+}
+
+.btn-add-user:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.35);
+    color: white;
+}
+
+/* Stat Cards */
+.stat-card-user {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-user::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.stat-card-user.total::before { background: var(--primary-red); }
+.stat-card-user.active::before { background: #22c55e; }
+.stat-card-user.admins::before { background: #ef4444; }
+.stat-card-user.support::before { background: #3b82f6; }
+
+.stat-card-user:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon-user {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.stat-card-user.total .stat-icon-user { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
+.stat-card-user.active .stat-icon-user { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.stat-card-user.admins .stat-icon-user { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.stat-card-user.support .stat-icon-user { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+
+.stat-content-user { display: flex; flex-direction: column; }
+.stat-value-user { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label-user { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+
+/* User Card */
+.user-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.user-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.user-card-body { padding: 24px; }
+
+.btn-refresh-user {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.btn-refresh-user:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+
+/* Filter Row */
+.filter-row-user {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.filter-group-user { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.filter-label-user { font-weight: 600; font-size: 0.85rem; color: var(--primary-red); margin: 0; }
+
+.filter-select-user {
+    padding: 8px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    background: white;
+    transition: all 0.3s ease;
+    min-width: 140px;
+}
+
+.filter-select-user:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
+
+.btn-clear-filter-user {
+    background: transparent;
+    border: 2px solid #e5e7eb;
+    color: #6b7280;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-clear-filter-user:hover { background: #ef4444; border-color: #ef4444; color: white; }
+
+/* Table */
+.table-user thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 14px 12px;
+    border: none;
+}
+
+.table-user tbody td { padding: 14px 12px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+.table-user tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+
+/* Role Badges */
+.badge-role { padding: 4px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-role.admin { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+.badge-role.support_admin { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
+
+/* Status Badges */
+.badge-status-user { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-status-user.active { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-status-user.inactive { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
+
+/* Action Buttons */
+.btn-action-user {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border-width: 2px;
+}
+
+.btn-action-user:hover { transform: scale(1.1); }
+
+.btn-action-user i { font-size: 0.85rem; }
+
+.btn-action-user.btn-outline-warning { color: #f59e0b; border-color: #f59e0b; }
+.btn-action-user.btn-outline-warning:hover { background: #f59e0b; color: white; border-color: #f59e0b; }
+
+.btn-action-user.btn-outline-info { color: #06b6d4; border-color: #06b6d4; }
+.btn-action-user.btn-outline-info:hover { background: #06b6d4; color: white; border-color: #06b6d4; }
+
+.btn-action-user.btn-outline-secondary { color: #6b7280; border-color: #6b7280; }
+.btn-action-user.btn-outline-secondary:hover { background: #6b7280; color: white; border-color: #6b7280; }
+
+.btn-action-user.btn-outline-success { color: #22c55e; border-color: #22c55e; }
+.btn-action-user.btn-outline-success:hover { background: #22c55e; color: white; border-color: #22c55e; }
+
+/* Modal */
+.modal-user { border-radius: 16px; overflow: hidden; border: none; }
+.modal-user .modal-header { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; border: none; padding: 20px 24px; }
+.modal-user .modal-header.header-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.modal-user .modal-body { padding: 24px; }
+.modal-user .modal-footer { border-top: 1px solid rgba(0, 0, 0, 0.05); padding: 16px 24px; }
+
+/* Form Controls */
+.form-label-user { font-weight: 600; font-size: 0.85rem; color: var(--text-dark); margin-bottom: 8px; display: block; }
+
+.form-control-user,
+.form-select-user {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.form-control-user:focus,
+.form-select-user:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
+
+.btn-submit-user {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-submit-user:hover { color: white; box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3); }
+
+/* Reset Password Info */
+.reset-password-info {
+    padding: 12px 16px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #92400e;
+}
+
+/* Responsive */
+@@media (max-width: 991px) {
+    .stat-card-user { padding: 16px; }
+    .stat-value-user { font-size: 1.25rem; }
+}
+
+@@media (max-width: 768px) {
+    .filter-row-user { padding: 12px; }
+    .filter-group-user { width: 100%; }
+    .filter-select-user { flex: 1; min-width: 100px; }
+}
+</style>
+
+
 @section Scripts {
 <script>
 let usersTable;
+let allUsersData = [];
 
 $(document).ready(function() {
-    // Initialize DataTable with DataTableConfig helper
-    usersTable = DataTableConfig.init('#usersTable', {
+    initUsersTable();
+    setupFilterHandlers();
+    setupFormHandlers();
+    setupModalCleanup();
+});
+
+function initUsersTable() {
+    usersTable = $('#usersTable').DataTable({
         ajax: {
             url: '/Admin/Users/GetAll',
-            dataSrc: json => json.success ? json.data : []
+            dataSrc: function(json) {
+                if (json.success && json.data) {
+                    allUsersData = json.data;
+                    updateStats(json.data);
+                    return json.data;
+                }
+                return [];
+            }
+        },
+        responsive: true,
+        pageLength: 10,
+        order: [[6, 'desc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_",
+            emptyTable: '<div class="text-center py-5"><i class="bi bi-people text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No users found</p></div>'
         },
         columns: [
-            { data: 'userUsername', render: data => `<strong>${data}</strong>` },
-            { data: 'fullName' },
+            { 
+                data: 'userUsername',
+                render: function(data) {
+                    return '<strong class="text-danger">' + data + '</strong>';
+                }
+            },
+            { 
+                data: 'fullName',
+                render: function(data) {
+                    return '<strong>' + data + '</strong>';
+                }
+            },
             { 
                 data: 'userRole',
-                render: data => `<span class="badge ${data === 'admin' ? 'bg-danger' : 'bg-info'}">${data}</span>`
+                render: function(data) {
+                    var roleClass = data === 'admin' ? 'admin' : 'support_admin';
+                    var roleText = data === 'admin' ? 'Admin' : 'Support Admin';
+                    return '<span class="badge-role ' + roleClass + '">' + roleText + '</span>';
+                }
             },
-            { data: 'userPosition' },
-            { data: 'userEmail', defaultContent: '<span class="text-muted">-</span>' },
+            { 
+                data: 'userPosition',
+                render: function(data) {
+                    return data || '<span class="text-muted">-</span>';
+                }
+            },
+            { 
+                data: 'userEmail',
+                render: function(data) {
+                    return data ? '<small>' + data + '</small>' : '<span class="text-muted">-</span>';
+                }
+            },
             { 
                 data: 'userStatus',
-                render: data => `<span class="status-badge ${data ? 'available' : 'overdue'}">${data ? 'Active' : 'Inactive'}</span>`
+                render: function(data) {
+                    var statusClass = data ? 'active' : 'inactive';
+                    var statusText = data ? 'Active' : 'Inactive';
+                    return '<span class="badge-status-user ' + statusClass + '">' + statusText + '</span>';
+                }
             },
-            { data: 'userDateCreated' },
+            { 
+                data: 'userDateCreated',
+                render: function(data) {
+                    return '<small class="text-muted">' + data + '</small>';
+                }
+            },
             {
-                data: 'userId',
+                data: null,
                 orderable: false,
                 render: function(data, type, row) {
-                    return `
-                        <div class="btn-action-group">
-                            <button class="btn btn-sm btn-outline-primary btn-action btn-edit" data-id="${data}" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-warning btn-action btn-reset-password" data-id="${data}" title="Reset Password">
-                                <i class="bi bi-key"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-${row.userStatus ? 'secondary' : 'success'} btn-action btn-toggle" 
-                                    data-id="${data}" data-name="${row.fullName}" data-status="${row.userStatus}"
-                                    title="${row.userStatus ? 'Deactivate' : 'Activate'}">
-                                <i class="bi bi-${row.userStatus ? 'pause' : 'play'}"></i>
-                            </button>
-                        </div>`;
+                    var toggleBtnClass = row.userStatus ? 'btn-outline-secondary' : 'btn-outline-success';
+                    var toggleIcon = row.userStatus ? 'pause-circle-fill' : 'play-circle-fill';
+                    var toggleTitle = row.userStatus ? 'Deactivate' : 'Activate';
+                    
+                    return '<div class="d-flex gap-1">' +
+                        '<button class="btn btn-sm btn-outline-warning btn-action-user btn-edit-user" data-id="' + row.userId + '" title="Edit"><i class="bi bi-pencil-fill"></i></button>' +
+                        '<button class="btn btn-sm btn-outline-info btn-action-user btn-reset-user" data-id="' + row.userId + '" title="Reset Password"><i class="bi bi-key-fill"></i></button>' +
+                        '<button class="btn btn-sm ' + toggleBtnClass + ' btn-action-user btn-toggle-user" data-id="' + row.userId + '" data-name="' + row.fullName + '" data-status="' + row.userStatus + '" title="' + toggleTitle + '"><i class="bi bi-' + toggleIcon + '"></i></button>' +
+                    '</div>';
                 }
             }
-        ],
-        order: [[6, 'desc']]
+        ]
     });
+}
 
+function updateStats(data) {
+    var total = data.length;
+    var active = data.filter(function(u) { return u.userStatus; }).length;
+    var admins = data.filter(function(u) { return u.userRole === 'admin'; }).length;
+    var support = data.filter(function(u) { return u.userRole === 'support_admin'; }).length;
+    
+    $('#statTotal').text(total);
+    $('#statActive').text(active);
+    $('#statAdmins').text(admins);
+    $('#statSupport').text(support);
+}
+
+function setupFilterHandlers() {
+    $('#filterRole').on('change', function() {
+        var val = $(this).val();
+        usersTable.column(2).search(val ? val : '', false, false).draw();
+    });
+    
+    $('#filterStatus').on('change', function() {
+        var val = $(this).val();
+        usersTable.column(5).search(val ? val : '', false, false).draw();
+    });
+    
+    $('#btnClearFilters').on('click', function() {
+        $('#filterRole, #filterStatus').val('');
+        usersTable.search('').columns().search('').draw();
+        showToast('Filters cleared', 'info');
+    });
+}
+
+function setupFormHandlers() {
     // Edit user
-    $('#usersTable').on('click', '.btn-edit', async function() {
-        const id = $(this).data('id');
-        Loading.show('Loading user data...');
-        
-        try {
-            const res = await Api.get(`/Admin/Users/Get/${id}`);
-            Loading.hide();
-            
+    $(document).on('click', '.btn-edit-user', function() {
+        var id = $(this).data('id');
+        $.get('/Admin/Users/Get/' + id, function(res) {
             if (res.success) {
-                const u = res.data;
+                var u = res.data;
                 $('#editUserId').val(u.userId);
                 $('#editUsername').val(u.userUsername);
                 $('#editRole').val(u.userRole);
@@ -250,124 +687,138 @@ $(document).ready(function() {
                 $('#editContactNo').val(u.userContactNo);
                 new bootstrap.Modal('#editUserModal').show();
             } else {
-                Toast.error(res.message);
+                showToast(res.message, 'error');
             }
-        } catch (error) {
-            Loading.hide();
-            Toast.error('Failed to load user data');
-        }
+        });
     });
 
     // Reset password
-    $('#usersTable').on('click', '.btn-reset-password', function() {
+    $(document).on('click', '.btn-reset-user', function() {
         $('#resetUserId').val($(this).data('id'));
+        $('#resetPasswordForm')[0].reset();
         new bootstrap.Modal('#resetPasswordModal').show();
     });
 
-    // Toggle status with SweetAlert2
-    $('#usersTable').on('click', '.btn-toggle', async function() {
-        const id = $(this).data('id');
-        const name = $(this).data('name');
-        const isActive = $(this).data('status');
+    // Toggle status
+    $(document).on('click', '.btn-toggle-user', function() {
+        var id = $(this).data('id');
+        var name = $(this).data('name');
+        var isActive = $(this).data('status');
+        var action = isActive ? 'deactivate' : 'activate';
         
-        const action = isActive ? 'deactivate' : 'activate';
-        const confirmed = await Confirm.action(
-            `${isActive ? 'Deactivate' : 'Activate'} User`,
-            `Are you sure you want to ${action} <strong>${name}</strong>?`,
-            `<i class="bi bi-${isActive ? 'pause' : 'play'} me-1"></i>${isActive ? 'Deactivate' : 'Activate'}`,
-            'question'
-        );
-        
-        if (!confirmed) return;
-        
-        Loading.show('Updating status...');
-        
-        try {
-            const res = await $.post('/Admin/Users/ToggleStatus', { 
-                userId: id, 
-                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() 
-            });
-            Loading.hide();
-            
-            if (res.success) {
-                Toast.success(`User ${action}d successfully`);
-                usersTable.ajax.reload(null, false);
-            } else {
-                Toast.error(res.message);
+        Swal.fire({
+            title: (isActive ? 'Deactivate' : 'Activate') + ' User?',
+            html: 'Are you sure you want to ' + action + ' <strong>' + name + '</strong>?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: isActive ? '#6b7280' : '#22c55e',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: '<i class="bi bi-' + (isActive ? 'pause' : 'play') + ' me-1"></i>' + (isActive ? 'Deactivate' : 'Activate'),
+            cancelButtonText: 'Cancel'
+        }).then(function(result) {
+            if (result.isConfirmed) {
+                $.post('/Admin/Users/ToggleStatus', { 
+                    userId: id, 
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() 
+                }, function(res) {
+                    if (res.success) {
+                        showToast('User ' + action + 'd successfully', 'success');
+                        usersTable.ajax.reload(null, false);
+                    } else {
+                        showToast(res.message, 'error');
+                    }
+                });
             }
-        } catch (error) {
-            Loading.hide();
-            Toast.error('Failed to update status');
-        }
+        });
     });
 
-    // Form submissions with Toast notifications
-    $('#createUserForm').submit(async function(e) {
+    // Create form
+    $('#createUserForm').submit(function(e) {
         e.preventDefault();
-        const btn = this.querySelector('button[type="submit"]');
-        Loading.button(btn, true);
+        var $btn = $('#createBtn');
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Creating...');
         
-        try {
-            const res = await $.post('/Admin/Users/Create', $(this).serialize());
-            Loading.button(btn, false);
-            
+        $.post('/Admin/Users/Create', $(this).serialize(), function(res) {
+            $btn.prop('disabled', false).html('<i class="bi bi-plus-circle me-1"></i>Create User');
             if (res.success) {
                 bootstrap.Modal.getInstance('#createUserModal').hide();
-                this.reset();
+                $('#createUserForm')[0].reset();
                 usersTable.ajax.reload();
-                Toast.success('User created successfully');
+                showToast('User created successfully', 'success');
             } else {
-                Toast.error(res.message);
+                showToast(res.message, 'error');
             }
-        } catch (error) {
-            Loading.button(btn, false);
-            Toast.error('Failed to create user');
-        }
+        });
     });
 
-    $('#editUserForm').submit(async function(e) {
+    // Edit form
+    $('#editUserForm').submit(function(e) {
         e.preventDefault();
-        const btn = this.querySelector('button[type="submit"]');
-        Loading.button(btn, true);
+        var $btn = $('#editBtn');
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
         
-        try {
-            const res = await $.post('/Admin/Users/Update', $(this).serialize());
-            Loading.button(btn, false);
-            
+        $.post('/Admin/Users/Update', $(this).serialize(), function(res) {
+            $btn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i>Save Changes');
             if (res.success) {
                 bootstrap.Modal.getInstance('#editUserModal').hide();
                 usersTable.ajax.reload(null, false);
-                Toast.success('User updated successfully');
+                showToast('User updated successfully', 'success');
             } else {
-                Toast.error(res.message);
+                showToast(res.message, 'error');
             }
-        } catch (error) {
-            Loading.button(btn, false);
-            Toast.error('Failed to update user');
-        }
+        });
     });
 
-    $('#resetPasswordForm').submit(async function(e) {
+    // Reset password form
+    $('#resetPasswordForm').submit(function(e) {
         e.preventDefault();
-        const btn = this.querySelector('button[type="submit"]');
-        Loading.button(btn, true);
+        var $btn = $('#resetBtn');
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Resetting...');
         
-        try {
-            const res = await $.post('/Admin/Users/ResetPassword', $(this).serialize());
-            Loading.button(btn, false);
-            
+        $.post('/Admin/Users/ResetPassword', $(this).serialize(), function(res) {
+            $btn.prop('disabled', false).html('<i class="bi bi-arrow-repeat me-1"></i>Reset Password');
             if (res.success) {
                 bootstrap.Modal.getInstance('#resetPasswordModal').hide();
-                this.reset();
-                Toast.success('Password reset successfully');
+                $('#resetPasswordForm')[0].reset();
+                showToast('Password reset successfully', 'success');
             } else {
-                Toast.error(res.message);
+                showToast(res.message, 'error');
             }
-        } catch (error) {
-            Loading.button(btn, false);
-            Toast.error('Failed to reset password');
-        }
+        });
     });
-});
+}
+
+function setupModalCleanup() {
+    $('#createUserModal, #editUserModal, #resetPasswordModal').on('hidden.bs.modal', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+    });
+}
+
+function refreshData() {
+    showToast('Refreshing...', 'info');
+    usersTable.ajax.reload();
+}
+
+function showToast(message, type) {
+    var bgColors = {
+        success: 'linear-gradient(135deg, #22c55e, #16a34a)',
+        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        info: 'linear-gradient(135deg, #8b0000, #5c0000)'
+    };
+    
+    Toastify({
+        text: message,
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        style: {
+            background: bgColors[type] || bgColors.info,
+            borderRadius: '10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }
+    }).showToast();
+}
 </script>
 }

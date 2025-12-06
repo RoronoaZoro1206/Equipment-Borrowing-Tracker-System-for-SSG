@@ -4,12 +4,13 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Services
 {
     /// <summary>
     /// Background service to automatically update overdue status of borrowed items
+    /// Runs every 30 seconds for real-time overdue detection
     /// </summary>
     public class OverdueStatusBackgroundService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<OverdueStatusBackgroundService> _logger;
-        private readonly TimeSpan _checkInterval = TimeSpan.FromHours(1);
+        private readonly TimeSpan _checkInterval = TimeSpan.FromSeconds(30); // Check every 30 seconds for real-time updates
 
         public OverdueStatusBackgroundService(
             IServiceProvider serviceProvider,

@@ -4,144 +4,156 @@
 }
 
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-graph-up me-2"></i>Reports & Analytics</h2>
-        <span class="badge bg-success" id="connectionStatus">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-reports">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Reports & Analytics</h2>
+                <p class="text-muted mb-0 small">View system statistics and generate reports</p>
+            </div>
+        </div>
+        <span class="connection-badge" id="connectionStatus">
             <i class="bi bi-wifi"></i> Real-time Connected
         </span>
     </div>
 
     <!-- Quick Stats -->
     <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-box-seam fs-1"></i>
-                    <h3 id="statTotalUnits">-</h3>
-                    <small>Total Equipment Units</small>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-reports total">
+                <div class="stat-icon-reports"><i class="bi bi-box-seam-fill"></i></div>
+                <div class="stat-content-reports">
+                    <span class="stat-value-reports" id="statTotalUnits">-</span>
+                    <span class="stat-label-reports">Total Equipment Units</span>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-check-circle fs-1"></i>
-                    <h3 id="statAvailable">-</h3>
-                    <small>Available</small>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-reports available">
+                <div class="stat-icon-reports"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="stat-content-reports">
+                    <span class="stat-value-reports" id="statAvailable">-</span>
+                    <span class="stat-label-reports">Available</span>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-arrow-left-right fs-1"></i>
-                    <h3 id="statBorrowed">-</h3>
-                    <small>Currently Borrowed</small>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-reports borrowed">
+                <div class="stat-icon-reports"><i class="bi bi-arrow-left-right"></i></div>
+                <div class="stat-content-reports">
+                    <span class="stat-value-reports" id="statBorrowed">-</span>
+                    <span class="stat-label-reports">Currently Borrowed</span>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card bg-danger text-white h-100">
-                <div class="card-body text-center">
-                    <i class="bi bi-exclamation-triangle fs-1"></i>
-                    <h3 id="statOverdue">-</h3>
-                    <small>Overdue Items</small>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-reports overdue">
+                <div class="stat-icon-reports"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <div class="stat-content-reports">
+                    <span class="stat-value-reports" id="statOverdue">-</span>
+                    <span class="stat-label-reports">Overdue Items</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Report Links -->
-    <div class="row g-4">
-        <div class="col-md-6 col-lg-3">
-            <a href="/Admin/Reports/Overdue" class="text-decoration-none">
-                <div class="card h-100 report-card">
-                    <div class="card-body text-center">
-                        <div class="report-icon bg-danger text-white">
+    <div class="reports-section-card mb-4">
+        <div class="reports-section-header">
+            <i class="bi bi-file-earmark-bar-graph me-2"></i>Available Reports
+        </div>
+        <div class="reports-section-body">
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <a href="/Admin/Reports/Overdue" class="report-link-card overdue">
+                        <div class="report-link-icon">
                             <i class="bi bi-clock-history"></i>
                         </div>
-                        <h5 class="mt-3">Overdue Items Report</h5>
-                        <p class="text-muted small">View all overdue borrows with student contact info</p>
-                    </div>
+                        <h5 class="report-link-title">Overdue Items Report</h5>
+                        <p class="report-link-desc">View all overdue borrows with student contact info</p>
+                        <span class="report-link-arrow"><i class="bi bi-arrow-right"></i></span>
+                    </a>
                 </div>
-            </a>
-        </div>
-        <div class="col-md-6 col-lg-3">
-            <a href="/Admin/Reports/Equipment" class="text-decoration-none">
-                <div class="card h-100 report-card">
-                    <div class="card-body text-center">
-                        <div class="report-icon bg-info text-white">
-                            <i class="bi bi-bar-chart"></i>
+                <div class="col-md-6 col-lg-3">
+                    <a href="/Admin/Reports/Equipment" class="report-link-card equipment">
+                        <div class="report-link-icon">
+                            <i class="bi bi-bar-chart-fill"></i>
                         </div>
-                        <h5 class="mt-3">Equipment Utilization</h5>
-                        <p class="text-muted small">Most/least borrowed equipment analysis</p>
-                    </div>
+                        <h5 class="report-link-title">Equipment Utilization</h5>
+                        <p class="report-link-desc">Most/least borrowed equipment analysis</p>
+                        <span class="report-link-arrow"><i class="bi bi-arrow-right"></i></span>
+                    </a>
                 </div>
-            </a>
-        </div>
-        <div class="col-md-6 col-lg-3">
-            <a href="/Admin/Reports/StudentHistory" class="text-decoration-none">
-                <div class="card h-100 report-card">
-                    <div class="card-body text-center">
-                        <div class="report-icon bg-primary text-white">
+                <div class="col-md-6 col-lg-3">
+                    <a href="/Admin/Reports/StudentHistory" class="report-link-card student">
+                        <div class="report-link-icon">
                             <i class="bi bi-person-lines-fill"></i>
                         </div>
-                        <h5 class="mt-3">Student History</h5>
-                        <p class="text-muted small">Per-student borrowing transaction history</p>
-                    </div>
+                        <h5 class="report-link-title">Student History</h5>
+                        <p class="report-link-desc">Per-student borrowing transaction history</p>
+                        <span class="report-link-arrow"><i class="bi bi-arrow-right"></i></span>
+                    </a>
                 </div>
-            </a>
-        </div>
-        <div class="col-md-6 col-lg-3">
-            <a href="/Admin/Reports/AuditLog" class="text-decoration-none">
-                <div class="card h-100 report-card">
-                    <div class="card-body text-center">
-                        <div class="report-icon bg-dark text-white">
+                <div class="col-md-6 col-lg-3">
+                    <a href="/Admin/Reports/AuditLog" class="report-link-card audit">
+                        <div class="report-link-icon">
                             <i class="bi bi-journal-text"></i>
                         </div>
-                        <h5 class="mt-3">Audit Log</h5>
-                        <p class="text-muted small">System activity and change history</p>
-                    </div>
+                        <h5 class="report-link-title">Audit Log</h5>
+                        <p class="report-link-desc">System activity and change history</p>
+                        <span class="report-link-arrow"><i class="bi bi-arrow-right"></i></span>
+                    </a>
                 </div>
-            </a>
+            </div>
         </div>
     </div>
 
     <!-- Today's Summary -->
-    <div class="row g-4 mt-2">
+    <div class="row g-4">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <i class="bi bi-calendar-day me-2"></i>Today's Activity
+            <div class="summary-card-reports">
+                <div class="summary-header-reports">
+                    <i class="bi bi-calendar-check me-2"></i>Today's Activity
                 </div>
-                <div class="card-body">
-                    <div class="row text-center">
+                <div class="summary-body-reports">
+                    <div class="row">
                         <div class="col-6">
-                            <h2 class="text-success" id="statTodayBorrowed">-</h2>
-                            <small class="text-muted">Borrowed Today</small>
+                            <div class="summary-stat">
+                                <span class="summary-stat-value borrowed" id="statTodayBorrowed">-</span>
+                                <span class="summary-stat-label">Borrowed Today</span>
+                            </div>
                         </div>
                         <div class="col-6">
-                            <h2 class="text-primary" id="statTodayReturned">-</h2>
-                            <small class="text-muted">Returned Today</small>
+                            <div class="summary-stat">
+                                <span class="summary-stat-value returned" id="statTodayReturned">-</span>
+                                <span class="summary-stat-label">Returned Today</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <i class="bi bi-people me-2"></i>System Overview
+            <div class="summary-card-reports">
+                <div class="summary-header-reports">
+                    <i class="bi bi-speedometer2 me-2"></i>System Overview
                 </div>
-                <div class="card-body">
-                    <div class="row text-center">
+                <div class="summary-body-reports">
+                    <div class="row">
                         <div class="col-6">
-                            <h2 class="text-info" id="statActiveStudents">-</h2>
-                            <small class="text-muted">Active Students</small>
+                            <div class="summary-stat">
+                                <span class="summary-stat-value students" id="statActiveStudents">-</span>
+                                <span class="summary-stat-label">Active Students</span>
+                            </div>
                         </div>
                         <div class="col-6">
-                            <h2 class="text-secondary" id="statEquipmentTypes">-</h2>
-                            <small class="text-muted">Equipment Types</small>
+                            <div class="summary-stat">
+                                <span class="summary-stat-value equipment" id="statEquipmentTypes">-</span>
+                                <span class="summary-stat-label">Equipment Types</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -150,10 +162,251 @@
     </div>
 </div>
 
+
 <style>
-.report-card { transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; }
-.report-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
-.report-icon { width: 60px; height: 60px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+/* ===========================================
+   Reports Dashboard - Red & White Theme
+   =========================================== */
+
+/* Page Icon */
+.page-icon-reports {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+
+/* Connection Badge */
+.connection-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
+}
+
+.connection-badge.disconnected {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+/* Stat Cards */
+.stat-card-reports {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-reports::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.stat-card-reports.total::before { background: var(--primary-red); }
+.stat-card-reports.available::before { background: #22c55e; }
+.stat-card-reports.borrowed::before { background: #3b82f6; }
+.stat-card-reports.overdue::before { background: #ef4444; }
+
+.stat-card-reports:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon-reports {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.stat-card-reports.total .stat-icon-reports { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
+.stat-card-reports.available .stat-icon-reports { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.stat-card-reports.borrowed .stat-icon-reports { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.stat-card-reports.overdue .stat-icon-reports { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.stat-content-reports { display: flex; flex-direction: column; }
+.stat-value-reports { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label-reports { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+
+/* Reports Section Card */
+.reports-section-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.reports-section-header {
+    padding: 18px 24px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.reports-section-body { padding: 24px; }
+
+/* Report Link Cards */
+.report-link-card {
+    display: block;
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    text-decoration: none;
+    border: 2px solid #e5e7eb;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.report-link-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    text-decoration: none;
+}
+
+.report-link-card.overdue { border-color: rgba(239, 68, 68, 0.3); }
+.report-link-card.overdue:hover { border-color: #ef4444; background: rgba(239, 68, 68, 0.02); }
+
+.report-link-card.equipment { border-color: rgba(59, 130, 246, 0.3); }
+.report-link-card.equipment:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.02); }
+
+.report-link-card.student { border-color: rgba(139, 0, 0, 0.3); }
+.report-link-card.student:hover { border-color: var(--primary-red); background: rgba(139, 0, 0, 0.02); }
+
+.report-link-card.audit { border-color: rgba(107, 114, 128, 0.3); }
+.report-link-card.audit:hover { border-color: #6b7280; background: rgba(107, 114, 128, 0.02); }
+
+.report-link-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+}
+
+.report-link-card.overdue .report-link-icon { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+.report-link-card.equipment .report-link-icon { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
+.report-link-card.student .report-link-icon { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; }
+.report-link-card.audit .report-link-icon { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
+
+.report-link-title {
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.report-link-desc {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+.report-link-arrow {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: all 0.3s ease;
+}
+
+.report-link-card:hover .report-link-arrow {
+    background: var(--primary-red);
+    color: white;
+    transform: translateX(4px);
+}
+
+/* Summary Cards */
+.summary-card-reports {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    border: 1px solid rgba(139, 0, 0, 0.08);
+}
+
+.summary-header-reports {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    color: white;
+    font-weight: 600;
+}
+
+.summary-body-reports { padding: 24px; }
+
+.summary-stat {
+    text-align: center;
+    padding: 16px;
+    background: #fafafa;
+    border-radius: 12px;
+}
+
+.summary-stat-value {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.summary-stat-value.borrowed { color: var(--primary-red); }
+.summary-stat-value.returned { color: #22c55e; }
+.summary-stat-value.students { color: #3b82f6; }
+.summary-stat-value.equipment { color: #6b7280; }
+
+.summary-stat-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* Responsive */
+@@media (max-width: 991px) {
+    .stat-card-reports { padding: 16px; }
+    .stat-value-reports { font-size: 1.25rem; }
+}
+
+@@media (max-width: 768px) {
+    .report-link-card { padding: 20px; }
+    .report-link-icon { width: 48px; height: 48px; font-size: 1.2rem; }
+    .summary-stat-value { font-size: 1.5rem; }
+}
 </style>
 
 @section Scripts {
@@ -163,7 +416,7 @@ $(document).ready(function() {
     loadStats();
 
     // SignalR Connection
-    const connection = new signalR.HubConnectionBuilder()
+    var connection = new signalR.HubConnectionBuilder()
         .withUrl("/hubs/dashboard")
         .withAutomaticReconnect()
         .build();
@@ -177,15 +430,15 @@ $(document).ready(function() {
         loadStats();
     });
 
-    connection.onclose(() => {
-        $('#connectionStatus').removeClass('bg-success').addClass('bg-danger').html('<i class="bi bi-wifi-off"></i> Disconnected');
+    connection.onclose(function() {
+        $('#connectionStatus').addClass('disconnected').html('<i class="bi bi-wifi-off"></i> Disconnected');
     });
 
-    connection.onreconnected(() => {
-        $('#connectionStatus').removeClass('bg-danger').addClass('bg-success').html('<i class="bi bi-wifi"></i> Real-time Connected');
+    connection.onreconnected(function() {
+        $('#connectionStatus').removeClass('disconnected').html('<i class="bi bi-wifi"></i> Real-time Connected');
     });
 
-    connection.start().catch(err => console.error(err));
+    connection.start().catch(function(err) { console.error(err); });
 });
 
 function loadStats() {

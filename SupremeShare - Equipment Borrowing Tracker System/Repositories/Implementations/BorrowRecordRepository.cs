@@ -196,6 +196,49 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Impleme
             return Convert.ToInt32(result);
         }
 
+        /// <summary>
+        /// Process borrow using sp_process_borrow_transaction (auto-selects available unit by equipment type)
+        /// </summary>
+        public async Task ProcessBorrowByEquipmentAsync(int studentId, int userId, int equipmentId, DateTime dueDate)
+        {
+            InputValidator.ValidateId(studentId, "Student ID");
+            InputValidator.ValidateId(userId, "User ID");
+            InputValidator.ValidateId(equipmentId, "Equipment ID");
+
+            string query = "CALL sp_process_borrow_transaction(@p_student_id, @p_user_id, @p_equipment_id, @p_due_date)";
+            var parameters = new NpgsqlParameter[]
+            {
+                new("@p_student_id", studentId),
+                new("@p_user_id", userId),
+                new("@p_equipment_id", equipmentId),
+                new("@p_due_date", dueDate)
+            };
+
+            await _db.ExecuteNonQueryAsync(query, parameters);
+            _logger.LogInformation("Borrow processed via sp_process_borrow_transaction: Student {StudentId}, Equipment {EquipmentId}", studentId, equipmentId);
+        }
+
+        /// <summary>
+        /// Process return using sp_process_return_transaction (VARCHAR condition: 'Good' or 'Damaged')
+        /// </summary>
+        public async Task ProcessReturnWithConditionAsync(int borrowId, string condition)
+        {
+            InputValidator.ValidateId(borrowId, "Borrow ID");
+            
+            if (string.IsNullOrWhiteSpace(condition) || (condition != "Good" && condition != "Damaged"))
+                throw new ValidationException("Condition must be 'Good' or 'Damaged'");
+
+            string query = "CALL sp_process_return_transaction(@p_borrow_id, @p_return_condition)";
+            var parameters = new NpgsqlParameter[]
+            {
+                new("@p_borrow_id", borrowId),
+                new("@p_return_condition", condition)
+            };
+
+            await _db.ExecuteNonQueryAsync(query, parameters);
+            _logger.LogInformation("Return processed via sp_process_return_transaction: BorrowId {BorrowId}, Condition {Condition}", borrowId, condition);
+        }
+
         private void ValidateBorrowRecord(BorrowRecord record)
         {
             InputValidator.ValidateId(record.TransactionId, "Transaction ID");

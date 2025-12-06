@@ -75,6 +75,9 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
         {
             try
             {
+                // Auto-update overdue statuses before fetching
+                await UpdateOverdueStatusesInternal();
+
                 var query = @"
                     SELECT t.transaction_id, t.transaction_code, t.transaction_date_borrowed,
                            s.student_id_number, s.student_first_name, s.student_last_name,
@@ -195,6 +198,9 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
         {
             try
             {
+                // Auto-update overdue statuses before fetching
+                await UpdateOverdueStatusesInternal();
+
                 var query = @"
                     SELECT b.borrow_id, b.borrow_status, b.borrow_due_date,
                            t.transaction_code, t.transaction_date_borrowed,
@@ -382,7 +388,7 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
         {
             try
             {
-                await _db.ExecuteNonQueryAsync("CALL sp_update_overdue_statuses()");
+                await UpdateOverdueStatusesInternal();
                 _logger.LogInformation("Overdue records updated");
                 return Json(new { success = true, message = "Overdue records updated" });
             }
@@ -393,12 +399,31 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
             }
         }
 
+        /// <summary>
+        /// Internal method to update overdue statuses - called automatically before fetching data
+        /// </summary>
+        private async Task UpdateOverdueStatusesInternal()
+        {
+            try
+            {
+                await _db.ExecuteNonQueryAsync("CALL sp_update_overdue_statuses()");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to update overdue statuses");
+                // Don't throw - this is a background operation
+            }
+        }
+
         // GET: Admin/Transactions/Stats
         [HttpGet("Stats")]
         public async Task<IActionResult> GetStats()
         {
             try
             {
+                // Auto-update overdue statuses before fetching stats
+                await UpdateOverdueStatusesInternal();
+
                 // Use database function fn_count_borrow_status for status counts
                 var activeBorrows = await _borrowRepo.CountByStatusAsync("borrowed");
                 var overdueCount = await _borrowRepo.CountByStatusAsync("overdue");
