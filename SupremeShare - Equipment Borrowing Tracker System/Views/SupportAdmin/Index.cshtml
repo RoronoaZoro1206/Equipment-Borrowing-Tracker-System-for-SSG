@@ -251,15 +251,23 @@
     </div>
 </div>
 
+<<<<<<< Updated upstream
 <!-- Status Records Modal -->
 <div class="modal fade" id="statusRecordsModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content modal-dash">
+=======
+<!-- Status Records Modal with DataTable -->
+<div class="modal fade" id="statusRecordsModal" tabindex="-1" aria-labelledby="statusRecordsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+>>>>>>> Stashed changes
             <div class="modal-header" id="statusModalHeader">
                 <h5 class="modal-title"><i class="bi bi-list-ul me-2"></i><span id="modalStatusTitle">Records</span></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
+<<<<<<< Updated upstream
                 <div class="table-responsive">
                     <table class="table table-dash mb-0" id="statusRecordsTable">
                         <thead>
@@ -280,6 +288,24 @@
                         </tbody>
                     </table>
                 </div>
+=======
+                <table class="table table-striped table-hover" id="statusRecordsTable" style="width:100%">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Transaction Code</th>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Equipment</th>
+                            <th>Serial No.</th>
+                            <th>Date Borrowed</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+>>>>>>> Stashed changes
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
@@ -676,6 +702,8 @@
 @section Scripts {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 <script>
+let statusDataTable = null;
+
 $(document).ready(function() {
     loadDashboardStats();
     initSignalR();
@@ -692,6 +720,7 @@ function loadDashboardStats() {
     });
 }
 
+<<<<<<< Updated upstream
 function initSignalR() {
     var connection = new signalR.HubConnectionBuilder()
         .withUrl("/hubs/dashboard")
@@ -760,7 +789,92 @@ function showStatusModal(status) {
         }
     }).fail(function() {
         $('#statusRecordsBody').html('<tr><td colspan="9" class="text-center text-danger py-4">Failed to load records</td></tr>');
+=======
+// Show modal with DataTable for clicked status card
+function showStatusModal(status) {
+    const titles = {
+        'borrowed': 'Borrowed Items',
+        'returned': 'Returned Items',
+        'overdue': 'Overdue Items',
+        'lost': 'Lost/Missing Items'
+    };
+    
+    const headerColors = {
+        'borrowed': '#3D5A3D',
+        'returned': '#059669',
+        'overdue': '#DC2626',
+        'lost': '#6B7280'
+    };
+    
+    const buttonStyles = {
+        'borrowed': { bg: '#DC2626', color: 'white' },
+        'returned': { bg: '#DC2626', color: 'white' },
+        'overdue': { bg: 'white', color: '#DC2626' },
+        'lost': { bg: '#DC2626', color: 'white' }
+    };
+    
+    $('#modalStatusTitle').text(titles[status] || 'Records');
+    $('#statusModalHeader').css('background', headerColors[status] || '#3D5A3D');
+    
+    const btnStyle = buttonStyles[status] || { bg: '#DC2626', color: 'white' };
+    $('.btn-close-modal').css({
+        'background': btnStyle.bg,
+        'color': btnStyle.color,
+        'border': status === 'overdue' ? '1px solid #DC2626' : 'none'
     });
+
+    // Destroy previous DataTable instance if exists
+    if (statusDataTable) {
+        statusDataTable.destroy();
+        $('#statusRecordsTable tbody').empty();
+    }
+
+    // Initialize DataTable with AJAX
+    statusDataTable = $('#statusRecordsTable').DataTable({
+        ajax: {
+            url: `/SupportAdmin/GetRecordsByStatus?status=${status}`,
+            dataSrc: function(json) {
+                return json.success ? json.data : [];
+            }
+        },
+        columns: [
+            { data: 'transactionCode', render: data => `<span class="fw-medium">${data || '-'}</span>` },
+            { data: 'studentIdNumber' },
+            { data: 'studentName' },
+            { data: 'equipmentName' },
+            { data: 'serialNo', render: data => `<code>${data || '-'}</code>` },
+            { data: 'dateBorrowed', render: data => data ? new Date(data).toLocaleDateString() : '-' },
+            { data: 'borrowDueDate', render: data => data ? new Date(data).toLocaleDateString() : '-' },
+            { 
+                data: 'borrowStatus',
+                render: data => {
+                    const badges = {
+                        'borrowed': '<span class="badge bg-primary">Borrowed</span>',
+                        'returned': '<span class="badge bg-success">Returned</span>',
+                        'overdue': '<span class="badge bg-danger">Overdue</span>',
+                        'lost': '<span class="badge bg-secondary">Lost</span>'
+                    };
+                    return badges[data?.toLowerCase()] || `<span class="badge bg-info">${data || '-'}</span>`;
+                }
+            },
+            {
+                data: 'transactionCode',
+                orderable: false,
+                render: data => `<button class="btn btn-sm btn-outline-primary" onclick="viewTransactionFromModal('${data}')">
+                    <i class="bi bi-eye"></i> View
+                </button>`
+            }
+        ],
+        pageLength: 10,
+        responsive: true,
+        language: {
+            emptyTable: "No records found",
+            loadingRecords: "Loading..."
+        }
+>>>>>>> Stashed changes
+    });
+    
+    new bootstrap.Modal(document.getElementById('statusRecordsModal')).show();
 }
 
 function getStatusBadge(status) {
@@ -803,7 +917,6 @@ function searchTransaction() {
             document.getElementById('dateBorrowed').textContent = d.transactionDateBorrowed ? new Date(d.transactionDateBorrowed).toLocaleString() : '-';
             document.getElementById('lastUpdated').textContent = d.transactionLastUpdated ? new Date(d.transactionLastUpdated).toLocaleString() : '-';
 
-            // Populate borrowing table
             let itemsHtml = '';
             if (d.items && d.items.length > 0) {
                 d.items.forEach(function(i) {
@@ -825,7 +938,6 @@ function searchTransaction() {
             }
             document.getElementById('borrowingTableBody').innerHTML = itemsHtml || '<tr><td colspan="7" class="text-center text-muted">No items found</td></tr>';
             
-            // Populate timeline
             let timelineHtml = '';
             if (d.timeline && d.timeline.length > 0) {
                 d.timeline.forEach(function(t) {
@@ -858,4 +970,62 @@ document.getElementById('transactionCode').addEventListener('keypress', function
     if (e.key === 'Enter') searchTransaction();
 });
 </script>
+<<<<<<< Updated upstream
+=======
+
+<style>
+/* Clickable Status Cards */
+.clickable-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.clickable-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+}
+
+.clickable-card:active {
+    transform: translateY(-2px);
+}
+
+/* Status Modal Styles */
+#statusRecordsModal .modal-header {
+    background: #3D5A3D;
+    color: white;
+    border-bottom: none;
+    padding: 16px 24px;
+}
+
+#statusRecordsModal .modal-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-close-modal {
+    background: #DC2626;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-close-modal:hover {
+    background: #B91C1C;
+}
+
+#statusRecordsModal .modal-body {
+    padding: 24px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+</style>
+>>>>>>> Stashed changes
 }

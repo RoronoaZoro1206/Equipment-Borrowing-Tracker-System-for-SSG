@@ -130,8 +130,13 @@
         <div class="modal-content modal-equip">
             <form id="createEquipmentForm">
                 @Html.AntiForgeryToken()
+<<<<<<< Updated upstream
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Equipment Type</h5>
+=======
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Equipment</h5>
+>>>>>>> Stashed changes
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -144,9 +149,28 @@
                         <input type="text" name="Category" class="form-control form-control-equip" required placeholder="e.g., Electronics, Audio">
                     </div>
                     <div class="mb-3">
+<<<<<<< Updated upstream
                         <label class="form-label-equip">Initial Quantity</label>
                         <input type="number" name="Quantity" class="form-control form-control-equip" value="0" min="0">
                         <small class="text-muted">You can add individual units later</small>
+=======
+                        <label class="form-label text-muted">Quantity</label>
+                        <input type="number" class="form-control bg-light" value="0" readonly disabled>
+                        <input type="hidden" name="Quantity" value="0">
+                        <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Quantity is automatically set once units are added for this equipment</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Date Added</label>
+                            <input type="text" class="form-control bg-light" id="createDateAdded" readonly disabled>
+                            <small class="text-muted">Auto-generated</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Last Updated</label>
+                            <input type="text" class="form-control bg-light" id="createLastUpdated" readonly disabled>
+                            <small class="text-muted">Auto-generated</small>
+                        </div>
+>>>>>>> Stashed changes
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -173,6 +197,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
+<<<<<<< Updated upstream
                         <label class="form-label-equip">Equipment Name</label>
                         <input type="text" name="Name" id="editName" class="form-control form-control-equip">
                     </div>
@@ -183,6 +208,32 @@
                     <div class="mb-3">
                         <label class="form-label-equip">Quantity</label>
                         <input type="number" name="Quantity" id="editQuantity" class="form-control form-control-equip" min="0">
+=======
+                        <label class="form-label">Equipment Name <span class="text-danger">*</span></label>
+                        <input type="text" name="Name" id="editName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Category <span class="text-danger">*</span></label>
+                        <input type="text" name="Category" id="editCategory" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Quantity</label>
+                        <input type="number" id="editQuantityDisplay" class="form-control bg-light" readonly disabled>
+                        <input type="hidden" name="Quantity" id="editQuantity">
+                        <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Quantity is automatically calculated from equipment units</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Date Added</label>
+                            <input type="text" class="form-control bg-light" id="editDateAdded" readonly disabled>
+                            <small class="text-muted">Auto-generated</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Last Updated</label>
+                            <input type="text" class="form-control bg-light" id="editLastUpdated" readonly disabled>
+                            <small class="text-muted">Auto-updated on save</small>
+                        </div>
+>>>>>>> Stashed changes
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -682,6 +733,7 @@ $(document).ready(function() {
     setupFormHandlers();
     initSignalR();
     
+<<<<<<< Updated upstream
     // Sync Quantities button handler
     $('#btnSyncQuantities').click(function() {
         var $btn = $(this);
@@ -711,9 +763,261 @@ $(document).ready(function() {
                 }).fail(function() {
                     $btn.prop('disabled', false).html('<i class="bi bi-arrow-repeat me-1"></i>Sync Quantities');
                     showToast('Failed to sync quantities', 'error');
+=======
+    // Initialize DataTable
+    equipmentTable = DataTableConfig.init('#equipmentTable', {
+        ajax: {
+            url: '/Admin/Equipment/GetAll',
+            dataSrc: json => json.success ? json.data : []
+        },
+        columns: [
+            { data: 'equipmentName', render: data => `<strong>${data}</strong>` },
+            { data: 'equipmentCategory', render: data => `<span class="badge bg-secondary">${data}</span>` },
+            { data: 'equipmentQuantity', className: 'text-center' },
+            { data: 'availableStock', className: 'text-center', render: data => `<span class="badge bg-success">${data}</span>` },
+            { data: 'equipmentDateAdded' },
+            {
+                data: 'equipmentId',
+                orderable: false,
+                render: function(data, type, row) {
+                    return `
+                        <div class="btn-action-group">
+                            <button class="btn btn-sm btn-outline-info btn-action btn-view-units" data-id="${data}" data-name="${row.equipmentName}" title="View Units">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-success btn-action btn-add-unit" data-id="${data}" title="Add Unit">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary btn-action btn-edit" data-id="${data}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-action btn-delete" data-id="${data}" data-name="${row.equipmentName}" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>`;
+                }
+            }
+        ],
+        order: [[0, 'asc']]
+    });
+
+    // Set auto-generated dates when Create modal opens
+    $('#createEquipmentModal').on('show.bs.modal', function() {
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        $('#createDateAdded').val(formattedDate);
+        $('#createLastUpdated').val(formattedDate);
+    });
+
+    // View units
+    $('#equipmentTable').on('click', '.btn-view-units', async function() {
+        const id = $(this).data('id');
+        const name = $(this).data('name');
+        $('#viewUnitsTitle').text(name);
+        Loading.show('Loading units...');
+        
+        try {
+            const res = await Api.get(`/Admin/Equipment/Units/${id}`);
+            Loading.hide();
+            
+            if (res.success) {
+                let html = '';
+                res.data.forEach(u => {
+                    const condBadge = u.conditionBool 
+                        ? '<span class="status-badge available">Good</span>' 
+                        : '<span class="status-badge overdue">Damaged</span>';
+                    const statusClass = u.eunitStatus === 'available' ? 'available' : 
+                                       (u.eunitStatus === 'borrowed' ? 'borrowed' : 'maintenance');
+                    html += `<tr class="fade-in">
+                        <td><strong class="text-primary">${u.eunitSerialNo}</strong></td>
+                        <td>${condBadge}</td>
+                        <td><span class="status-badge ${statusClass}">${u.eunitStatus}</span></td>
+                        <td class="hide-mobile">${u.eunitDateAdded}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger btn-action btn-delete-unit" 
+                                    data-id="${u.eunitId}" data-serial="${u.eunitSerialNo}" 
+                                    ${u.eunitStatus === 'borrowed' ? 'disabled title="Cannot delete borrowed unit"' : ''}>
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+>>>>>>> Stashed changes
                 });
             }
+<<<<<<< Updated upstream
         });
+=======
+        } catch (error) {
+            Loading.hide();
+            Toast.error('Failed to load units');
+        }
+    });
+
+    // Add unit
+    $('#equipmentTable').on('click', '.btn-add-unit', function() {
+        $('#addUnitEquipmentId').val($(this).data('id'));
+        $('#addUnitForm')[0].reset();
+        new bootstrap.Modal('#addUnitModal').show();
+    });
+
+    // Edit equipment - populate all fields including dates
+    $('#equipmentTable').on('click', '.btn-edit', async function() {
+        const id = $(this).data('id');
+        Loading.show('Loading...');
+        
+        try {
+            const res = await Api.get(`/Admin/Equipment/Get/${id}`);
+            Loading.hide();
+            
+            if (res.success) {
+                const data = res.data;
+                $('#editEquipmentId').val(data.equipmentId);
+                $('#editName').val(data.equipmentName);
+                $('#editCategory').val(data.equipmentCategory);
+                $('#editQuantity').val(data.equipmentQuantity);
+                $('#editQuantityDisplay').val(data.equipmentQuantity);
+                
+                // Format and display dates
+                const dateAdded = new Date(data.equipmentDateAdded);
+                const lastUpdated = data.equipmentLastUpdated ? new Date(data.equipmentLastUpdated) : new Date();
+                $('#editDateAdded').val(dateAdded.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }));
+                $('#editLastUpdated').val(lastUpdated.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }));
+                
+                new bootstrap.Modal('#editEquipmentModal').show();
+            } else {
+                Toast.error(res.message);
+            }
+        } catch (error) {
+            Loading.hide();
+            Toast.error('Failed to load equipment');
+        }
+    });
+
+    // Delete equipment with SweetAlert2
+    $('#equipmentTable').on('click', '.btn-delete', async function() {
+        const id = $(this).data('id');
+        const name = $(this).data('name');
+        
+        const confirmed = await Confirm.delete(name);
+        if (!confirmed) return;
+        
+        Loading.show('Deleting...');
+        
+        try {
+            const res = await Api.post('/Admin/Equipment/Delete', { equipmentId: id });
+            Loading.hide();
+            
+            if (res.success) {
+                Toast.success('Equipment deleted');
+                equipmentTable.ajax.reload();
+                loadStats();
+            } else {
+                Toast.error(res.message);
+            }
+        } catch (error) {
+            Loading.hide();
+            Toast.error('Failed to delete equipment');
+        }
+    });
+
+    // Delete unit
+    $(document).on('click', '.btn-delete-unit', async function() {
+        const id = $(this).data('id');
+        const serial = $(this).data('serial');
+        
+        const confirmed = await Confirm.delete(`Unit ${serial}`);
+        if (!confirmed) return;
+        
+        Loading.show('Deleting...');
+        
+        try {
+            const res = await Api.post('/Admin/Equipment/DeleteUnit', { unitId: id });
+            Loading.hide();
+            
+            if (res.success) {
+                Toast.success('Unit deleted');
+                $(this).closest('tr').fadeOut(() => $(this).closest('tr').remove());
+                equipmentTable.ajax.reload();
+                loadStats();
+            } else {
+                Toast.error(res.message);
+            }
+        } catch (error) {
+            Loading.hide();
+            Toast.error('Failed to delete unit');
+        }
+    });
+
+    // Form submissions
+    $('#createEquipmentForm').submit(async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('createEquipBtn');
+        Loading.button(btn, true);
+        
+        try {
+            const res = await $.post('/Admin/Equipment/Create', $(this).serialize());
+            Loading.button(btn, false);
+            
+            if (res.success) {
+                bootstrap.Modal.getInstance('#createEquipmentModal').hide();
+                this.reset();
+                equipmentTable.ajax.reload();
+                loadStats();
+                Toast.success('Equipment created successfully');
+            } else {
+                Toast.error(res.message);
+            }
+        } catch (error) {
+            Loading.button(btn, false);
+            Toast.error('Failed to create equipment');
+        }
+    });
+
+    $('#editEquipmentForm').submit(async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('editEquipBtn');
+        Loading.button(btn, true);
+        
+        try {
+            const res = await $.post('/Admin/Equipment/Update', $(this).serialize());
+            Loading.button(btn, false);
+            
+            if (res.success) {
+                bootstrap.Modal.getInstance('#editEquipmentModal').hide();
+                equipmentTable.ajax.reload();
+                Toast.success('Equipment updated');
+            } else {
+                Toast.error(res.message);
+            }
+        } catch (error) {
+            Loading.button(btn, false);
+            Toast.error('Failed to update equipment');
+        }
+    });
+
+    $('#addUnitForm').submit(async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('addUnitBtn');
+        Loading.button(btn, true);
+        
+        try {
+            const res = await $.post('/Admin/Equipment/CreateUnit', $(this).serialize());
+            Loading.button(btn, false);
+            
+            if (res.success) {
+                bootstrap.Modal.getInstance('#addUnitModal').hide();
+                this.reset();
+                equipmentTable.ajax.reload();
+                loadStats();
+                Toast.success('Unit added successfully');
+            } else {
+                Toast.error(res.message);
+            }
+        } catch (error) {
+            Loading.button(btn, false);
+            Toast.error('Failed to add unit');
+        }
+>>>>>>> Stashed changes
     });
 });
 
