@@ -1,0 +1,415 @@
+@model IEnumerable<SupremeShare___Equipment_Borrowing_Tracker_System.Models.Equipment>
+@{
+    ViewData["Title"] = "Equipment Units";
+    Layout = "~/Views/Shared/_MainLayout.cshtml";
+}
+
+<div class="container-fluid py-4 fade-in">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
+        <h2><i class="bi bi-hdd-stack-fill me-2"></i>Equipment Units</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUnitModal">
+            <i class="bi bi-plus-lg me-1"></i>Add New Unit
+        </button>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md">
+            <div class="card card-hover bg-info text-white">
+                <div class="card-body text-center py-3">
+                    <h3 id="statTotal" class="mb-1">-</h3>
+                    <small>Total Units</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="card card-hover bg-success text-white">
+                <div class="card-body text-center py-3">
+                    <h3 id="statAvailable" class="mb-1">-</h3>
+                    <small>Available</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="card card-hover bg-warning text-dark">
+                <div class="card-body text-center py-3">
+                    <h3 id="statBorrowed" class="mb-1">-</h3>
+                    <small>Borrowed</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="card card-hover bg-secondary text-white">
+                <div class="card-body text-center py-3">
+                    <h3 id="statMaintenance" class="mb-1">-</h3>
+                    <small>Maintenance</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md">
+            <div class="card card-hover bg-danger text-white">
+                <div class="card-body text-center py-3">
+                    <h3 id="statDamaged" class="mb-1">-</h3>
+                    <small>Damaged</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Units Table -->
+    <div class="card card-hover shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-list-ul me-2"></i>All Equipment Units</span>
+            <button class="btn btn-sm btn-outline-light" onclick="refreshData()">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-hover" id="unitsTable" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Serial No</th>
+                        <th>Equipment</th>
+                        <th>Category</th>
+                        <th>Condition</th>
+                        <th>Status</th>
+                        <th class="hide-mobile">Date Added</th>
+                        <th class="hide-mobile">Last Updated</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Unit Modal -->
+<div class="modal fade" id="addUnitModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="addUnitForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Equipment Unit</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Equipment Type <span class="text-danger">*</span></label>
+                        <select name="EquipmentId" id="addEquipmentId" class="form-select" required>
+                            <option value="">-- Select Equipment --</option>
+                            @foreach (var equip in Model)
+                            {
+                                <option value="@equip.EquipmentId">@equip.EquipmentName (@equip.EquipmentCategory)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Serial Number <span class="text-danger">*</span></label>
+                        <input type="text" name="SerialNo" class="form-control" required placeholder="e.g., SN-001, LAPTOP-2024-001">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Condition</label>
+                        <select name="Condition" class="form-select">
+                            <option value="true" selected>✓ Good</option>
+                            <option value="false">✗ Damaged</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="Status" class="form-select">
+                            <option value="available" selected>Available</option>
+                            <option value="maintenance">Under Maintenance</option>
+                            <option value="retired">Retired</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Date Added</label>
+                            <input type="text" class="form-control bg-light" id="addDateAdded" readonly disabled>
+                            <small class="text-muted">Auto-generated</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Last Updated</label>
+                            <input type="text" class="form-control bg-light" id="addLastUpdated" readonly disabled>
+                            <small class="text-muted">Auto-generated</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="addUnitBtn">
+                        <i class="bi bi-plus-circle me-1"></i>Add Unit
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Unit Modal -->
+<div class="modal fade" id="editUnitModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="editUnitForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="UnitId" id="editUnitId">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Equipment Unit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Equipment Type <span class="text-danger">*</span></label>
+                        <select name="EquipmentId" id="editEquipmentId" class="form-select" required>
+                            <option value="">-- Select Equipment --</option>
+                            @foreach (var equip in Model)
+                            {
+                                <option value="@equip.EquipmentId">@equip.EquipmentName (@equip.EquipmentCategory)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Serial Number <span class="text-danger">*</span></label>
+                        <input type="text" name="SerialNo" id="editSerialNo" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Condition</label>
+                        <select name="Condition" id="editCondition" class="form-select">
+                            <option value="true">✓ Good</option>
+                            <option value="false">✗ Damaged</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="Status" id="editStatus" class="form-select">
+                            <option value="available">Available</option>
+                            <option value="borrowed">Borrowed</option>
+                            <option value="maintenance">Under Maintenance</option>
+                            <option value="retired">Retired</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Date Added</label>
+                            <input type="text" class="form-control bg-light" id="editDateAdded" readonly disabled>
+                            <small class="text-muted">Auto-generated</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Last Updated</label>
+                            <input type="text" class="form-control bg-light" id="editLastUpdated" readonly disabled>
+                            <small class="text-muted">Auto-updated on save</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning" id="editUnitBtn">
+                        <i class="bi bi-check-circle me-1"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let unitsTable;
+
+$(document).ready(function() {
+    loadStats();
+    
+    // Initialize DataTable
+    unitsTable = DataTableConfig.init('#unitsTable', {
+        ajax: {
+            url: '/Admin/Equipment/GetAllUnits',
+            dataSrc: json => json.success ? json.data : []
+        },
+        columns: [
+            { data: 'eunitSerialNo', render: data => `<strong class="text-primary">${data}</strong>` },
+            { data: 'equipmentName', render: data => `<strong>${data}</strong>` },
+            { data: 'equipmentCategory', render: data => `<span class="badge bg-secondary">${data}</span>` },
+            { 
+                data: 'conditionBool', 
+                render: data => data 
+                    ? '<span class="status-badge available">Good</span>' 
+                    : '<span class="status-badge overdue">Damaged</span>'
+            },
+            { 
+                data: 'eunitStatus', 
+                render: data => {
+                    const statusClass = data === 'available' ? 'available' : 
+                                       (data === 'borrowed' ? 'borrowed' : 
+                                       (data === 'maintenance' ? 'maintenance' : 'secondary'));
+                    return `<span class="status-badge ${statusClass}">${data}</span>`;
+                }
+            },
+            { data: 'eunitDateAdded', className: 'hide-mobile' },
+            { data: 'eunitLastUpdated', className: 'hide-mobile' },
+            {
+                data: 'eunitId',
+                orderable: false,
+                render: function(data, type, row) {
+                    const disableDelete = row.eunitStatus === 'borrowed' ? 'disabled title="Cannot delete borrowed unit"' : '';
+                    return `
+                        <div class="btn-action-group">
+                            <button class="btn btn-sm btn-outline-primary btn-action btn-edit" data-id="${data}" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger btn-action btn-delete" data-id="${data}" data-serial="${row.eunitSerialNo}" ${disableDelete} title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>`;
+                }
+            }
+        ],
+        order: [[5, 'desc']] // Order by date added descending
+    });
+
+    // Set auto-generated dates when Add modal opens
+    $('#addUnitModal').on('show.bs.modal', function() {
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+        $('#addDateAdded').val(formattedDate);
+        $('#addLastUpdated').val(formattedDate);
+    });
+
+    // Edit unit
+    $('#unitsTable').on('click', '.btn-edit', async function() {
+        const id = $(this).data('id');
+        Loading.show('Loading...');
+        
+        try {
+            const res = await Api.get(`/Admin/Equipment/Unit/${id}`);
+            Loading.hide();
+            
+            if (res.success) {
+                const data = res.data;
+                $('#editUnitId').val(data.eunitId);
+                $('#editEquipmentId').val(data.equipmentId);
+                $('#editSerialNo').val(data.eunitSerialNo);
+                $('#editCondition').val(data.eunitCondition.toString());
+                $('#editStatus').val(data.eunitStatus);
+                
+                // Format and display dates
+                const dateAdded = new Date(data.eunitDateAdded);
+                const lastUpdated = new Date(data.eunitLastUpdated);
+                $('#editDateAdded').val(dateAdded.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }));
+                $('#editLastUpdated').val(lastUpdated.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }));
+                
+                new bootstrap.Modal('#editUnitModal').show();
+            } else {
+                Toast.error(res.message);
+            }
+        } catch (error) {
+            Loading.hide();
+            Toast.error('Failed to load unit');
+        }
+    });
+
+    // Delete unit
+    $('#unitsTable').on('click', '.btn-delete:not([disabled])', async function() {
+        const id = $(this).data('id');
+        const serial = $(this).data('serial');
+        
+        const confirmed = await Confirm.delete(`Unit ${serial}`);
+        if (!confirmed) return;
+        
+        Loading.show('Deleting...');
+        
+        try {
+            const res = await Api.post('/Admin/Equipment/DeleteUnit', { unitId: id });
+            Loading.hide();
+            
+            if (res.success) {
+                Toast.success('Unit deleted successfully');
+                unitsTable.ajax.reload();
+                loadStats();
+            } else {
+                Toast.error(res.message);
+            }
+        } catch (error) {
+            Loading.hide();
+            Toast.error('Failed to delete unit');
+        }
+    });
+
+    // Add unit form submission
+    $('#addUnitForm').submit(async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('addUnitBtn');
+        Loading.button(btn, true);
+        
+        try {
+            const res = await $.post('/Admin/Equipment/CreateUnit', $(this).serialize());
+            Loading.button(btn, false);
+            
+            if (res.success) {
+                bootstrap.Modal.getInstance('#addUnitModal').hide();
+                this.reset();
+                unitsTable.ajax.reload();
+                loadStats();
+                Toast.success('Unit added successfully');
+            } else {
+                Toast.error(res.message);
+            }
+        } catch (error) {
+            Loading.button(btn, false);
+            Toast.error('Failed to add unit');
+        }
+    });
+
+    // Edit unit form submission
+    $('#editUnitForm').submit(async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('editUnitBtn');
+        Loading.button(btn, true);
+        
+        try {
+            const res = await $.post('/Admin/Equipment/UpdateUnit', $(this).serialize());
+            Loading.button(btn, false);
+            
+            if (res.success) {
+                bootstrap.Modal.getInstance('#editUnitModal').hide();
+                unitsTable.ajax.reload();
+                loadStats();
+                Toast.success('Unit updated successfully');
+            } else {
+                Toast.error(res.message);
+            }
+        } catch (error) {
+            Loading.button(btn, false);
+            Toast.error('Failed to update unit');
+        }
+    });
+});
+
+async function loadStats() {
+    try {
+        const res = await Api.get('/Admin/Equipment/Stats');
+        if (res.success) {
+            $('#statTotal').text(res.data.totalUnits);
+            $('#statAvailable').text(res.data.availableUnits);
+            $('#statBorrowed').text(res.data.borrowedUnits);
+            // Calculate maintenance units (need to fetch from units)
+            const unitsRes = await Api.get('/Admin/Equipment/GetAllUnits');
+            if (unitsRes.success) {
+                const maintenanceCount = unitsRes.data.filter(u => u.eunitStatus === 'maintenance').length;
+                $('#statMaintenance').text(maintenanceCount);
+            }
+            $('#statDamaged').text(res.data.damagedUnits);
+        }
+    } catch (error) {
+        console.error('Failed to load stats');
+    }
+}
+
+function refreshData() {
+    Toast.info('Refreshing...');
+    unitsTable.ajax.reload();
+    loadStats();
+}
+</script>
+}

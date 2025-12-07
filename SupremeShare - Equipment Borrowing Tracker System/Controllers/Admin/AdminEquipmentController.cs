@@ -43,6 +43,50 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
             return View("~/Views/Admin/Equipment/Index.cshtml", equipment);
         }
 
+        // GET: Admin/Equipment/Units - Equipment Units Management Page
+        [HttpGet("Units")]
+        public async Task<IActionResult> UnitsPage()
+        {
+            var equipment = await _equipmentRepo.GetAllAsync();
+            return View("~/Views/Admin/Equipment/Units.cshtml", equipment);
+        }
+
+        // GET: Admin/Equipment/GetAllUnits - All units with equipment info for Units page
+        [HttpGet("GetAllUnits")]
+        public async Task<IActionResult> GetAllUnits()
+        {
+            try
+            {
+                var allUnits = await _unitRepo.GetAllAsync();
+                var result = new List<object>();
+
+                foreach (var unit in allUnits)
+                {
+                    var equipment = await _equipmentRepo.GetByIdAsync(unit.EquipmentId);
+                    result.Add(new
+                    {
+                        unit.EunitId,
+                        unit.EquipmentId,
+                        EquipmentName = equipment?.EquipmentName ?? "Unknown",
+                        EquipmentCategory = equipment?.EquipmentCategory ?? "Unknown",
+                        unit.EunitSerialNo,
+                        Condition = unit.EunitCondition ? "Good" : "Damaged",
+                        ConditionBool = unit.EunitCondition,
+                        unit.EunitStatus,
+                        EunitDateAdded = unit.EunitDateAdded.ToString("yyyy-MM-dd"),
+                        EunitLastUpdated = unit.EunitLastUpdated.ToString("yyyy-MM-dd HH:mm")
+                    });
+                }
+
+                return Json(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching all units");
+                return Json(new { success = false, message = "Failed to fetch units" });
+            }
+        }
+
         #region Equipment Type CRUD
 
         // GET: Admin/Equipment/GetAll
@@ -265,6 +309,42 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
             {
                 _logger.LogError(ex, "Error fetching available units");
                 return Json(new { success = false, message = "Failed to fetch available units" });
+            }
+        }
+
+        // GET: Admin/Equipment/GetUnitsByStatus - For Dashboard status card modal
+        [HttpGet("GetUnitsByStatus")]
+        public async Task<IActionResult> GetUnitsByStatus([FromQuery] string status)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(status))
+                    return Json(new { success = false, message = "Status is required" });
+
+                var allUnits = await _unitRepo.GetAllAsync();
+                var filteredUnits = allUnits.Where(u => u.EunitStatus.Equals(status, StringComparison.OrdinalIgnoreCase));
+
+                var result = new List<object>();
+                foreach (var unit in filteredUnits)
+                {
+                    var equipment = await _equipmentRepo.GetByIdAsync(unit.EquipmentId);
+                    result.Add(new
+                    {
+                        SerialNo = unit.EunitSerialNo,
+                        EquipmentName = equipment?.EquipmentName ?? "Unknown",
+                        Category = equipment?.EquipmentCategory ?? "Unknown",
+                        Condition = unit.EunitCondition,
+                        Status = unit.EunitStatus,
+                        LastUpdated = unit.EunitLastUpdated
+                    });
+                }
+
+                return Json(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching units by status {Status}", status);
+                return Json(new { success = false, message = "Failed to fetch units" });
             }
         }
 

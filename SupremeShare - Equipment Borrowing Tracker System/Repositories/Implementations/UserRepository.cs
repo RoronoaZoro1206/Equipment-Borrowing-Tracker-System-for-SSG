@@ -183,6 +183,153 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Impleme
             return Convert.ToInt32(result) > 0;
         }
 
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return null;
+            
+            var sanitizedEmail = InputValidator.SanitizeString(email, 100);
+            string query = @"SELECT user_id, user_username, user_role, user_position, 
+                user_last_name, user_first_name, user_middle_name, user_suffix,
+                user_email, user_contact_no, user_status, user_date_created, user_last_updated 
+                FROM ""USER"" WHERE LOWER(user_email) = LOWER(@email)";
+            var parameters = new NpgsqlParameter[] { new("@email", sanitizedEmail) };
+            var dt = await _db.ExecuteQueryAsync(query, parameters);
+
+            if (dt.Rows.Count == 0) return null;
+            return MapToUser(dt.Rows[0], excludePassword: true);
+        }
+
+        public async Task<bool> UpdatePasswordAsync(int userId, string hashedPassword)
+        {
+            InputValidator.ValidateId(userId, "User ID");
+            
+            string query = @"UPDATE ""USER"" SET 
+                user_hashed_password = @password,
+                user_last_updated = CURRENT_TIMESTAMP
+                WHERE user_id = @id";
+
+            var parameters = new NpgsqlParameter[]
+            {
+                new("@id", userId),
+                new("@password", hashedPassword)
+            };
+
+            var result = await _db.ExecuteNonQueryAsync(query, parameters) > 0;
+            
+            if (result)
+            {
+                _logger.LogInformation("Password updated for user: {UserId}", userId);
+            }
+
+            return result;
+        }
+
+        public async Task<IEnumerable<User>> GetByRoleAsync(string role)
+        {
+            var sanitizedRole = InputValidator.SanitizeString(role, 50).ToLower();
+            
+            // Cast enum to text for case-insensitive comparison
+            string query = @"SELECT user_id, user_username, user_role, user_position, 
+                user_last_name, user_first_name, user_middle_name, user_suffix,
+                user_email, user_contact_no, user_status, user_date_created, user_last_updated 
+                FROM ""USER"" WHERE user_role::text = @role ORDER BY user_date_created DESC";
+            var parameters = new NpgsqlParameter[] { new("@role", sanitizedRole) };
+            var dt = await _db.ExecuteQueryAsync(query, parameters);
+
+            return dt.AsEnumerable().Select(row => MapToUser(row, excludePassword: true));
+        }
+
+        public async Task<IEnumerable<User>> GetActiveByRoleAsync(string role)
+        {
+            var sanitizedRole = InputValidator.SanitizeString(role, 50).ToLower();
+            
+            // Cast enum to text for case-insensitive comparison
+            string query = @"SELECT user_id, user_username, user_role, user_position, 
+                user_last_name, user_first_name, user_middle_name, user_suffix,
+                user_email, user_contact_no, user_status, user_date_created, user_last_updated 
+                FROM ""USER"" WHERE user_role::text = @role AND user_status = TRUE 
+                ORDER BY user_date_created DESC";
+            var parameters = new NpgsqlParameter[] { new("@role", sanitizedRole) };
+            var dt = await _db.ExecuteQueryAsync(query, parameters);
+
+            return dt.AsEnumerable().Select(row => MapToUser(row, excludePassword: true));
+        }
+
+        public async Task<IEnumerable<User>> GetInactiveByRoleAsync(string role)
+        {
+            var sanitizedRole = InputValidator.SanitizeString(role, 50).ToLower();
+            
+            // Cast enum to text for case-insensitive comparison
+            string query = @"SELECT user_id, user_username, user_role, user_position, 
+                user_last_name, user_first_name, user_middle_name, user_suffix,
+                user_email, user_contact_no, user_status, user_date_created, user_last_updated 
+                FROM ""USER"" WHERE user_role::text = @role AND user_status = FALSE 
+                ORDER BY user_date_created DESC";
+            var parameters = new NpgsqlParameter[] { new("@role", sanitizedRole) };
+            var dt = await _db.ExecuteQueryAsync(query, parameters);
+
+            return dt.AsEnumerable().Select(row => MapToUser(row, excludePassword: true));
+        }
+
+        public async Task<bool> ActivateUserAsync(int userId, string hashedPassword)
+        {
+            InputValidator.ValidateId(userId, "User ID");
+
+            var existingUser = await GetByIdAsync(userId);
+            if (existingUser == null)
+                throw new NotFoundException("User not found.");
+
+            string query = @"UPDATE ""USER"" SET 
+                user_status = TRUE, 
+                user_hashed_password = @password,
+                user_last_updated = CURRENT_TIMESTAMP 
+                WHERE user_id = @id";
+            var parameters = new NpgsqlParameter[] 
+            { 
+                new("@id", userId),
+                new("@password", hashedPassword)
+            };
+            
+            var result = await _db.ExecuteNonQueryAsync(query, parameters) > 0;
+            
+            if (result)
+            {
+                await _auditService.LogActionAsync(userId, "USER_ACTIVATED", 
+                    new { existingUser.UserUsername, OldStatus = false }, 
+                    new { existingUser.UserUsername, NewStatus = true });
+                _logger.LogInformation("User activated: {UserId}", userId);
+            }
+
+            return result;
+        }
+
+        public async Task<bool> DeactivateUserAsync(int userId)
+        {
+            InputValidator.ValidateId(userId, "User ID");
+
+            var existingUser = await GetByIdAsync(userId);
+            if (existingUser == null)
+                throw new NotFoundException("User not found.");
+
+            string query = @"UPDATE ""USER"" SET 
+                user_status = FALSE, 
+                user_last_updated = CURRENT_TIMESTAMP 
+                WHERE user_id = @id";
+            var parameters = new NpgsqlParameter[] { new("@id", userId) };
+            
+            var result = await _db.ExecuteNonQueryAsync(query, parameters) > 0;
+            
+            if (result)
+            {
+                await _auditService.LogActionAsync(userId, "USER_DEACTIVATED", 
+                    new { existingUser.UserUsername, OldStatus = true }, 
+                    new { existingUser.UserUsername, NewStatus = false });
+                _logger.LogWarning("User deactivated: {UserId}", userId);
+            }
+
+            return result;
+        }
+
         private void ValidateUser(User user)
         {
             InputValidator.ValidateUsername(user.UserUsername);
