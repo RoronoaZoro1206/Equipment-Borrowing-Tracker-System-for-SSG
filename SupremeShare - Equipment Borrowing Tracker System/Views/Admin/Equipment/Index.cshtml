@@ -130,13 +130,8 @@
         <div class="modal-content modal-equip">
             <form id="createEquipmentForm">
                 @Html.AntiForgeryToken()
-<<<<<<< Updated upstream
                 <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Equipment Type</h5>
-=======
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Equipment</h5>
->>>>>>> Stashed changes
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -149,28 +144,10 @@
                         <input type="text" name="Category" class="form-control form-control-equip" required placeholder="e.g., Electronics, Audio">
                     </div>
                     <div class="mb-3">
-<<<<<<< Updated upstream
-                        <label class="form-label-equip">Initial Quantity</label>
-                        <input type="number" name="Quantity" class="form-control form-control-equip" value="0" min="0">
-                        <small class="text-muted">You can add individual units later</small>
-=======
-                        <label class="form-label text-muted">Quantity</label>
-                        <input type="number" class="form-control bg-light" value="0" readonly disabled>
+                        <label class="form-label-equip text-muted">Quantity</label>
+                        <input type="number" class="form-control form-control-equip bg-light" value="0" readonly disabled>
                         <input type="hidden" name="Quantity" value="0">
                         <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Quantity is automatically set once units are added for this equipment</small>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Date Added</label>
-                            <input type="text" class="form-control bg-light" id="createDateAdded" readonly disabled>
-                            <small class="text-muted">Auto-generated</small>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Last Updated</label>
-                            <input type="text" class="form-control bg-light" id="createLastUpdated" readonly disabled>
-                            <small class="text-muted">Auto-generated</small>
-                        </div>
->>>>>>> Stashed changes
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -197,43 +174,18 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-<<<<<<< Updated upstream
-                        <label class="form-label-equip">Equipment Name</label>
-                        <input type="text" name="Name" id="editName" class="form-control form-control-equip">
+                        <label class="form-label-equip">Equipment Name <span class="text-danger">*</span></label>
+                        <input type="text" name="Name" id="editName" class="form-control form-control-equip" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label-equip">Category</label>
-                        <input type="text" name="Category" id="editCategory" class="form-control form-control-equip">
+                        <label class="form-label-equip">Category <span class="text-danger">*</span></label>
+                        <input type="text" name="Category" id="editCategory" class="form-control form-control-equip" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label-equip">Quantity</label>
-                        <input type="number" name="Quantity" id="editQuantity" class="form-control form-control-equip" min="0">
-=======
-                        <label class="form-label">Equipment Name <span class="text-danger">*</span></label>
-                        <input type="text" name="Name" id="editName" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Category <span class="text-danger">*</span></label>
-                        <input type="text" name="Category" id="editCategory" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted">Quantity</label>
-                        <input type="number" id="editQuantityDisplay" class="form-control bg-light" readonly disabled>
+                        <label class="form-label-equip text-muted">Quantity</label>
+                        <input type="number" id="editQuantityDisplay" class="form-control form-control-equip bg-light" readonly disabled>
                         <input type="hidden" name="Quantity" id="editQuantity">
                         <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Quantity is automatically calculated from equipment units</small>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Date Added</label>
-                            <input type="text" class="form-control bg-light" id="editDateAdded" readonly disabled>
-                            <small class="text-muted">Auto-generated</small>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label text-muted">Last Updated</label>
-                            <input type="text" class="form-control bg-light" id="editLastUpdated" readonly disabled>
-                            <small class="text-muted">Auto-updated on save</small>
-                        </div>
->>>>>>> Stashed changes
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -733,7 +685,6 @@ $(document).ready(function() {
     setupFormHandlers();
     initSignalR();
     
-<<<<<<< Updated upstream
     // Sync Quantities button handler
     $('#btnSyncQuantities').click(function() {
         var $btn = $(this);
@@ -763,19 +714,119 @@ $(document).ready(function() {
                 }).fail(function() {
                     $btn.prop('disabled', false).html('<i class="bi bi-arrow-repeat me-1"></i>Sync Quantities');
                     showToast('Failed to sync quantities', 'error');
-=======
-    // Initialize DataTable
-    equipmentTable = DataTableConfig.init('#equipmentTable', {
+                });
+            }
+        });
+    });
+});
+
+// Initialize SignalR for real-time updates
+function initSignalR() {
+    signalRConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/dashboard")
+        .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+        .build();
+
+    // Listen for stats updates
+    signalRConnection.on("StatsUpdated", function() {
+        console.log("SignalR: Stats updated - refreshing equipment data");
+        loadStats();
+        if (equipmentTable) {
+            equipmentTable.ajax.reload(null, false);
+        }
+    });
+
+    // Listen for equipment status changes
+    signalRConnection.on("EquipmentStatusChanged", function(data) {
+        console.log("SignalR: Equipment status changed", data);
+        showToast('Equipment updated: ' + data.equipmentName, 'info');
+        loadStats();
+        if (equipmentTable) {
+            equipmentTable.ajax.reload(null, false);
+        }
+    });
+
+    // Listen for overdue alerts (affects borrowed count)
+    signalRConnection.on("OverdueAlert", function(count) {
+        if (count > 0) {
+            showToast('⚠️ ' + count + ' item(s) are now overdue!', 'warning');
+        }
+        loadStats();
+    });
+
+    // Start connection
+    signalRConnection.start()
+        .then(function() {
+            console.log("SignalR connected for real-time equipment updates");
+        })
+        .catch(function(err) {
+            console.error("SignalR connection error:", err);
+        });
+
+    signalRConnection.onreconnected(function() {
+        console.log("SignalR reconnected");
+        loadStats();
+    });
+}
+
+function loadStats() {
+    $.get('/Admin/Equipment/Stats', function(res) {
+        if (res.success) {
+            $('#statTypes').text(res.data.totalEquipmentTypes);
+            $('#statTotal').text(res.data.totalUnits);
+            $('#statAvailable').text(res.data.availableUnits);
+            $('#statBorrowed').text(res.data.borrowedUnits);
+            $('#statDamaged').text(res.data.damagedUnits);
+        }
+    });
+}
+
+function initEquipmentTable() {
+    equipmentTable = $('#equipmentTable').DataTable({
         ajax: {
             url: '/Admin/Equipment/GetAll',
-            dataSrc: json => json.success ? json.data : []
+            dataSrc: function(json) {
+                if (json.success && json.data) {
+                    populateCategoryFilter(json.data);
+                    return json.data;
+                }
+                return [];
+            }
+        },
+        responsive: true,
+        pageLength: 10,
+        order: [[0, 'asc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_",
+            emptyTable: '<div class="text-center py-5"><i class="bi bi-box-seam text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No equipment found</p></div>'
         },
         columns: [
-            { data: 'equipmentName', render: data => `<strong>${data}</strong>` },
-            { data: 'equipmentCategory', render: data => `<span class="badge bg-secondary">${data}</span>` },
-            { data: 'equipmentQuantity', className: 'text-center' },
-            { data: 'availableStock', className: 'text-center', render: data => `<span class="badge bg-success">${data}</span>` },
-            { data: 'equipmentDateAdded' },
+            { 
+                data: 'equipmentName',
+                render: function(data) {
+                    return '<strong>' + data + '</strong>';
+                }
+            },
+            { 
+                data: 'equipmentCategory',
+                render: function(data) {
+                    return '<span class="badge-category">' + data + '</span>';
+                }
+            },
+            { 
+                data: 'equipmentQuantity',
+                className: 'text-center'
+            },
+            { 
+                data: 'availableStock',
+                className: 'text-center',
+                render: function(data) {
+                    return '<span class="badge bg-success">' + data + '</span>';
+                }
+            },
             {
                 data: 'equipmentId',
                 orderable: false,
@@ -841,12 +892,9 @@ $(document).ready(function() {
                             </button>
                         </td>
                     </tr>`;
->>>>>>> Stashed changes
                 });
+                $('#unitsTable tbody').html(html || '<tr><td colspan="5" class="text-center text-muted py-4">No units found</td></tr>');
             }
-<<<<<<< Updated upstream
-        });
-=======
         } catch (error) {
             Loading.hide();
             Toast.error('Failed to load units');
@@ -1017,130 +1065,61 @@ $(document).ready(function() {
             Loading.button(btn, false);
             Toast.error('Failed to add unit');
         }
->>>>>>> Stashed changes
-    });
-});
-
-// Initialize SignalR for real-time updates
-function initSignalR() {
-    signalRConnection = new signalR.HubConnectionBuilder()
-        .withUrl("/hubs/dashboard")
-        .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
-        .build();
-
-    // Listen for stats updates
-    signalRConnection.on("StatsUpdated", function() {
-        console.log("SignalR: Stats updated - refreshing equipment data");
-        loadStats();
-        if (equipmentTable) {
-            equipmentTable.ajax.reload(null, false);
-        }
     });
 
-    // Listen for equipment status changes
-    signalRConnection.on("EquipmentStatusChanged", function(data) {
-        console.log("SignalR: Equipment status changed", data);
-        showToast('Equipment updated: ' + data.equipmentName, 'info');
-        loadStats();
-        if (equipmentTable) {
-            equipmentTable.ajax.reload(null, false);
-        }
-    });
-
-    // Listen for overdue alerts (affects borrowed count)
-    signalRConnection.on("OverdueAlert", function(count) {
-        if (count > 0) {
-            showToast('⚠️ ' + count + ' item(s) are now overdue!', 'warning');
-        }
-        loadStats();
-    });
-
-    // Start connection
-    signalRConnection.start()
-        .then(function() {
-            console.log("SignalR connected for real-time equipment updates");
-        })
-        .catch(function(err) {
-            console.error("SignalR connection error:", err);
-        });
-
-    signalRConnection.onreconnected(function() {
-        console.log("SignalR reconnected");
-        loadStats();
-    });
-}
-
-function loadStats() {
-    $.get('/Admin/Equipment/Stats', function(res) {
-        if (res.success) {
-            $('#statTypes').text(res.data.totalEquipmentTypes);
-            $('#statTotal').text(res.data.totalUnits);
-            $('#statAvailable').text(res.data.availableUnits);
-            $('#statBorrowed').text(res.data.borrowedUnits);
-            $('#statDamaged').text(res.data.damagedUnits);
-        }
-    });
-}
-
-function initEquipmentTable() {
-    equipmentTable = $('#equipmentTable').DataTable({
-        ajax: {
-            url: '/Admin/Equipment/GetAll',
-            dataSrc: function(json) {
-                if (json.success && json.data) {
-                    populateCategoryFilter(json.data);
-                    return json.data;
+    $('#editUnitForm').submit(async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('editUnitBtn');
+        Loading.button(btn, true);
+        
+        try {
+            const res = await $.post('/Admin/Equipment/UpdateUnit', $(this).serialize());
+            Loading.button(btn, false);
+            
+            if (res.success) {
+                // Close edit unit modal
+                var editModal = bootstrap.Modal.getInstance(document.getElementById('editUnitModal'));
+                if (editModal) editModal.hide();
+                
+                // Reload units in the view modal if open
+                if (currentEquipmentId) {
+                    // Small delay to let modal close properly
+                    setTimeout(function() {
+                        loadUnitsOnly(currentEquipmentId);
+                    }, 300);
                 }
-                return [];
+                equipmentTable.ajax.reload();
+                loadStats();
+                Toast.success('Unit updated', 'success');
+            } else {
+                Toast.error(res.message);
             }
-        },
-        responsive: true,
-        pageLength: 10,
-        order: [[0, 'asc']],
-        language: {
-            search: "",
-            searchPlaceholder: "Search...",
-            lengthMenu: "Show _MENU_",
-            info: "Showing _START_ to _END_ of _TOTAL_",
-            emptyTable: '<div class="text-center py-5"><i class="bi bi-box-seam text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No equipment found</p></div>'
-        },
-        columns: [
-            { 
-                data: 'equipmentName',
-                render: function(data) {
-                    return '<strong>' + data + '</strong>';
-                }
-            },
-            { 
-                data: 'equipmentCategory',
-                render: function(data) {
-                    return '<span class="badge-category">' + data + '</span>';
-                }
-            },
-            { 
-                data: 'equipmentQuantity',
-                className: 'text-center'
-            },
-            { 
-                data: 'availableStock',
-                className: 'text-center',
-                render: function(data) {
-                    return '<span class="badge-available">' + data + '</span>';
-                }
-            },
-            {
-                data: null,
-                orderable: false,
-                render: function(data, type, row) {
-                    return '<div class="d-flex gap-1">' +
-                        '<button class="btn btn-sm btn-outline-primary btn-action-equip btn-view-units" data-id="' + row.equipmentId + '" data-name="' + row.equipmentName + '" title="View Units"><i class="bi bi-eye"></i></button>' +
-                        '<button class="btn btn-sm btn-outline-success btn-action-equip btn-add-unit" data-id="' + row.equipmentId + '" title="Add Unit"><i class="bi bi-plus"></i></button>' +
-                        '<button class="btn btn-sm btn-outline-warning btn-action-equip btn-edit-equip" data-id="' + row.equipmentId + '" title="Edit"><i class="bi bi-pencil"></i></button>' +
-                        '<button class="btn btn-sm btn-outline-danger btn-action-equip btn-delete-equip" data-id="' + row.equipmentId + '" data-name="' + row.equipmentName + '" title="Delete"><i class="bi bi-trash"></i></button>' +
-                    '</div>';
-                }
-            }
-        ]
+        } catch (error) {
+            Loading.button(btn, false);
+            Toast.error('Failed to update unit');
+        }
+    });
+    
+    // Clean up modal backdrops when modals are hidden
+    $('#editUnitModal').on('hidden.bs.modal', function() {
+        // Remove extra backdrops (keep one if view units modal is open)
+        var backdrops = $('.modal-backdrop');
+        if (backdrops.length > 1) {
+            backdrops.slice(1).remove();
+        }
+        
+        // If view units modal is not visible, clean up completely
+        if (!$('#viewUnitsModal').hasClass('show')) {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open').css('padding-right', '');
+        }
+    });
+    
+    // Clean up when view units modal is closed
+    $('#viewUnitsModal').on('hidden.bs.modal', function() {
+        currentEquipmentId = null;
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
     });
 }
 
@@ -1361,9 +1340,9 @@ function setupFormHandlers() {
                 }
                 equipmentTable.ajax.reload();
                 loadStats();
-                showToast('Unit updated', 'success');
+                Toast.success('Unit updated', 'success');
             } else {
-                showToast(res.message, 'error');
+                Toast.error(res.message);
             }
         });
     });

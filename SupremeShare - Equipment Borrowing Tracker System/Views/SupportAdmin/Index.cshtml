@@ -125,152 +125,20 @@
             </div>
         </div>
     </div>
-
-    <!-- Transaction Details Card (Hidden by default) -->
-    <div class="dash-card" id="transactionDetails" style="display: none;">
-        <div class="dash-card-header d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-receipt"></i>
-                <span>Transaction Details</span>
-            </div>
-            <button class="btn-close-details" onclick="closeTransactionDetails()">
-                <i class="bi bi-x-lg me-1"></i>Close
-            </button>
-        </div>
-        <div class="dash-card-body">
-            <!-- Transaction Code Banner -->
-            <div class="txn-code-banner">
-                <span class="txn-code-label">Transaction Code</span>
-                <span class="txn-code-value" id="txnCode">--</span>
-            </div>
-
-            <!-- Borrower Information -->
-            <div class="info-section">
-                <h6 class="info-section-title"><i class="bi bi-person-badge me-2"></i>Borrower Information</h6>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <span class="info-label">Student ID</span>
-                        <span class="info-value" id="studentId">--</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Full Name</span>
-                        <span class="info-value" id="studentName">--</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">College</span>
-                        <span class="info-value" id="studentCollege">--</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Course</span>
-                        <span class="info-value" id="studentCourse">--</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Email</span>
-                        <span class="info-value" id="studentEmail">--</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">Contact</span>
-                        <span class="info-value" id="studentContact">--</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Transaction Meta -->
-            <div class="txn-meta-row">
-                <div class="txn-meta-item">
-                    <i class="bi bi-person-check"></i>
-                    <div>
-                        <span class="meta-label">Recorded By</span>
-                        <span class="meta-value" id="recordedBy">--</span>
-                    </div>
-                </div>
-                <div class="txn-meta-item">
-                    <i class="bi bi-calendar-check"></i>
-                    <div>
-                        <span class="meta-label">Date Borrowed</span>
-                        <span class="meta-value" id="dateBorrowed">--</span>
-                    </div>
-                </div>
-                <div class="txn-meta-item">
-                    <i class="bi bi-clock-history"></i>
-                    <div>
-                        <span class="meta-label">Last Updated</span>
-                        <span class="meta-value" id="lastUpdated">--</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Remarks -->
-            <div class="remarks-box-dash">
-                <span class="remarks-label-dash"><i class="bi bi-chat-left-text me-1"></i>Remarks</span>
-                <p class="remarks-text" id="txnRemarks">--</p>
-            </div>
-
-            <!-- Borrowing Items Table -->
-            <div class="info-section">
-                <h6 class="info-section-title"><i class="bi bi-box-seam me-2"></i>Borrowed Items</h6>
-                <div class="table-responsive">
-                    <table class="table table-dash mb-0">
-                        <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>Equipment</th>
-                                <th>Serial No.</th>
-                                <th>Status</th>
-                                <th>Due Date</th>
-                                <th>Returned</th>
-                                <th>Condition</th>
-                            </tr>
-                        </thead>
-                        <tbody id="borrowingTableBody">
-                            <tr><td colspan="7" class="text-center text-muted py-3">No items found</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Timeline -->
-            <div class="info-section">
-                <h6 class="info-section-title"><i class="bi bi-clock-history me-2"></i>Activity Timeline</h6>
-                <div class="table-responsive">
-                    <table class="table table-dash mb-0">
-                        <thead>
-                            <tr>
-                                <th>Date & Time</th>
-                                <th>Action</th>
-                                <th>By</th>
-                            </tr>
-                        </thead>
-                        <tbody id="timelineTableBody">
-                            <tr><td colspan="3" class="text-center text-muted py-3">No timeline data</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
-<<<<<<< Updated upstream
 <!-- Status Records Modal -->
 <div class="modal fade" id="statusRecordsModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content modal-dash">
-=======
-<!-- Status Records Modal with DataTable -->
-<div class="modal fade" id="statusRecordsModal" tabindex="-1" aria-labelledby="statusRecordsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
->>>>>>> Stashed changes
-            <div class="modal-header" id="statusModalHeader">
+            <div class="modal-header bg-dark text-white">
                 <h5 class="modal-title"><i class="bi bi-list-ul me-2"></i><span id="modalStatusTitle">Records</span></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-<<<<<<< Updated upstream
                 <div class="table-responsive">
-                    <table class="table table-dash mb-0" id="statusRecordsTable">
-                        <thead>
+                    <table class="table table-striped mb-0" id="statusRecordsTable">
+                        <thead class="table-dark">
                             <tr>
                                 <th>Transaction Code</th>
                                 <th>Student ID</th>
@@ -280,752 +148,102 @@
                                 <th>Date Borrowed</th>
                                 <th>Due Date</th>
                                 <th>Status</th>
-                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="statusRecordsBody">
-                            <tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-danger"></div></td></tr>
+                            <tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-danger"></div></td></tr>
                         </tbody>
                     </table>
                 </div>
-=======
-                <table class="table table-striped table-hover" id="statusRecordsTable" style="width:100%">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Transaction Code</th>
-                            <th>Student ID</th>
-                            <th>Student Name</th>
-                            <th>Equipment</th>
-                            <th>Serial No.</th>
-                            <th>Date Borrowed</th>
-                            <th>Due Date</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
->>>>>>> Stashed changes
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
-
-<style>
-/* ===========================================
-   Support Admin Dashboard - Red & White Theme
-   =========================================== */
-
-/* Page Icon */
-.page-icon-dashboard {
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.5rem;
-    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
-}
-
-/* Connection Badge */
-.connection-badge {
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-    color: white;
-    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
-}
-
-.connection-badge.disconnected {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
-}
-
-/* Stat Cards */
-.stat-card-dash {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-}
-
-.stat-card-dash::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-}
-
-.stat-card-dash.borrowed::before { background: var(--primary-red); }
-.stat-card-dash.returned::before { background: #22c55e; }
-.stat-card-dash.overdue::before { background: #f59e0b; }
-.stat-card-dash.lost::before { background: #6b7280; }
-
-.stat-card-dash:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-}
-
-.stat-icon-dash {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-}
-
-.stat-card-dash.borrowed .stat-icon-dash { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
-.stat-card-dash.returned .stat-icon-dash { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-.stat-card-dash.overdue .stat-icon-dash { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-.stat-card-dash.lost .stat-icon-dash { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
-
-.stat-content-dash { display: flex; flex-direction: column; }
-.stat-value-dash { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
-.stat-label-dash { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
-
-/* Quick Action Cards */
-.quick-action-card {
-    display: block;
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    text-decoration: none;
-    border: 2px solid #e5e7eb;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    height: 100%;
-}
-
-.quick-action-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-    text-decoration: none;
-}
-
-.quick-action-card.borrow { border-color: rgba(139, 0, 0, 0.3); }
-.quick-action-card.borrow:hover { border-color: var(--primary-red); background: rgba(139, 0, 0, 0.02); }
-
-.quick-action-card.return { border-color: rgba(34, 197, 94, 0.3); }
-.quick-action-card.return:hover { border-color: #22c55e; background: rgba(34, 197, 94, 0.02); }
-
-.quick-action-card.transactions { border-color: rgba(59, 130, 246, 0.3); }
-.quick-action-card.transactions:hover { border-color: #3b82f6; background: rgba(59, 130, 246, 0.02); }
-
-.quick-action-card.equipment { border-color: rgba(107, 114, 128, 0.3); }
-.quick-action-card.equipment:hover { border-color: #6b7280; background: rgba(107, 114, 128, 0.02); }
-
-.quick-action-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    margin-bottom: 16px;
-}
-
-.quick-action-card.borrow .quick-action-icon { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; }
-.quick-action-card.return .quick-action-icon { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
-.quick-action-card.transactions .quick-action-icon { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; }
-.quick-action-card.equipment .quick-action-icon { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
-
-.quick-action-title { font-weight: 700; color: var(--text-dark); margin-bottom: 8px; font-size: 1rem; }
-.quick-action-desc { font-size: 0.8rem; color: #6b7280; margin-bottom: 0; line-height: 1.5; }
-
-.quick-action-arrow {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
-    transition: all 0.3s ease;
-}
-
-.quick-action-card:hover .quick-action-arrow {
-    background: var(--primary-red);
-    color: white;
-    transform: translateX(4px);
-}
-
-/* Dashboard Card */
-.dash-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-    border: 1px solid rgba(139, 0, 0, 0.08);
-}
-
-.dash-card-header {
-    padding: 18px 24px;
-    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
-    color: white;
-    font-weight: 600;
-}
-
-.dash-card-body { padding: 24px; }
-
-/* Search Container */
-.search-container { max-width: 700px; margin: 0 auto; }
-
-.search-input-group {
-    display: flex;
-    align-items: center;
-    background: #fafafa;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 4px;
-    transition: all 0.3s ease;
-}
-
-.search-input-group:focus-within {
-    border-color: var(--primary-red);
-    box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.1);
-}
-
-.search-icon {
-    padding: 12px 16px;
-    color: #6b7280;
-    font-size: 1.2rem;
-}
-
-.search-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    padding: 12px 0;
-    font-size: 1rem;
-    outline: none;
-}
-
-.btn-search-dash {
-    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-search-dash:hover {
-    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
-    color: white;
-}
-
-.search-hint { font-size: 0.8rem; color: #6b7280; text-align: center; }
-
-/* Close Details Button */
-.btn-close-details {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-}
-
-.btn-close-details:hover { background: rgba(255, 255, 255, 0.3); color: white; }
-
-/* Transaction Code Banner */
-.txn-code-banner {
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-    border-radius: 12px;
-    padding: 20px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-}
-
-.txn-code-label { color: rgba(255, 255, 255, 0.7); font-size: 0.85rem; }
-.txn-code-value { font-family: 'Courier New', monospace; font-size: 1.5rem; font-weight: 700; color: white; letter-spacing: 1px; }
-
-/* Info Section */
-.info-section {
-    background: #fafafa;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.info-section-title {
-    font-weight: 700;
-    color: var(--primary-red);
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid rgba(139, 0, 0, 0.1);
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-}
-
-.info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.info-label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
-.info-value { font-weight: 600; color: var(--text-dark); }
-
-/* Transaction Meta Row */
-.txn-meta-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 20px;
-}
-
-.txn-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    background: #fafafa;
-    border-radius: 10px;
-}
-
-.txn-meta-item i {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1rem;
-}
-
-.txn-meta-item div { display: flex; flex-direction: column; }
-.meta-label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; }
-.meta-value { font-weight: 600; color: var(--text-dark); font-size: 0.9rem; }
-
-/* Remarks Box */
-.remarks-box-dash {
-    background: rgba(139, 0, 0, 0.05);
-    border-left: 4px solid var(--primary-red);
-    border-radius: 0 8px 8px 0;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-}
-
-.remarks-label-dash { font-size: 0.8rem; color: var(--primary-red); font-weight: 600; display: block; margin-bottom: 8px; }
-.remarks-text { margin: 0; color: var(--text-dark); }
-
-/* Table Styles */
-.table-dash thead th {
-    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
-    color: white;
-    font-weight: 600;
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 12px;
-    border: none;
-}
-
-.table-dash tbody td {
-    padding: 12px;
-    vertical-align: middle;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.table-dash tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
-
-/* Status Badges */
-.badge-status-dash { padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
-.badge-status-dash.borrowed { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; }
-.badge-status-dash.returned { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
-.badge-status-dash.overdue { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
-.badge-status-dash.lost { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
-
-/* Modal */
-.modal-dash { border-radius: 16px; overflow: hidden; border: none; }
-.modal-dash .modal-header { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; border: none; padding: 20px 24px; }
-.modal-dash .modal-body { padding: 24px; max-height: 60vh; overflow-y: auto; }
-.modal-dash .modal-footer { border-top: 1px solid rgba(0, 0, 0, 0.05); padding: 16px 24px; }
-
-/* Responsive */
-@@media (max-width: 991px) {
-    .stat-card-dash { padding: 16px; }
-    .stat-value-dash { font-size: 1.5rem; }
-    .txn-code-value { font-size: 1.2rem; }
-}
-
-@@media (max-width: 768px) {
-    .quick-action-card { padding: 20px; }
-    .quick-action-icon { width: 48px; height: 48px; font-size: 1.2rem; }
-    .search-input-group { flex-direction: column; padding: 12px; }
-    .search-icon { display: none; }
-    .search-input { width: 100%; padding: 12px; text-align: center; }
-    .btn-search-dash { width: 100%; margin-top: 8px; }
-    .txn-code-banner { flex-direction: column; text-align: center; gap: 8px; }
-}
-</style>
-
-
 @section Scripts {
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 <script>
-let statusDataTable = null;
-
+// Load stats on page load
 $(document).ready(function() {
     loadDashboardStats();
-    initSignalR();
+    
+    // Enter key for search
+    $('#transactionCode').keypress(function(e) {
+        if (e.which == 13) searchTransaction();
+    });
 });
 
 function loadDashboardStats() {
-    $.get('/SupportAdmin/Transactions/Stats', function(res) {
+    $.get('/SupportAdmin/Dashboard/GetStats', function(res) {
         if (res.success) {
-            $('#statBorrowed').text(res.data.activeBorrows);
-            $('#statReturned').text(res.data.returnedToday);
-            $('#statOverdue').text(res.data.overdueCount);
-            $('#statLost').text(res.data.lostCount);
-        }
-    });
-}
-
-<<<<<<< Updated upstream
-function initSignalR() {
-    var connection = new signalR.HubConnectionBuilder()
-        .withUrl("/hubs/dashboard")
-        .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
-        .build();
-
-    connection.on("StatsUpdated", function() { loadDashboardStats(); });
-    connection.on("NewTransaction", function() { loadDashboardStats(); });
-    
-    // Handle overdue alerts with toast notification
-    connection.on("OverdueAlert", function(count) {
-        if (count > 0) {
-            Toastify({
-                text: "⚠️ " + count + " item(s) are now overdue!",
-                duration: 5000,
-                gravity: "top",
-                position: "right",
-                style: { background: "linear-gradient(135deg, #ef4444, #dc2626)" }
-            }).showToast();
-        }
-        loadDashboardStats();
-    });
-
-    connection.onclose(function() {
-        $('#connectionStatus').addClass('disconnected').html('<i class="bi bi-wifi-off"></i> Disconnected');
-    });
-
-    connection.onreconnected(function() {
-        $('#connectionStatus').removeClass('disconnected').html('<i class="bi bi-wifi"></i> Real-time Connected');
-        loadDashboardStats();
-    });
-
-    connection.start().catch(function(err) { console.error(err); });
-}
-
-function showStatusModal(status) {
-    const titles = { 'borrowed': 'Active Borrows', 'returned': 'Returned Items', 'overdue': 'Overdue Items', 'lost': 'Lost/Missing Items' };
-    $('#modalStatusTitle').text(titles[status] || 'Records');
-    $('#statusRecordsBody').html('<tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-danger"></div></td></tr>');
-    
-    new bootstrap.Modal('#statusRecordsModal').show();
-    
-    $.get('/SupportAdmin/GetRecordsByStatus?status=' + status, function(res) {
-        if (res.success && res.data && res.data.length > 0) {
-            let html = '';
-            res.data.forEach(function(r) {
-                const statusBadge = getStatusBadge(r.borrowStatus);
-                const dueDate = r.borrowDueDate ? new Date(r.borrowDueDate).toLocaleDateString() : '-';
-                const borrowDate = r.dateBorrowed ? new Date(r.dateBorrowed).toLocaleDateString() : '-';
-                
-                html += '<tr>' +
-                    '<td><strong class="text-danger">' + (r.transactionCode || '-') + '</strong></td>' +
-                    '<td>' + (r.studentIdNumber || '-') + '</td>' +
-                    '<td>' + (r.studentName || '-') + '</td>' +
-                    '<td>' + (r.equipmentName || '-') + '</td>' +
-                    '<td><code>' + (r.serialNo || '-') + '</code></td>' +
-                    '<td>' + borrowDate + '</td>' +
-                    '<td>' + dueDate + '</td>' +
-                    '<td>' + statusBadge + '</td>' +
-                    '<td><button class="btn btn-sm btn-outline-danger" onclick="viewTransactionFromModal(\'' + r.transactionCode + '\')"><i class="bi bi-eye-fill"></i></button></td>' +
-                '</tr>';
-            });
-            $('#statusRecordsBody').html(html);
-        } else {
-            $('#statusRecordsBody').html('<tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-inbox" style="font-size:2rem;"></i><p class="mt-2 mb-0">No records found</p></td></tr>');
+            $('#statBorrowed').text(res.data.borrowed || 0);
+            $('#statReturned').text(res.data.returnedToday || 0);
+            $('#statOverdue').text(res.data.overdue || 0);
+            $('#statLost').text(res.data.lost || 0);
         }
     }).fail(function() {
-        $('#statusRecordsBody').html('<tr><td colspan="9" class="text-center text-danger py-4">Failed to load records</td></tr>');
-=======
-// Show modal with DataTable for clicked status card
+        console.log('Failed to load stats');
+    });
+}
+
+function searchTransaction() {
+    const code = $('#transactionCode').val().trim();
+    if (!code) {
+        Toast.warning('Please enter a transaction code');
+        return;
+    }
+    
+    Toast.info('Searching...');
+    window.location.href = '/SupportAdmin/Transactions?search=' + encodeURIComponent(code);
+}
+
 function showStatusModal(status) {
     const titles = {
-        'borrowed': 'Borrowed Items',
-        'returned': 'Returned Items',
+        'borrowed': 'Active Borrows',
+        'returned': 'Returned Today',
         'overdue': 'Overdue Items',
         'lost': 'Lost/Missing Items'
     };
     
-    const headerColors = {
-        'borrowed': '#3D5A3D',
-        'returned': '#059669',
-        'overdue': '#DC2626',
-        'lost': '#6B7280'
-    };
-    
-    const buttonStyles = {
-        'borrowed': { bg: '#DC2626', color: 'white' },
-        'returned': { bg: '#DC2626', color: 'white' },
-        'overdue': { bg: 'white', color: '#DC2626' },
-        'lost': { bg: '#DC2626', color: 'white' }
-    };
-    
     $('#modalStatusTitle').text(titles[status] || 'Records');
-    $('#statusModalHeader').css('background', headerColors[status] || '#3D5A3D');
+    $('#statusRecordsBody').html('<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-danger"></div></td></tr>');
     
-    const btnStyle = buttonStyles[status] || { bg: '#DC2626', color: 'white' };
-    $('.btn-close-modal').css({
-        'background': btnStyle.bg,
-        'color': btnStyle.color,
-        'border': status === 'overdue' ? '1px solid #DC2626' : 'none'
-    });
-
-    // Destroy previous DataTable instance if exists
-    if (statusDataTable) {
-        statusDataTable.destroy();
-        $('#statusRecordsTable tbody').empty();
-    }
-
-    // Initialize DataTable with AJAX
-    statusDataTable = $('#statusRecordsTable').DataTable({
-        ajax: {
-            url: `/SupportAdmin/GetRecordsByStatus?status=${status}`,
-            dataSrc: function(json) {
-                return json.success ? json.data : [];
-            }
-        },
-        columns: [
-            { data: 'transactionCode', render: data => `<span class="fw-medium">${data || '-'}</span>` },
-            { data: 'studentIdNumber' },
-            { data: 'studentName' },
-            { data: 'equipmentName' },
-            { data: 'serialNo', render: data => `<code>${data || '-'}</code>` },
-            { data: 'dateBorrowed', render: data => data ? new Date(data).toLocaleDateString() : '-' },
-            { data: 'borrowDueDate', render: data => data ? new Date(data).toLocaleDateString() : '-' },
-            { 
-                data: 'borrowStatus',
-                render: data => {
-                    const badges = {
-                        'borrowed': '<span class="badge bg-primary">Borrowed</span>',
-                        'returned': '<span class="badge bg-success">Returned</span>',
-                        'overdue': '<span class="badge bg-danger">Overdue</span>',
-                        'lost': '<span class="badge bg-secondary">Lost</span>'
-                    };
-                    return badges[data?.toLowerCase()] || `<span class="badge bg-info">${data || '-'}</span>`;
-                }
-            },
-            {
-                data: 'transactionCode',
-                orderable: false,
-                render: data => `<button class="btn btn-sm btn-outline-primary" onclick="viewTransactionFromModal('${data}')">
-                    <i class="bi bi-eye"></i> View
-                </button>`
-            }
-        ],
-        pageLength: 10,
-        responsive: true,
-        language: {
-            emptyTable: "No records found",
-            loadingRecords: "Loading..."
-        }
->>>>>>> Stashed changes
-    });
+    new bootstrap.Modal('#statusRecordsModal').show();
     
-    new bootstrap.Modal(document.getElementById('statusRecordsModal')).show();
-}
-
-function getStatusBadge(status) {
-    const s = (status || '').toLowerCase();
-    const badges = {
-        'borrowed': '<span class="badge-status-dash borrowed">Borrowed</span>',
-        'returned': '<span class="badge-status-dash returned">Returned</span>',
-        'overdue': '<span class="badge-status-dash overdue">Overdue</span>',
-        'lost': '<span class="badge-status-dash lost">Lost</span>'
-    };
-    return badges[s] || '<span class="badge bg-secondary">' + (status || '-') + '</span>';
-}
-
-function viewTransactionFromModal(code) {
-    bootstrap.Modal.getInstance(document.getElementById('statusRecordsModal'))?.hide();
-    document.getElementById('transactionCode').value = code;
-    searchTransaction();
-}
-
-function searchTransaction() {
-    const code = document.getElementById('transactionCode').value.trim();
-    if (!code) {
-        Swal.fire({ icon: 'info', title: 'Info', text: 'Please enter a transaction code', confirmButtonColor: '#8b0000' });
-        return;
-    }
-
-    $.get('/SupportAdmin/Transactions/SearchByCode?code=' + encodeURIComponent(code), function(res) {
-        if (res.success && res.data) {
-            const d = res.data;
-            document.getElementById('transactionDetails').style.display = 'block';
-            document.getElementById('txnCode').textContent = d.transactionCode;
-            document.getElementById('studentId').textContent = d.student.studentIdNumber;
-            document.getElementById('studentName').textContent = d.student.fullName;
-            document.getElementById('studentCollege').textContent = d.student.studentCollege || '-';
-            document.getElementById('studentCourse').textContent = d.student.studentCourse || '-';
-            document.getElementById('studentEmail').textContent = d.student.studentEmail || '-';
-            document.getElementById('studentContact').textContent = d.student.studentContactNo || '-';
-            document.getElementById('txnRemarks').textContent = d.transactionRemarks || 'No remarks';
-            document.getElementById('recordedBy').textContent = d.recordedBy || '-';
-            document.getElementById('dateBorrowed').textContent = d.transactionDateBorrowed ? new Date(d.transactionDateBorrowed).toLocaleString() : '-';
-            document.getElementById('lastUpdated').textContent = d.transactionLastUpdated ? new Date(d.transactionLastUpdated).toLocaleString() : '-';
-
-            let itemsHtml = '';
-            if (d.items && d.items.length > 0) {
-                d.items.forEach(function(i) {
-                    const statusBadge = getStatusBadge(i.borrowStatus);
-                    const returnCondition = i.borrowReturnCondition !== null 
-                        ? (i.borrowReturnCondition ? '<span class="text-success fw-bold">Good</span>' : '<span class="text-danger fw-bold">Damaged</span>') 
-                        : '-';
-                    
-                    itemsHtml += '<tr>' +
-                        '<td>' + (i.equipmentCategory || '-') + '</td>' +
-                        '<td><strong>' + (i.equipmentName || '-') + '</strong></td>' +
-                        '<td><code>' + (i.serialNo || '-') + '</code></td>' +
-                        '<td>' + statusBadge + '</td>' +
-                        '<td>' + (i.borrowDueDate ? new Date(i.borrowDueDate).toLocaleDateString() : '-') + '</td>' +
-                        '<td>' + (i.borrowDateReturned ? new Date(i.borrowDateReturned).toLocaleDateString() : '-') + '</td>' +
-                        '<td>' + returnCondition + '</td>' +
-                    '</tr>';
-                });
-            }
-            document.getElementById('borrowingTableBody').innerHTML = itemsHtml || '<tr><td colspan="7" class="text-center text-muted">No items found</td></tr>';
-            
-            let timelineHtml = '';
-            if (d.timeline && d.timeline.length > 0) {
-                d.timeline.forEach(function(t) {
-                    timelineHtml += '<tr>' +
-                        '<td>' + (t.date ? new Date(t.date).toLocaleString() : '-') + '</td>' +
-                        '<td>' + (t.action || '-') + '</td>' +
-                        '<td>' + (t.by || '-') + '</td>' +
-                    '</tr>';
-                });
-            }
-            document.getElementById('timelineTableBody').innerHTML = timelineHtml || '<tr><td colspan="3" class="text-center text-muted">No timeline data</td></tr>';
-            
-            document.getElementById('transactionDetails').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            
-            Toastify({ text: "Transaction found!", duration: 2000, gravity: "top", position: "right", style: { background: "linear-gradient(135deg, #22c55e, #16a34a)" } }).showToast();
+    $.get('/SupportAdmin/Dashboard/GetRecordsByStatus?status=' + status, function(res) {
+        if (res.success && res.data.length > 0) {
+            let html = '';
+            res.data.forEach(function(r) {
+                html += `<tr>
+                    <td><a href="/SupportAdmin/Transactions?search=${r.transactionCode}">${r.transactionCode}</a></td>
+                    <td>${r.studentIdNumber || '-'}</td>
+                    <td>${r.studentName || '-'}</td>
+                    <td>${r.equipmentName || '-'}</td>
+                    <td>${r.serialNo || '-'}</td>
+                    <td>${r.dateBorrowed ? new Date(r.dateBorrowed).toLocaleDateString() : '-'}</td>
+                    <td>${r.dueDate ? new Date(r.dueDate).toLocaleDateString() : '-'}</td>
+                    <td><span class="badge bg-${getStatusColor(r.status)}">${r.status}</span></td>
+                </tr>`;
+            });
+            $('#statusRecordsBody').html(html);
         } else {
-            Swal.fire({ icon: 'warning', title: 'Not Found', text: res.message || 'Transaction not found', confirmButtonColor: '#8b0000' });
+            $('#statusRecordsBody').html('<tr><td colspan="8" class="text-center text-muted py-4">No records found</td></tr>');
         }
     }).fail(function() {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to search transaction', confirmButtonColor: '#8b0000' });
+        $('#statusRecordsBody').html('<tr><td colspan="8" class="text-center text-danger py-4">Failed to load records</td></tr>');
     });
 }
 
-function closeTransactionDetails() {
-    document.getElementById('transactionDetails').style.display = 'none';
-    document.getElementById('transactionCode').value = '';
+function getStatusColor(status) {
+    switch(status?.toLowerCase()) {
+        case 'borrowed': return 'primary';
+        case 'returned': return 'success';
+        case 'overdue': return 'warning';
+        case 'lost': return 'danger';
+        default: return 'secondary';
+    }
 }
-
-document.getElementById('transactionCode').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') searchTransaction();
-});
 </script>
-<<<<<<< Updated upstream
-=======
-
-<style>
-/* Clickable Status Cards */
-.clickable-card {
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.clickable-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
-}
-
-.clickable-card:active {
-    transform: translateY(-2px);
-}
-
-/* Status Modal Styles */
-#statusRecordsModal .modal-header {
-    background: #3D5A3D;
-    color: white;
-    border-bottom: none;
-    padding: 16px 24px;
-}
-
-#statusRecordsModal .modal-title {
-    font-family: 'Playfair Display', serif;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-close-modal {
-    background: #DC2626;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-close-modal:hover {
-    background: #B91C1C;
-}
-
-#statusRecordsModal .modal-body {
-    padding: 24px;
-    max-height: 70vh;
-    overflow-y: auto;
-}
-</style>
->>>>>>> Stashed changes
 }
