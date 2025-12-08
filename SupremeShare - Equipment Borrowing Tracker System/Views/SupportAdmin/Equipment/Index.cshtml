@@ -12,7 +12,7 @@
             </div>
             <div>
                 <h2 class="page-title mb-0">Equipment Inventory</h2>
-                <p class="text-muted mb-0 small">View equipment and unit availability</p>
+                <p class="text-muted mb-0 small">View equipment types and availability</p>
             </div>
         </div>
         <div class="d-flex align-items-center gap-2">
@@ -26,13 +26,11 @@
         </div>
     </div>
 
-    <!-- Stats Cards - Red/White Theme -->
+    <!-- Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
-            <div class="stat-card-equip">
-                <div class="stat-icon-equip types">
-                    <i class="bi bi-grid-3x3-gap-fill"></i>
-                </div>
+            <div class="stat-card-equip types">
+                <div class="stat-icon-equip"><i class="bi bi-grid-3x3-gap-fill"></i></div>
                 <div class="stat-content-equip">
                     <span class="stat-value-equip" id="statTotalTypes">-</span>
                     <span class="stat-label-equip">Equipment Types</span>
@@ -40,35 +38,29 @@
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="stat-card-equip">
-                <div class="stat-icon-equip available">
-                    <i class="bi bi-check-circle-fill"></i>
+            <div class="stat-card-equip total">
+                <div class="stat-icon-equip"><i class="bi bi-boxes"></i></div>
+                <div class="stat-content-equip">
+                    <span class="stat-value-equip" id="statTotalUnits">-</span>
+                    <span class="stat-label-equip">Total Units</span>
                 </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="stat-card-equip available">
+                <div class="stat-icon-equip"><i class="bi bi-check-circle-fill"></i></div>
                 <div class="stat-content-equip">
                     <span class="stat-value-equip" id="statAvailable">-</span>
-                    <span class="stat-label-equip">Available Units</span>
+                    <span class="stat-label-equip">Available</span>
                 </div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="stat-card-equip">
-                <div class="stat-icon-equip borrowed">
-                    <i class="bi bi-arrow-up-right-circle-fill"></i>
-                </div>
+            <div class="stat-card-equip borrowed">
+                <div class="stat-icon-equip"><i class="bi bi-arrow-up-right-circle-fill"></i></div>
                 <div class="stat-content-equip">
                     <span class="stat-value-equip" id="statBorrowed">-</span>
-                    <span class="stat-label-equip">Borrowed Units</span>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-lg-3">
-            <div class="stat-card-equip">
-                <div class="stat-icon-equip maintenance">
-                    <i class="bi bi-tools"></i>
-                </div>
-                <div class="stat-content-equip">
-                    <span class="stat-value-equip" id="statMaintenance">-</span>
-                    <span class="stat-label-equip">In Maintenance</span>
+                    <span class="stat-label-equip">Borrowed</span>
                 </div>
             </div>
         </div>
@@ -79,28 +71,42 @@
         <div class="equip-card-header">
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-list-ul"></i>
-                <span>Equipment List</span>
+                <span>Equipment Types</span>
             </div>
             <button class="btn btn-refresh-equip" id="btnRefresh">
                 <i class="bi bi-arrow-clockwise me-1"></i>Refresh
             </button>
         </div>
         <div class="equip-card-body">
+            <!-- Filter Row -->
+            <div class="filter-row-equip mb-3">
+                <div class="filter-group-equip">
+                    <label class="filter-label-equip"><i class="bi bi-funnel me-1"></i>Filter:</label>
+                    <select id="filterCategory" class="filter-select-equip">
+                        <option value="">All Categories</option>
+                    </select>
+                    <button class="btn btn-clear-filter-equip" id="btnClearFilters" title="Clear Filters">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+
             <div class="table-responsive">
                 <table class="table table-equip mb-0" id="equipmentTable">
                     <thead>
                         <tr>
-                            <th>Equipment Name</th>
+                            <th>No.</th>
                             <th>Category</th>
-                            <th class="text-center">Total Units</th>
-                            <th class="text-center">Available</th>
+                            <th>Equipment</th>
+                            <th class="text-center">Quantity</th>
                             <th>Date Added</th>
-                            <th>Actions</th>
+                            <th>Last Updated</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td colspan="6" class="text-center py-5">
+                            <td colspan="7" class="text-center py-5">
                                 <div class="spinner-border text-danger" role="status"></div>
                                 <p class="text-muted mt-2 mb-0">Loading equipment...</p>
                             </td>
@@ -110,9 +116,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Info Note -->
+    <div class="info-note-equip mt-3">
+        <i class="bi bi-info-circle me-2"></i>
+        <span><strong>Note:</strong> To add, edit, or manage equipment records, please contact an Administrator.</span>
+    </div>
 </div>
 
-<!-- Units Modal -->
+<!-- View Units Modal -->
 <div class="modal fade" id="unitsModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content modal-equip">
@@ -135,7 +147,7 @@
                                 <th>Condition</th>
                                 <th>Status</th>
                                 <th>Date Added</th>
-                                <th>Action</th>
+                                <th>Last Updated</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -149,41 +161,55 @@
     </div>
 </div>
 
-<form id="tokenForm">@Html.AntiForgeryToken()</form>
-
 <style>
+/* Equipment Page (Support Admin) - Red & White Theme */
 .page-icon-equip { width: 56px; height: 56px; background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25); }
 .connection-badge { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
 .connection-badge.disconnected { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
-.badge-view-only { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
-.stat-card-equip { background: white; border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); border: 1px solid rgba(139, 0, 0, 0.08); transition: all 0.3s ease; position: relative; overflow: hidden; }
-.stat-card-equip::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary-red); }
-.stat-card-equip:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(139, 0, 0, 0.12); }
-.stat-icon-equip { width: 52px; height: 52px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
-.stat-icon-equip.types { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
-.stat-icon-equip.available { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-.stat-icon-equip.borrowed { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
-.stat-icon-equip.maintenance { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.badge-view-only { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; padding: 10px 20px; border-radius: 10px; font-weight: 600; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(107, 114, 128, 0.25); }
+
+/* Stat Cards */
+.stat-card-equip { background: white; border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease; position: relative; overflow: hidden; }
+.stat-card-equip::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+.stat-card-equip.types::before { background: var(--primary-red); }
+.stat-card-equip.total::before { background: #3b82f6; }
+.stat-card-equip.available::before { background: #22c55e; }
+.stat-card-equip.borrowed::before { background: #f59e0b; }
+.stat-card-equip:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
+.stat-icon-equip { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.stat-card-equip.types .stat-icon-equip { background: rgba(139, 0, 0, 0.1); color: var(--primary-red); }
+.stat-card-equip.total .stat-icon-equip { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.stat-card-equip.available .stat-icon-equip { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.stat-card-equip.borrowed .stat-icon-equip { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 .stat-content-equip { display: flex; flex-direction: column; }
-.stat-value-equip { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
-.stat-label-equip { font-size: 0.8rem; color: #6b7280; margin-top: 4px; }
+.stat-value-equip { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label-equip { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+
+/* Equipment Card */
 .equip-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); overflow: hidden; border: 1px solid rgba(139, 0, 0, 0.08); }
 .equip-card-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; font-weight: 600; }
 .equip-card-body { padding: 24px; }
 .btn-refresh-equip { background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; transition: all 0.3s ease; }
 .btn-refresh-equip:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+
+/* Filter Row */
+.filter-row-equip { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 14px 16px; background: linear-gradient(135deg, #fafafa 0%, #fff 100%); border-radius: 10px; border: 1px solid rgba(139, 0, 0, 0.08); }
+.filter-group-equip { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.filter-label-equip { font-weight: 600; font-size: 0.85rem; color: var(--primary-red); margin: 0; }
+.filter-select-equip { padding: 8px 16px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.85rem; background: white; transition: all 0.3s ease; min-width: 150px; }
+.filter-select-equip:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
+.btn-clear-filter-equip { background: transparent; border: 2px solid #e5e7eb; color: #6b7280; padding: 8px 12px; border-radius: 8px; transition: all 0.3s ease; }
+.btn-clear-filter-equip:hover { background: #ef4444; border-color: #ef4444; color: white; }
+
+/* Table */
 .table-equip thead th { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 14px 12px; border: none; }
 .table-equip tbody td { padding: 14px 12px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
 .table-equip tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
 .table-units thead th { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; padding: 12px 10px; border: none; }
 .table-units tbody td { padding: 12px 10px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
-.units-legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 16px; background: linear-gradient(135deg, #fafafa 0%, #fff 100%); border-radius: 10px; border: 1px solid rgba(139, 0, 0, 0.08); }
-.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #6b7280; }
-.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
-.legend-dot.available { background: #22c55e; }
-.legend-dot.borrowed { background: var(--primary-red); }
-.legend-dot.maintenance { background: #f59e0b; }
-.legend-dot.lost { background: #1f2937; }
+
+/* Badges */
+.badge-category { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
 .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
 .badge-status.available { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
 .badge-status.borrowed { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; }
@@ -192,18 +218,33 @@
 .badge-condition { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
 .badge-condition.good { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
 .badge-condition.damaged { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
-.badge-category { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-.badge-available { padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-.badge-available.has-stock { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
-.badge-available.no-stock { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+
+/* View Units Button */
 .btn-view-units { background: transparent; border: 2px solid var(--primary-red); color: var(--primary-red); padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; transition: all 0.3s ease; }
 .btn-view-units:hover { background: var(--primary-red); color: white; }
+
+/* Units Legend */
+.units-legend { display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 16px; background: linear-gradient(135deg, #fafafa 0%, #fff 100%); border-radius: 10px; border: 1px solid rgba(139, 0, 0, 0.08); }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #6b7280; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+.legend-dot.available { background: #22c55e; }
+.legend-dot.borrowed { background: var(--primary-red); }
+.legend-dot.maintenance { background: #f59e0b; }
+.legend-dot.lost { background: #1f2937; }
+
+/* Modal */
 .modal-equip { border-radius: 16px; overflow: hidden; border: none; }
 .modal-equip .modal-header { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; border: none; padding: 20px 24px; }
 .modal-equip .modal-body { padding: 24px; }
 .modal-equip .modal-footer { border-top: 1px solid rgba(0, 0, 0, 0.05); padding: 16px 24px; }
-@@media (max-width: 991px) { .stat-card-equip { padding: 16px; } .stat-value-equip { font-size: 1.5rem; } .stat-icon-equip { width: 44px; height: 44px; font-size: 1.1rem; } }
-@@media (max-width: 576px) { .page-icon-equip { width: 48px; height: 48px; font-size: 1.25rem; } .stat-card-equip { padding: 14px; } .stat-value-equip { font-size: 1.25rem; } }
+
+/* Info Note */
+.info-note-equip { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border: 1px solid #93c5fd; border-radius: 12px; padding: 16px 20px; color: #1e40af; display: flex; align-items: center; }
+.info-note-equip i { font-size: 1.2rem; }
+
+/* Responsive */
+@@media (max-width: 991px) { .stat-card-equip { padding: 16px; } .stat-value-equip { font-size: 1.25rem; } }
+@@media (max-width: 768px) { .filter-row-equip { padding: 12px; } .filter-group-equip { width: 100%; } .filter-select-equip { flex: 1; min-width: 100px; } }
 </style>
 
 @section Scripts {
@@ -216,14 +257,19 @@ $(document).ready(function() {
     loadStats();
     initEquipmentTable();
     initSignalR();
-    $('#btnRefresh').click(function() { showToast('Refreshing...', 'info'); loadStats(); equipmentTable.ajax.reload(); });
+    setupFilterHandlers();
+    
+    $('#btnRefresh').click(function() {
+        showToast('Refreshing...', 'info');
+        loadStats();
+        equipmentTable.ajax.reload();
+    });
 });
 
 function initSignalR() {
     signalRConnection = new signalR.HubConnectionBuilder().withUrl("/hubs/dashboard").withAutomaticReconnect([0, 2000, 5000, 10000, 30000]).build();
     signalRConnection.on("StatsUpdated", function() { loadStats(); if (equipmentTable) equipmentTable.ajax.reload(null, false); });
     signalRConnection.on("EquipmentStatusChanged", function(data) { showToast('Equipment updated: ' + data.equipmentName, 'info'); loadStats(); if (equipmentTable) equipmentTable.ajax.reload(null, false); });
-    signalRConnection.on("OverdueAlert", function(count) { if (count > 0) showToast('Warning: ' + count + ' item(s) are now overdue!', 'warning'); loadStats(); });
     signalRConnection.start().then(function() { updateConnectionBadge(true); }).catch(function(err) { updateConnectionBadge(false); });
     signalRConnection.onreconnecting(function() { updateConnectionBadge(false); });
     signalRConnection.onreconnected(function() { updateConnectionBadge(true); loadStats(); });
@@ -240,60 +286,93 @@ function loadStats() {
     $.get('/SupportAdmin/Equipment/Stats', function(res) {
         if (res.success) {
             $('#statTotalTypes').text(res.data.totalEquipmentTypes);
+            $('#statTotalUnits').text(res.data.totalUnits);
             $('#statAvailable').text(res.data.availableUnits);
             $('#statBorrowed').text(res.data.borrowedUnits);
-            $('#statMaintenance').text(res.data.maintenanceUnits);
         }
     });
 }
 
 function initEquipmentTable() {
     equipmentTable = $('#equipmentTable').DataTable({
-        ajax: { url: '/SupportAdmin/Equipment/GetAll', dataSrc: function(json) { return json.success ? json.data : []; } },
-        responsive: true, pageLength: 10, order: [[0, 'asc']],
-        language: { search: "", searchPlaceholder: "Search...", lengthMenu: "Show _MENU_ entries", info: "Showing _START_ to _END_ of _TOTAL_ entries", emptyTable: '<div class="text-center py-5"><i class="bi bi-box-seam text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No equipment found</p></div>' },
+        ajax: {
+            url: '/SupportAdmin/Equipment/GetAll',
+            dataSrc: function(json) {
+                if (json.success && json.data) {
+                    populateCategoryFilter(json.data);
+                    return json.data;
+                }
+                return [];
+            }
+        },
+        responsive: true,
+        pageLength: 10,
+        order: [[0, 'asc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_",
+            emptyTable: '<div class="text-center py-5"><i class="bi bi-box-seam text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No equipment found</p></div>'
+        },
         columns: [
-            { data: 'equipmentName', render: function(data) { return '<strong>' + data + '</strong>'; } },
+            { data: 'equipmentId', className: 'text-center', render: function(data) { return '<span class="fw-bold">' + data + '</span>'; } },
             { data: 'equipmentCategory', render: function(data) { return '<span class="badge-category">' + data + '</span>'; } },
+            { data: 'equipmentName', render: function(data) { return '<strong>' + data + '</strong>'; } },
             { data: 'equipmentQuantity', className: 'text-center' },
-            { data: 'availableStock', className: 'text-center', render: function(data) { return '<span class="badge-available ' + (data > 0 ? 'has-stock' : 'no-stock') + '">' + data + '</span>'; } },
-            { data: 'equipmentDateAdded', render: function(data) { return '<small class="text-muted">' + data + '</small>'; } },
-            { data: 'equipmentId', orderable: false, render: function(data, type, row) { return '<button class="btn btn-view-units" data-id="' + data + '" data-name="' + row.equipmentName + '"><i class="bi bi-eye me-1"></i>View Units</button>'; } }
+            { data: 'equipmentDateAdded', render: function(data) { return '<span class="text-muted small">' + data + '</span>'; } },
+            { data: 'equipmentLastUpdated', render: function(data) { return '<span class="text-muted small">' + data + '</span>'; } },
+            { data: 'equipmentId', orderable: false, className: 'text-center', render: function(data, type, row) { return '<button class="btn btn-view-units" data-id="' + data + '" data-name="' + row.equipmentName + '"><i class="bi bi-eye me-1"></i>View</button>'; } }
         ]
     });
 }
 
+function populateCategoryFilter(data) {
+    var categories = [...new Set(data.map(function(e) { return e.equipmentCategory; }))].sort();
+    var current = $('#filterCategory').val();
+    $('#filterCategory').empty().append('<option value="">All Categories</option>');
+    categories.forEach(function(c) {
+        $('#filterCategory').append('<option value="' + c + '"' + (c === current ? ' selected' : '') + '>' + c + '</option>');
+    });
+}
+
+function setupFilterHandlers() {
+    $('#filterCategory').on('change', function() {
+        var val = $(this).val();
+        equipmentTable.column(1).search(val ? '^' + val + '$' : '', true, false).draw();
+    });
+    $('#btnClearFilters').on('click', function() {
+        $('#filterCategory').val('');
+        equipmentTable.search('').columns().search('').draw();
+        showToast('Filters cleared', 'info');
+    });
+}
+
+// View Units Modal
 $(document).on('click', '.btn-view-units', function() {
     var equipmentId = $(this).data('id');
     var equipmentName = $(this).data('name');
     $('#modalEquipmentName').text(equipmentName);
     $('#unitsTable tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-danger" role="status"></div></td></tr>');
     new bootstrap.Modal('#unitsModal').show();
+    
     $.get('/SupportAdmin/Equipment/Units/' + equipmentId, function(res) {
         if (res.success) {
             var html = '';
             res.data.forEach(function(u) {
                 var conditionBadge = u.conditionBool ? '<span class="badge-condition good"><i class="bi bi-check-circle-fill me-1"></i>Good</span>' : '<span class="badge-condition damaged"><i class="bi bi-x-circle-fill me-1"></i>Damaged</span>';
                 var statusBadge = '<span class="badge-status ' + u.eunitStatus + '">' + u.eunitStatus + '</span>';
-                var actionHtml = '<span class="text-muted">-</span>';
-                if (u.eunitStatus !== 'borrowed' && u.eunitStatus !== 'lost') {
-                    actionHtml = '<select class="form-select form-select-sm status-select" data-id="' + u.eunitId + '" style="width: auto;"><option value="available"' + (u.eunitStatus === 'available' ? ' selected' : '') + '>Available</option><option value="maintenance"' + (u.eunitStatus === 'maintenance' ? ' selected' : '') + '>Maintenance</option></select>';
-                }
-                html += '<tr><td><strong class="text-danger">' + u.eunitSerialNo + '</strong></td><td>' + conditionBadge + '</td><td>' + statusBadge + '</td><td><small>' + u.eunitDateAdded + '</small></td><td>' + actionHtml + '</td></tr>';
+                html += '<tr><td><strong class="text-danger">' + u.eunitSerialNo + '</strong></td><td>' + conditionBadge + '</td><td>' + statusBadge + '</td><td><small class="text-muted">' + u.eunitDateAdded + '</small></td><td><small class="text-muted">' + u.eunitLastUpdated + '</small></td></tr>';
             });
-            $('#unitsTable tbody').html(html || '<tr><td colspan="5" class="text-center text-muted py-4">No units found</td></tr>');
+            $('#unitsTable tbody').html(html || '<tr><td colspan="5" class="text-center text-muted py-4">No units found for this equipment</td></tr>');
         }
     });
 });
 
-$(document).on('change', '.status-select', function() {
-    var unitId = $(this).data('id');
-    var status = $(this).val();
-    var select = $(this);
-    $.post('/SupportAdmin/Equipment/UpdateUnitStatus', { unitId: unitId, status: status, __RequestVerificationToken: $('#tokenForm input[name="__RequestVerificationToken"]').val() }, function(res) {
-        if (res.success) { showToast('Unit status updated', 'success'); var badge = select.closest('tr').find('.badge-status'); badge.removeClass('available maintenance').addClass(status).text(status); loadStats(); }
-        else { showToast('Error: ' + res.message, 'error'); }
-    });
+// Modal cleanup
+$('#unitsModal').on('hidden.bs.modal', function() {
+    $('.modal-backdrop').remove();
+    $('body').removeClass('modal-open').css('padding-right', '');
 });
 
 function showToast(message, type) {

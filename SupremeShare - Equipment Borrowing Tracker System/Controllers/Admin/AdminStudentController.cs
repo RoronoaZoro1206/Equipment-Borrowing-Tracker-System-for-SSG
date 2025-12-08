@@ -83,6 +83,48 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
             }
         }
 
+        // GET: Admin/Students/GetById/{id} - Alias for Get/{id}
+        [HttpGet("GetById/{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            try
+            {
+                var student = await _studentRepo.GetByIdAsync(id);
+                if (student == null)
+                    return Json(new { success = false, message = "Student not found" });
+
+                return Json(new { success = true, data = student });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching student {StudentId}", id);
+                return Json(new { success = false, message = "Failed to fetch student" });
+            }
+        }
+
+        // GET: Admin/Students/GetColleges (API)
+        [HttpGet("GetColleges")]
+        public async Task<IActionResult> GetColleges()
+        {
+            try
+            {
+                var students = await _studentRepo.GetAllAsync();
+                var colleges = students
+                    .Where(s => !string.IsNullOrWhiteSpace(s.StudentCollege))
+                    .Select(s => s.StudentCollege)
+                    .Distinct()
+                    .OrderBy(c => c)
+                    .ToList();
+
+                return Json(new { success = true, data = colleges });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching colleges");
+                return Json(new { success = false, message = "Failed to fetch colleges" });
+            }
+        }
+
         // GET: Admin/Students/Search?q=xxx
         [HttpGet("Search")]
         public async Task<IActionResult> Search([FromQuery] string q)

@@ -184,12 +184,22 @@ h1, h2, h3, h4, h5 {
     border-radius: 50px;
     font-weight: 600;
     letter-spacing: 0.5px;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+    border: 2px solid var(--primary-red);
 }
 
 .navbar-premium .btn-nav-login:hover {
-    background: var(--primary-red-dark);
+    background: var(--white);
+    color: var(--primary-red) !important;
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.25);
+    border-color: var(--primary-red);
+}
+
+.navbar-premium .btn-nav-login:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(139, 0, 0, 0.2);
 }
 
 /* ===========================================
@@ -802,4 +812,133 @@ h1, h2, h3, h4, h5 {
     .btn-luxury, .btn-gold { padding: 14px 30px; font-size: 0.85rem; }
     .feature-card-premium { padding: 40px 30px; }
     .hero-logo-img { height: 80px; }
+}
+
+
+/* ===========================================
+   Scroll to Top Button - Modern Glassmorphism
+   =========================================== */
+.scroll-to-top {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 
+        0 8px 32px rgba(139, 0, 0, 0.35),
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.scroll-to-top::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+    border-radius: 16px;
+    pointer-events: none;
+}
+
+.scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.scroll-to-top:hover {
+    background: linear-gradient(135deg, var(--primary-red-light) 0%, var(--primary-red) 100%);
+    box-shadow: 
+        0 10px 36px rgba(139, 0, 0, 0.4),
+        0 5px 14px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.scroll-to-top:active {
+    background: linear-gradient(135deg, var(--primary-red) 0%, var(--primary-red-dark) 100%);
+    box-shadow: 
+        0 6px 24px rgba(139, 0, 0, 0.35),
+        0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress Ring SVG - Modern Style */
+.scroll-to-top .progress-ring {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 50px;
+    height: 50px;
+    transform: rotate(-90deg);
+}
+
+.scroll-to-top .progress-ring-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.2);
+    stroke-width: 2;
+}
+
+.scroll-to-top .progress-ring-fill {
+    fill: none;
+    stroke: var(--white);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 138.23;
+    stroke-dashoffset: 138.23;
+    transition: stroke-dashoffset 0.15s ease-out;
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
+}
+
+/* Arrow Icon - Modern */
+.scroll-to-top .arrow-icon {
+    color: var(--white);
+    font-size: 1.35rem;
+    z-index: 1;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.scroll-to-top:hover .arrow-icon {
+    color: var(--white);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .scroll-to-top {
+        bottom: 24px;
+        right: 24px;
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+    }
+    
+    .scroll-to-top .progress-ring {
+        top: 3px;
+        left: 3px;
+        width: 44px;
+        height: 44px;
+    }
+    
+    .scroll-to-top .progress-ring-bg,
+    .scroll-to-top .progress-ring-fill {
+        stroke-width: 2;
+    }
+    
+    .scroll-to-top .arrow-icon {
+        font-size: 1.2rem;
+    }
 }

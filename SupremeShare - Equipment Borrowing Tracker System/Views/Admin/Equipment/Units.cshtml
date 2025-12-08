@@ -5,99 +5,146 @@
 }
 
 <div class="container-fluid py-4 fade-in">
+    <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
-        <h2><i class="bi bi-hdd-stack-fill me-2"></i>Equipment Units</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUnitModal">
-            <i class="bi bi-plus-lg me-1"></i>Add New Unit
+        <div class="d-flex align-items-center gap-3">
+            <div class="page-icon-units">
+                <i class="bi bi-hdd-stack-fill"></i>
+            </div>
+            <div>
+                <h2 class="page-title mb-0">Equipment Units</h2>
+                <p class="text-muted mb-0 small">Manage individual equipment units and serial numbers</p>
+            </div>
+        </div>
+        <button class="btn btn-add-unit" data-bs-toggle="modal" data-bs-target="#addUnitModal">
+            <i class="bi bi-plus-lg me-1"></i>Add Equipment Unit
         </button>
     </div>
 
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md">
-            <div class="card card-hover bg-info text-white">
-                <div class="card-body text-center py-3">
-                    <h3 id="statTotal" class="mb-1">-</h3>
-                    <small>Total Units</small>
+        <div class="col-6 col-lg">
+            <div class="stat-card-units total">
+                <div class="stat-icon-units"><i class="bi bi-boxes"></i></div>
+                <div class="stat-content-units">
+                    <span class="stat-value-units" id="statTotal">0</span>
+                    <span class="stat-label-units">Total Units</span>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md">
-            <div class="card card-hover bg-success text-white">
-                <div class="card-body text-center py-3">
-                    <h3 id="statAvailable" class="mb-1">-</h3>
-                    <small>Available</small>
+        <div class="col-6 col-lg">
+            <div class="stat-card-units available">
+                <div class="stat-icon-units"><i class="bi bi-check-circle"></i></div>
+                <div class="stat-content-units">
+                    <span class="stat-value-units" id="statAvailable">0</span>
+                    <span class="stat-label-units">Available</span>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md">
-            <div class="card card-hover bg-warning text-dark">
-                <div class="card-body text-center py-3">
-                    <h3 id="statBorrowed" class="mb-1">-</h3>
-                    <small>Borrowed</small>
+        <div class="col-6 col-lg">
+            <div class="stat-card-units borrowed">
+                <div class="stat-icon-units"><i class="bi bi-arrow-up-right-circle"></i></div>
+                <div class="stat-content-units">
+                    <span class="stat-value-units" id="statBorrowed">0</span>
+                    <span class="stat-label-units">Borrowed</span>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md">
-            <div class="card card-hover bg-secondary text-white">
-                <div class="card-body text-center py-3">
-                    <h3 id="statMaintenance" class="mb-1">-</h3>
-                    <small>Maintenance</small>
+        <div class="col-6 col-lg">
+            <div class="stat-card-units maintenance">
+                <div class="stat-icon-units"><i class="bi bi-tools"></i></div>
+                <div class="stat-content-units">
+                    <span class="stat-value-units" id="statMaintenance">0</span>
+                    <span class="stat-label-units">Maintenance</span>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md">
-            <div class="card card-hover bg-danger text-white">
-                <div class="card-body text-center py-3">
-                    <h3 id="statDamaged" class="mb-1">-</h3>
-                    <small>Damaged</small>
+        <div class="col-6 col-lg">
+            <div class="stat-card-units damaged">
+                <div class="stat-icon-units"><i class="bi bi-exclamation-triangle"></i></div>
+                <div class="stat-content-units">
+                    <span class="stat-value-units" id="statDamaged">0</span>
+                    <span class="stat-label-units">Damaged</span>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Equipment Units Table -->
-    <div class="card card-hover shadow-sm">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <span><i class="bi bi-list-ul me-2"></i>All Equipment Units</span>
-            <button class="btn btn-sm btn-outline-light" onclick="refreshData()">
-                <i class="bi bi-arrow-clockwise"></i>
+    <div class="units-card">
+        <div class="units-card-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-list-ul"></i>
+                <span>All Equipment Units</span>
+            </div>
+            <button class="btn btn-refresh-units" onclick="refreshData()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
             </button>
         </div>
-        <div class="card-body">
-            <table class="table table-striped table-hover" id="unitsTable" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>Serial No</th>
-                        <th>Equipment</th>
-                        <th>Category</th>
-                        <th>Condition</th>
-                        <th>Status</th>
-                        <th class="hide-mobile">Date Added</th>
-                        <th class="hide-mobile">Last Updated</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+        <div class="units-card-body">
+            <!-- Filter Row -->
+            <div class="filter-row-units mb-3">
+                <div class="filter-group-units">
+                    <label class="filter-label-units"><i class="bi bi-funnel me-1"></i>Filter:</label>
+                    <select id="filterCategory" class="filter-select-units">
+                        <option value="">All Categories</option>
+                    </select>
+                    <select id="filterStatus" class="filter-select-units">
+                        <option value="">All Status</option>
+                        <option value="available">Available</option>
+                        <option value="borrowed">Borrowed</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="retired">Retired</option>
+                    </select>
+                    <button class="btn btn-clear-filter-units" id="btnClearFilters" title="Clear Filters">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-units mb-0" id="unitsTable" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Serial No.</th>
+                            <th>Category</th>
+                            <th>Equipment</th>
+                            <th>Condition</th>
+                            <th>Status</th>
+                            <th>Date Added</th>
+                            <th>Last Updated</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="9" class="text-center py-5">
+                                <div class="spinner-border text-danger" role="status"></div>
+                                <p class="text-muted mt-2 mb-0">Loading equipment units...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Add Unit Modal -->
-<div class="modal fade" id="addUnitModal" tabindex="-1">
+<div class="modal fade" id="addUnitModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content modal-units">
             <form id="addUnitForm">
                 @Html.AntiForgeryToken()
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Equipment Unit</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Equipment Type <span class="text-danger">*</span></label>
-                        <select name="EquipmentId" id="addEquipmentId" class="form-select" required>
+                        <label class="form-label-units">Equipment Type <span class="text-danger">*</span></label>
+                        <select name="EquipmentId" id="addEquipmentId" class="form-select form-select-units" required>
                             <option value="">-- Select Equipment --</option>
                             @foreach (var equip in Model)
                             {
@@ -106,19 +153,19 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Serial Number <span class="text-danger">*</span></label>
-                        <input type="text" name="SerialNo" class="form-control" required placeholder="e.g., SN-001, LAPTOP-2024-001">
+                        <label class="form-label-units">Serial Number <span class="text-danger">*</span></label>
+                        <input type="text" name="SerialNo" class="form-control form-control-units" required placeholder="e.g., SN-001, LAPTOP-2024-001">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Condition</label>
-                        <select name="Condition" class="form-select">
+                        <label class="form-label-units">Condition</label>
+                        <select name="Condition" class="form-select form-select-units">
                             <option value="true" selected>✓ Good</option>
                             <option value="false">✗ Damaged</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select name="Status" class="form-select">
+                        <label class="form-label-units">Status</label>
+                        <select name="Status" class="form-select form-select-units">
                             <option value="available" selected>Available</option>
                             <option value="maintenance">Under Maintenance</option>
                             <option value="retired">Retired</option>
@@ -126,20 +173,20 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Date Added</label>
-                            <input type="text" class="form-control bg-light" id="addDateAdded" readonly disabled>
-                            <small class="text-muted">Auto-generated</small>
+                            <label class="form-label-units text-muted">Date Added</label>
+                            <input type="text" class="form-control form-control-units bg-light" id="addDateAdded" readonly disabled>
+                            <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Auto-generated</small>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Last Updated</label>
-                            <input type="text" class="form-control bg-light" id="addLastUpdated" readonly disabled>
-                            <small class="text-muted">Auto-generated</small>
+                            <label class="form-label-units text-muted">Last Updated</label>
+                            <input type="text" class="form-control form-control-units bg-light" id="addLastUpdated" readonly disabled>
+                            <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Auto-generated</small>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="addUnitBtn">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-submit-units" id="addUnitBtn">
                         <i class="bi bi-plus-circle me-1"></i>Add Unit
                     </button>
                 </div>
@@ -149,20 +196,20 @@
 </div>
 
 <!-- Edit Unit Modal -->
-<div class="modal fade" id="editUnitModal" tabindex="-1">
+<div class="modal fade" id="editUnitModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
+        <div class="modal-content modal-units">
             <form id="editUnitForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="UnitId" id="editUnitId">
-                <div class="modal-header bg-warning">
+                <div class="modal-header header-warning">
                     <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Edit Equipment Unit</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Equipment Type <span class="text-danger">*</span></label>
-                        <select name="EquipmentId" id="editEquipmentId" class="form-select" required>
+                        <label class="form-label-units">Equipment Type <span class="text-danger">*</span></label>
+                        <select name="EquipmentId" id="editEquipmentId" class="form-select form-select-units" required>
                             <option value="">-- Select Equipment --</option>
                             @foreach (var equip in Model)
                             {
@@ -171,40 +218,41 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Serial Number <span class="text-danger">*</span></label>
-                        <input type="text" name="SerialNo" id="editSerialNo" class="form-control" required>
+                        <label class="form-label-units">Serial Number <span class="text-danger">*</span></label>
+                        <input type="text" name="SerialNo" id="editSerialNo" class="form-control form-control-units" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Condition</label>
-                        <select name="Condition" id="editCondition" class="form-select">
+                        <label class="form-label-units">Condition</label>
+                        <select name="Condition" id="editCondition" class="form-select form-select-units">
                             <option value="true">✓ Good</option>
                             <option value="false">✗ Damaged</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Status</label>
-                        <select name="Status" id="editStatus" class="form-select">
+                        <label class="form-label-units">Status</label>
+                        <select name="Status" id="editStatus" class="form-select form-select-units">
                             <option value="available">Available</option>
                             <option value="borrowed">Borrowed</option>
                             <option value="maintenance">Under Maintenance</option>
                             <option value="retired">Retired</option>
                         </select>
+                        <small class="text-muted"><i class="bi bi-info-circle me-1"></i>Borrowed status is managed by transactions</small>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Date Added</label>
-                            <input type="text" class="form-control bg-light" id="editDateAdded" readonly disabled>
+                            <label class="form-label-units text-muted">Date Added</label>
+                            <input type="text" class="form-control form-control-units bg-light" id="editDateAdded" readonly disabled>
                             <small class="text-muted">Auto-generated</small>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-muted">Last Updated</label>
-                            <input type="text" class="form-control bg-light" id="editLastUpdated" readonly disabled>
+                            <label class="form-label-units text-muted">Last Updated</label>
+                            <input type="text" class="form-control form-control-units bg-light" id="editLastUpdated" readonly disabled>
                             <small class="text-muted">Auto-updated on save</small>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-warning" id="editUnitBtn">
                         <i class="bi bi-check-circle me-1"></i>Save Changes
                     </button>
@@ -214,61 +262,93 @@
     </div>
 </div>
 
+<style>
+/* Equipment Units Page - Maroon Theme */
+.page-icon-units {
+    width: 56px; height: 56px;
+    background: linear-gradient(135deg, var(--primary-red, #8B0000) 0%, #5c0000 100%);
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 1.5rem; box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
+}
+.btn-add-unit {
+    background: linear-gradient(135deg, var(--primary-red, #8B0000) 0%, #5c0000 100%);
+    color: white; border: none; padding: 10px 20px; border-radius: 10px;
+    font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(139, 0, 0, 0.25);
+}
+.btn-add-unit:hover { box-shadow: 0 6px 20px rgba(139, 0, 0, 0.35); color: white; }
+.stat-card-units {
+    background: white; border-radius: 16px; padding: 20px; display: flex;
+    align-items: center; gap: 16px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05); transition: all 0.3s ease;
+    position: relative; overflow: hidden;
+}
+.stat-card-units::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+.stat-card-units.total::before { background: var(--primary-red, #8B0000); }
+.stat-card-units.available::before { background: #22c55e; }
+.stat-card-units.borrowed::before { background: #f59e0b; }
+.stat-card-units.maintenance::before { background: #6b7280; }
+.stat-card-units.damaged::before { background: #ef4444; }
+.stat-card-units:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); }
+.stat-icon-units { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.stat-card-units.total .stat-icon-units { background: rgba(139, 0, 0, 0.1); color: var(--primary-red, #8B0000); }
+.stat-card-units.available .stat-icon-units { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.stat-card-units.borrowed .stat-icon-units { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.stat-card-units.maintenance .stat-icon-units { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
+.stat-card-units.damaged .stat-icon-units { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.stat-content-units { display: flex; flex-direction: column; }
+.stat-value-units { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--text-dark); line-height: 1; }
+.stat-label-units { font-size: 0.75rem; color: #6b7280; margin-top: 4px; }
+.units-card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06); overflow: hidden; border: 1px solid rgba(139, 0, 0, 0.08); }
+.units-card-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; background: linear-gradient(135deg, var(--primary-red, #8B0000) 0%, #5c0000 100%); color: white; font-weight: 600; }
+.units-card-body { padding: 24px; }
+.btn-refresh-units { background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; transition: all 0.3s ease; }
+.btn-refresh-units:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+.filter-row-units { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 14px 16px; background: linear-gradient(135deg, #fafafa 0%, #fff 100%); border-radius: 10px; border: 1px solid rgba(139, 0, 0, 0.08); }
+.filter-group-units { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.filter-label-units { font-weight: 600; font-size: 0.85rem; color: var(--primary-red, #8B0000); margin: 0; }
+.filter-select-units { padding: 8px 16px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 0.85rem; background: white; transition: all 0.3s ease; min-width: 150px; }
+.filter-select-units:focus { border-color: var(--primary-red, #8B0000); outline: none; box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
+.btn-clear-filter-units { background: transparent; border: 2px solid #e5e7eb; color: #6b7280; padding: 8px 12px; border-radius: 8px; transition: all 0.3s ease; }
+.btn-clear-filter-units:hover { background: #ef4444; border-color: #ef4444; color: white; }
+
+.table-units thead th { background: linear-gradient(135deg, var(--primary-red, #8B0000) 0%, #5c0000 100%); color: white; font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 14px 12px; border: none; }
+.table-units tbody td { padding: 14px 12px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+.table-units tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+.badge-condition { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-condition.good { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-condition.damaged { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+.badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+.badge-status.available { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-status.borrowed { background: linear-gradient(135deg, var(--primary-red, #8B0000) 0%, #5c0000 100%); color: white; }
+.badge-status.maintenance { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+.badge-status.retired { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; }
+.badge-category { background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; }
+.btn-action-units { padding: 6px 10px; border-radius: 6px; transition: all 0.3s ease; border-width: 2px; }
+.btn-edit-unit { color: #f59e0b; border-color: #f59e0b; }
+.btn-edit-unit:hover { background: #f59e0b; color: white; }
+.modal-units { border-radius: 16px; overflow: hidden; border: none; }
+.modal-units .modal-header { background: linear-gradient(135deg, var(--primary-red, #8B0000) 0%, #5c0000 100%); color: white; border: none; padding: 20px 24px; }
+.modal-units .modal-header.header-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.modal-units .modal-body { padding: 24px; }
+.modal-units .modal-footer { border-top: 1px solid rgba(0, 0, 0, 0.05); padding: 16px 24px; }
+.form-label-units { font-weight: 600; font-size: 0.85rem; color: var(--text-dark); margin-bottom: 8px; display: block; }
+.form-control-units, .form-select-units { border: 2px solid #e5e7eb; padding: 10px 14px; border-radius: 8px; transition: all 0.3s ease; }
+.form-control-units:focus, .form-select-units:focus { border-color: var(--primary-red, #8B0000); box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
+.btn-submit-units { background: linear-gradient(135deg, var(--primary-red, #8B0000) 0%, #5c0000 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; }
+.btn-submit-units:hover { color: white; box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3); }
+@@media (max-width: 991px) { .stat-card-units { padding: 16px; } .stat-value-units { font-size: 1.25rem; } }
+@@media (max-width: 768px) { .filter-row-units { padding: 12px; } .filter-group-units { width: 100%; } .filter-select-units { flex: 1; min-width: 100px; } }
+</style>
+
 @section Scripts {
 <script>
 let unitsTable;
 
 $(document).ready(function() {
     loadStats();
+    initUnitsTable();
+    setupFilterHandlers();
     
-    // Initialize DataTable
-    unitsTable = DataTableConfig.init('#unitsTable', {
-        ajax: {
-            url: '/Admin/Equipment/GetAllUnits',
-            dataSrc: json => json.success ? json.data : []
-        },
-        columns: [
-            { data: 'eunitSerialNo', render: data => `<strong class="text-primary">${data}</strong>` },
-            { data: 'equipmentName', render: data => `<strong>${data}</strong>` },
-            { data: 'equipmentCategory', render: data => `<span class="badge bg-secondary">${data}</span>` },
-            { 
-                data: 'conditionBool', 
-                render: data => data 
-                    ? '<span class="status-badge available">Good</span>' 
-                    : '<span class="status-badge overdue">Damaged</span>'
-            },
-            { 
-                data: 'eunitStatus', 
-                render: data => {
-                    const statusClass = data === 'available' ? 'available' : 
-                                       (data === 'borrowed' ? 'borrowed' : 
-                                       (data === 'maintenance' ? 'maintenance' : 'secondary'));
-                    return `<span class="status-badge ${statusClass}">${data}</span>`;
-                }
-            },
-            { data: 'eunitDateAdded', className: 'hide-mobile' },
-            { data: 'eunitLastUpdated', className: 'hide-mobile' },
-            {
-                data: 'eunitId',
-                orderable: false,
-                render: function(data, type, row) {
-                    const disableDelete = row.eunitStatus === 'borrowed' ? 'disabled title="Cannot delete borrowed unit"' : '';
-                    return `
-                        <div class="btn-action-group">
-                            <button class="btn btn-sm btn-outline-primary btn-action btn-edit" data-id="${data}" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger btn-action btn-delete" data-id="${data}" data-serial="${row.eunitSerialNo}" ${disableDelete} title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>`;
-                }
-            }
-        ],
-        order: [[5, 'desc']] // Order by date added descending
-    });
-
-    // Set auto-generated dates when Add modal opens
     $('#addUnitModal').on('show.bs.modal', function() {
         const now = new Date();
         const formattedDate = now.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -276,15 +356,12 @@ $(document).ready(function() {
         $('#addLastUpdated').val(formattedDate);
     });
 
-    // Edit unit
-    $('#unitsTable').on('click', '.btn-edit', async function() {
+    $('#unitsTable').on('click', '.btn-edit-unit', async function() {
         const id = $(this).data('id');
         Loading.show('Loading...');
-        
         try {
-            const res = await Api.get(`/Admin/Equipment/Unit/${id}`);
+            const res = await Api.get('/Admin/Equipment/Unit/' + id);
             Loading.hide();
-            
             if (res.success) {
                 const data = res.data;
                 $('#editUnitId').val(data.eunitId);
@@ -292,13 +369,15 @@ $(document).ready(function() {
                 $('#editSerialNo').val(data.eunitSerialNo);
                 $('#editCondition').val(data.eunitCondition.toString());
                 $('#editStatus').val(data.eunitStatus);
-                
-                // Format and display dates
+                if (data.eunitStatus === 'borrowed') {
+                    $('#editStatus').prop('disabled', true);
+                } else {
+                    $('#editStatus').prop('disabled', false);
+                }
                 const dateAdded = new Date(data.eunitDateAdded);
                 const lastUpdated = new Date(data.eunitLastUpdated);
                 $('#editDateAdded').val(dateAdded.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' }));
                 $('#editLastUpdated').val(lastUpdated.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }));
-                
                 new bootstrap.Modal('#editUnitModal').show();
             } else {
                 Toast.error(res.message);
@@ -309,43 +388,13 @@ $(document).ready(function() {
         }
     });
 
-    // Delete unit
-    $('#unitsTable').on('click', '.btn-delete:not([disabled])', async function() {
-        const id = $(this).data('id');
-        const serial = $(this).data('serial');
-        
-        const confirmed = await Confirm.delete(`Unit ${serial}`);
-        if (!confirmed) return;
-        
-        Loading.show('Deleting...');
-        
-        try {
-            const res = await Api.post('/Admin/Equipment/DeleteUnit', { unitId: id });
-            Loading.hide();
-            
-            if (res.success) {
-                Toast.success('Unit deleted successfully');
-                unitsTable.ajax.reload();
-                loadStats();
-            } else {
-                Toast.error(res.message);
-            }
-        } catch (error) {
-            Loading.hide();
-            Toast.error('Failed to delete unit');
-        }
-    });
-
-    // Add unit form submission
     $('#addUnitForm').submit(async function(e) {
         e.preventDefault();
         const btn = document.getElementById('addUnitBtn');
         Loading.button(btn, true);
-        
         try {
             const res = await $.post('/Admin/Equipment/CreateUnit', $(this).serialize());
             Loading.button(btn, false);
-            
             if (res.success) {
                 bootstrap.Modal.getInstance('#addUnitModal').hide();
                 this.reset();
@@ -361,16 +410,13 @@ $(document).ready(function() {
         }
     });
 
-    // Edit unit form submission
     $('#editUnitForm').submit(async function(e) {
         e.preventDefault();
         const btn = document.getElementById('editUnitBtn');
         Loading.button(btn, true);
-        
         try {
             const res = await $.post('/Admin/Equipment/UpdateUnit', $(this).serialize());
             Loading.button(btn, false);
-            
             if (res.success) {
                 bootstrap.Modal.getInstance('#editUnitModal').hide();
                 unitsTable.ajax.reload();
@@ -384,7 +430,79 @@ $(document).ready(function() {
             Toast.error('Failed to update unit');
         }
     });
+    
+    $('#addUnitModal').on('hidden.bs.modal', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+    });
+    
+    $('#editUnitModal').on('hidden.bs.modal', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+    });
 });
+
+function initUnitsTable() {
+    unitsTable = $('#unitsTable').DataTable({
+        ajax: {
+            url: '/Admin/Equipment/GetAllUnits',
+            dataSrc: function(json) {
+                if (json.success && json.data) {
+                    populateCategoryFilter(json.data);
+                    return json.data;
+                }
+                return [];
+            }
+        },
+        responsive: true,
+        pageLength: 10,
+        order: [[6, 'desc']],
+        language: {
+            search: "",
+            searchPlaceholder: "Search...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_",
+            emptyTable: '<div class="text-center py-5"><i class="bi bi-hdd-stack text-muted" style="font-size: 3rem;"></i><p class="text-muted mt-3 mb-0">No equipment units found</p></div>'
+        },
+        columns: [
+            { data: null, className: 'text-center', render: function(data, type, row, meta) { return '<span class="fw-bold">' + (meta.row + 1) + '</span>'; } },
+            { data: 'eunitSerialNo', render: function(data) { return '<strong class="text-danger">' + data + '</strong>'; } },
+            { data: 'equipmentCategory', render: function(data) { return '<span class="badge-category">' + data + '</span>'; } },
+            { data: 'equipmentName', render: function(data) { return '<strong>' + data + '</strong>'; } },
+            { data: 'conditionBool', render: function(data) { return data ? '<span class="badge-condition good">Good</span>' : '<span class="badge-condition damaged">Damaged</span>'; } },
+            { data: 'eunitStatus', render: function(data) { var cls = data === 'available' ? 'available' : (data === 'borrowed' ? 'borrowed' : (data === 'maintenance' ? 'maintenance' : 'retired')); return '<span class="badge-status ' + cls + '">' + data + '</span>'; } },
+            { data: 'eunitDateAdded', render: function(data) { return '<span class="text-muted small">' + data + '</span>'; } },
+            { data: 'eunitLastUpdated', render: function(data) { return '<span class="text-muted small">' + data + '</span>'; } },
+            { data: 'eunitId', orderable: false, className: 'text-center', render: function(data) { return '<button class="btn btn-sm btn-outline-warning btn-action-units btn-edit-unit" data-id="' + data + '" title="Edit"><i class="bi bi-pencil"></i> Edit</button>'; } }
+        ]
+    });
+}
+
+function populateCategoryFilter(data) {
+    var categories = [...new Set(data.map(function(e) { return e.equipmentCategory; }))].sort();
+    var current = $('#filterCategory').val();
+    $('#filterCategory').empty().append('<option value="">All Categories</option>');
+    categories.forEach(function(c) {
+        $('#filterCategory').append('<option value="' + c + '"' + (c === current ? ' selected' : '') + '>' + c + '</option>');
+    });
+}
+
+function setupFilterHandlers() {
+    $('#filterCategory').on('change', function() {
+        var val = $(this).val();
+        unitsTable.column(2).search(val ? '^' + val + '$' : '', true, false).draw();
+    });
+    $('#filterStatus').on('change', function() {
+        var val = $(this).val();
+        unitsTable.column(5).search(val ? '^' + val + '$' : '', true, false).draw();
+    });
+    $('#btnClearFilters').on('click', function() {
+        $('#filterCategory').val('');
+        $('#filterStatus').val('');
+        unitsTable.search('').columns().search('').draw();
+        Toast.info('Filters cleared');
+    });
+}
 
 async function loadStats() {
     try {
@@ -393,13 +511,12 @@ async function loadStats() {
             $('#statTotal').text(res.data.totalUnits);
             $('#statAvailable').text(res.data.availableUnits);
             $('#statBorrowed').text(res.data.borrowedUnits);
-            // Calculate maintenance units (need to fetch from units)
-            const unitsRes = await Api.get('/Admin/Equipment/GetAllUnits');
-            if (unitsRes.success) {
-                const maintenanceCount = unitsRes.data.filter(u => u.eunitStatus === 'maintenance').length;
-                $('#statMaintenance').text(maintenanceCount);
-            }
             $('#statDamaged').text(res.data.damagedUnits);
+        }
+        const unitsRes = await Api.get('/Admin/Equipment/GetAllUnits');
+        if (unitsRes.success) {
+            const maintenanceCount = unitsRes.data.filter(u => u.eunitStatus === 'maintenance').length;
+            $('#statMaintenance').text(maintenanceCount);
         }
     } catch (error) {
         console.error('Failed to load stats');

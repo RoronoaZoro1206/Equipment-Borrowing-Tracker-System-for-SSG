@@ -3,142 +3,126 @@
     Layout = "~/Views/Shared/_MainLayout.cshtml";
 }
 
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-3">
-            <div class="page-icon-dashboard">
-                <i class="bi bi-speedometer2"></i>
-            </div>
-            <div>
-                <h2 class="page-title mb-0">Support Admin Dashboard</h2>
-                <p class="text-muted mb-0 small">Monitor borrowing activities and transactions</p>
-            </div>
+<!-- Hero Banner -->
+<div class="dashboard-hero">
+    <div class="hero-bg" style="background-image: url('/File_Images/admin-MAIN.png');"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <div class="hero-logo">
+            <img src="~/File_Images/533693089_1177970501030425_4668075712780998242_n.jpg" alt="SSG Logo" />
         </div>
+        <div class="hero-text">
+            <h1>Supreme Student Government</h1>
+            <p>Cebu Technological University - Main Campus</p>
+        </div>
+    </div>
+    <div class="hero-stripe"></div>
+</div>
+
+<!-- Dashboard Section -->
+<div class="dashboard-section">
+    <div class="section-header d-flex justify-content-between align-items-center">
+        <h2 class="section-title"><i class="bi bi-grid-3x3-gap-fill"></i> Dashboard</h2>
         <span class="connection-badge" id="connectionStatus">
             <i class="bi bi-wifi"></i> Real-time Connected
         </span>
     </div>
-
-    <!-- Stats Cards -->
+    
+    <!-- Status Cards - Clickable -->
     <div class="row g-3 mb-4">
         <div class="col-6 col-lg-3">
-            <div class="stat-card-dash borrowed clickable-card" onclick="showStatusModal('borrowed')">
-                <div class="stat-icon-dash"><i class="bi bi-box-arrow-up-right"></i></div>
-                <div class="stat-content-dash">
-                    <span class="stat-value-dash" id="statBorrowed">-</span>
-                    <span class="stat-label-dash">Active Borrows</span>
-                </div>
+            <div class="status-card-maroon borrowed clickable-card" onclick="showStatusModal('borrowed')">
+                <div class="status-icon"><i class="bi bi-box-arrow-up-right"></i></div>
+                <div class="status-label">BORROWED</div>
+                <div class="status-value" id="statBorrowed">@(ViewBag.BorrowedCount ?? 0)</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="stat-card-dash returned clickable-card" onclick="showStatusModal('returned')">
-                <div class="stat-icon-dash"><i class="bi bi-check-circle-fill"></i></div>
-                <div class="stat-content-dash">
-                    <span class="stat-value-dash" id="statReturned">-</span>
-                    <span class="stat-label-dash">Returned Today</span>
-                </div>
+            <div class="status-card-maroon returned clickable-card" onclick="showStatusModal('returned')">
+                <div class="status-icon"><i class="bi bi-check-circle-fill"></i></div>
+                <div class="status-label">RETURNED</div>
+                <div class="status-value" id="statReturned">@(ViewBag.ReturnedToday ?? 0)</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="stat-card-dash overdue clickable-card" onclick="showStatusModal('overdue')">
-                <div class="stat-icon-dash"><i class="bi bi-clock-history"></i></div>
-                <div class="stat-content-dash">
-                    <span class="stat-value-dash" id="statOverdue">-</span>
-                    <span class="stat-label-dash">Overdue Items</span>
-                </div>
+            <div class="status-card-maroon overdue clickable-card" onclick="showStatusModal('overdue')">
+                <div class="status-icon"><i class="bi bi-clock-history"></i></div>
+                <div class="status-label">OVERDUE</div>
+                <div class="status-value" id="statOverdue">@(ViewBag.OverdueCount ?? 0)</div>
             </div>
         </div>
         <div class="col-6 col-lg-3">
-            <div class="stat-card-dash lost clickable-card" onclick="showStatusModal('lost')">
-                <div class="stat-icon-dash"><i class="bi bi-exclamation-triangle-fill"></i></div>
-                <div class="stat-content-dash">
-                    <span class="stat-value-dash" id="statLost">-</span>
-                    <span class="stat-label-dash">Lost/Missing</span>
-                </div>
+            <div class="status-card-maroon lost clickable-card" onclick="showStatusModal('lost')">
+                <div class="status-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <div class="status-label">LOST/MISSING</div>
+                <div class="status-value" id="statLost">@(ViewBag.LostCount ?? 0)</div>
             </div>
         </div>
+    </div>
+
+    <!-- Transaction Search -->
+    <div class="search-section mb-4">
+        <div class="search-box-maroon">
+            <i class="bi bi-upc-scan search-icon"></i>
+            <input type="text" id="transactionCode" class="search-input" placeholder="Enter Transaction Code (e.g., TXN-20241206-001)">
+            <button class="btn-search-maroon" onclick="searchTransaction()">
+                <i class="bi bi-search me-1"></i>Search
+            </button>
+        </div>
+        <p class="search-hint"><i class="bi bi-info-circle me-1"></i>Press Enter or click Search to find a transaction</p>
     </div>
 
     <!-- Quick Actions -->
     <div class="row g-4 mb-4">
         <div class="col-md-6 col-lg-3">
-            <a href="/SupportAdmin/Transactions/Borrow" class="quick-action-card borrow">
-                <div class="quick-action-icon">
-                    <i class="bi bi-box-arrow-up"></i>
-                </div>
+            <a href="/SupportAdmin/Transactions/Borrow" class="quick-action-card-maroon">
+                <div class="quick-action-icon"><i class="bi bi-box-arrow-up"></i></div>
                 <h5 class="quick-action-title">New Borrow</h5>
                 <p class="quick-action-desc">Record a new equipment borrowing</p>
                 <span class="quick-action-arrow"><i class="bi bi-arrow-right"></i></span>
             </a>
         </div>
         <div class="col-md-6 col-lg-3">
-            <a href="/SupportAdmin/Transactions/Return" class="quick-action-card return">
-                <div class="quick-action-icon">
-                    <i class="bi bi-box-arrow-in-down"></i>
-                </div>
+            <a href="/SupportAdmin/Transactions/Return" class="quick-action-card-maroon">
+                <div class="quick-action-icon"><i class="bi bi-box-arrow-in-down"></i></div>
                 <h5 class="quick-action-title">Process Return</h5>
                 <p class="quick-action-desc">Record equipment returns</p>
                 <span class="quick-action-arrow"><i class="bi bi-arrow-right"></i></span>
             </a>
         </div>
         <div class="col-md-6 col-lg-3">
-            <a href="/SupportAdmin/Transactions" class="quick-action-card transactions">
-                <div class="quick-action-icon">
-                    <i class="bi bi-list-check"></i>
-                </div>
+            <a href="/SupportAdmin/Transactions" class="quick-action-card-maroon">
+                <div class="quick-action-icon"><i class="bi bi-list-check"></i></div>
                 <h5 class="quick-action-title">All Transactions</h5>
                 <p class="quick-action-desc">View transaction history</p>
                 <span class="quick-action-arrow"><i class="bi bi-arrow-right"></i></span>
             </a>
         </div>
         <div class="col-md-6 col-lg-3">
-            <a href="/SupportAdmin/Equipment" class="quick-action-card equipment">
-                <div class="quick-action-icon">
-                    <i class="bi bi-box-seam-fill"></i>
-                </div>
+            <a href="/SupportAdmin/Equipment" class="quick-action-card-maroon">
+                <div class="quick-action-icon"><i class="bi bi-box-seam-fill"></i></div>
                 <h5 class="quick-action-title">Equipment</h5>
                 <p class="quick-action-desc">View available equipment</p>
                 <span class="quick-action-arrow"><i class="bi bi-arrow-right"></i></span>
             </a>
         </div>
     </div>
-
-    <!-- Transaction Search Section -->
-    <div class="dash-card mb-4">
-        <div class="dash-card-header">
-            <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-search"></i>
-                <span>Quick Transaction Search</span>
-            </div>
-        </div>
-        <div class="dash-card-body">
-            <div class="search-container">
-                <div class="search-input-group">
-                    <i class="bi bi-upc-scan search-icon"></i>
-                    <input type="text" id="transactionCode" class="search-input" placeholder="Enter Transaction Code (e.g., TXN-20241206-001)">
-                    <button class="btn-search-dash" onclick="searchTransaction()">
-                        <i class="bi bi-search me-1"></i>Search
-                    </button>
-                </div>
-                <p class="search-hint mt-2 mb-0"><i class="bi bi-info-circle me-1"></i>Press Enter or click Search to find a transaction</p>
-            </div>
-        </div>
-    </div>
 </div>
+
+<!-- Note: Analytics widgets (Charts, Recent Activity) are available only for Admin role -->
 
 <!-- Status Records Modal -->
 <div class="modal fade" id="statusRecordsModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <div class="modal-header bg-dark text-white">
+            <div class="modal-header modal-header-maroon">
                 <h5 class="modal-title"><i class="bi bi-list-ul me-2"></i><span id="modalStatusTitle">Records</span></h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-striped mb-0" id="statusRecordsTable">
-                        <thead class="table-dark">
+                    <table class="table table-hover mb-0" id="statusRecordsTable">
+                        <thead class="table-maroon">
                             <tr>
                                 <th>Transaction Code</th>
                                 <th>Student ID</th>
@@ -148,10 +132,11 @@
                                 <th>Date Borrowed</th>
                                 <th>Due Date</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody id="statusRecordsBody">
-                            <tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-danger"></div></td></tr>
+                            <tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-danger"></div></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -163,10 +148,135 @@
     </div>
 </div>
 
+<!-- Transaction Details Modal -->
+<div class="modal fade" id="transactionDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header modal-header-maroon d-flex justify-content-between">
+                <h5 class="modal-title"><i class="bi bi-receipt me-2"></i>TRANSACTION DETAILS</h5>
+                <button type="button" class="btn btn-close-maroon" data-bs-dismiss="modal">Close X</button>
+            </div>
+            <div class="modal-body p-0">
+                <!-- Transaction Code Banner -->
+                <div class="txn-code-banner">
+                    <span class="txn-label">Transaction Code:</span>
+                    <span class="txn-code" id="detailTxnCode">--</span>
+                </div>
+                
+                <!-- Borrower Information -->
+                <div class="borrower-info-maroon">
+                    <h6 class="info-section-title">BORROWER INFORMATION</h6>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">ID Number</span>
+                            <span class="info-value" id="detailStudentId">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Full Name</span>
+                            <span class="info-value" id="detailStudentName">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">College</span>
+                            <span class="info-value" id="detailCollege">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Course</span>
+                            <span class="info-value" id="detailCourse">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email</span>
+                            <span class="info-value" id="detailEmail">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Contact No.</span>
+                            <span class="info-value" id="detailContact">--</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="info-value" id="detailStudentStatus">--</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Remarks -->
+                <div class="remarks-section-maroon">
+                    <span class="remarks-label">Remarks:</span>
+                    <div class="remarks-box" id="detailRemarks">No remarks</div>
+                </div>
+                
+                <!-- Transaction Meta -->
+                <div class="txn-meta-section">
+                    <div class="meta-item">
+                        <span class="meta-label">Recorded By:</span>
+                        <span class="meta-value" id="detailRecordedBy">--</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Date Borrowed:</span>
+                        <span class="meta-value" id="detailDateBorrowed">--</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Transaction Last Updated:</span>
+                        <span class="meta-value" id="detailLastUpdated">--</span>
+                    </div>
+                </div>
+                
+                <!-- Borrowing Information Table -->
+                <div class="borrowing-section">
+                    <h6 class="info-section-title">BORROWING INFORMATION</h6>
+                    <div class="table-responsive">
+                        <table class="table-borrowing-maroon">
+                            <thead>
+                                <tr>
+                                    <th>Equipment Category</th>
+                                    <th>Equipment</th>
+                                    <th>Serial No.</th>
+                                    <th>Current Status</th>
+                                    <th>Date Borrowed</th>
+                                    <th>Due Date</th>
+                                    <th>Date Returned</th>
+                                    <th>Return Condition</th>
+                                    <th>Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailItemsBody">
+                                <tr><td colspan="9" class="text-center text-muted">No items found</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Timeline -->
+                <div class="timeline-section-maroon">
+                    <h6 class="info-section-title">TIMELINE</h6>
+                    <div class="table-responsive">
+                        <table class="table-timeline-maroon">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Action Taken</th>
+                                    <th>By</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailTimelineBody">
+                                <tr><td colspan="3" class="text-center text-muted">No timeline data</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @section Scripts {
 <script>
-// Load stats on page load
+let statusModal, detailsModal;
+
 $(document).ready(function() {
+    statusModal = new bootstrap.Modal('#statusRecordsModal');
+    detailsModal = new bootstrap.Modal('#transactionDetailsModal');
+    
     loadDashboardStats();
     
     // Enter key for search
@@ -188,6 +298,18 @@ function loadDashboardStats() {
     });
 }
 
+function formatTimeAgo(timestamp) {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return 'Just now';
+    if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+    return Math.floor(diff / 86400) + ' days ago';
+}
+
 function searchTransaction() {
     const code = $('#transactionCode').val().trim();
     if (!code) {
@@ -196,43 +318,119 @@ function searchTransaction() {
     }
     
     Toast.info('Searching...');
-    window.location.href = '/SupportAdmin/Transactions?search=' + encodeURIComponent(code);
+    showTransactionDetails(code);
 }
 
 function showStatusModal(status) {
     const titles = {
-        'borrowed': 'Active Borrows',
+        'borrowed': 'Borrowed Items',
         'returned': 'Returned Today',
         'overdue': 'Overdue Items',
         'lost': 'Lost/Missing Items'
     };
     
     $('#modalStatusTitle').text(titles[status] || 'Records');
-    $('#statusRecordsBody').html('<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-danger"></div></td></tr>');
+    $('#statusRecordsBody').html('<tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-danger"></div></td></tr>');
     
-    new bootstrap.Modal('#statusRecordsModal').show();
+    statusModal.show();
     
     $.get('/SupportAdmin/Dashboard/GetRecordsByStatus?status=' + status, function(res) {
         if (res.success && res.data.length > 0) {
             let html = '';
             res.data.forEach(function(r) {
+                const dateBorrowed = r.dateBorrowed ? new Date(r.dateBorrowed).toLocaleDateString() : '-';
+                const dueDate = r.dueDate ? new Date(r.dueDate).toLocaleDateString() : '-';
+                
                 html += `<tr>
-                    <td><a href="/SupportAdmin/Transactions?search=${r.transactionCode}">${r.transactionCode}</a></td>
+                    <td><a href="javascript:void(0)" onclick="showTransactionDetails('${r.transactionCode}')" class="txn-link">${r.transactionCode}</a></td>
                     <td>${r.studentIdNumber || '-'}</td>
                     <td>${r.studentName || '-'}</td>
                     <td>${r.equipmentName || '-'}</td>
                     <td>${r.serialNo || '-'}</td>
-                    <td>${r.dateBorrowed ? new Date(r.dateBorrowed).toLocaleDateString() : '-'}</td>
-                    <td>${r.dueDate ? new Date(r.dueDate).toLocaleDateString() : '-'}</td>
+                    <td>${dateBorrowed}</td>
+                    <td>${dueDate}</td>
                     <td><span class="badge bg-${getStatusColor(r.status)}">${r.status}</span></td>
+                    <td><button class="btn btn-sm btn-maroon" onclick="showTransactionDetails('${r.transactionCode}')"><i class="bi bi-eye"></i></button></td>
                 </tr>`;
             });
             $('#statusRecordsBody').html(html);
         } else {
-            $('#statusRecordsBody').html('<tr><td colspan="8" class="text-center text-muted py-4">No records found</td></tr>');
+            $('#statusRecordsBody').html('<tr><td colspan="9" class="text-center text-muted py-4">No records found</td></tr>');
         }
     }).fail(function() {
-        $('#statusRecordsBody').html('<tr><td colspan="8" class="text-center text-danger py-4">Failed to load records</td></tr>');
+        $('#statusRecordsBody').html('<tr><td colspan="9" class="text-center text-danger py-4">Failed to load records</td></tr>');
+    });
+}
+
+function showTransactionDetails(code) {
+    statusModal.hide();
+    
+    $('#detailTxnCode').text('Loading...');
+    $('#detailStudentId, #detailStudentName, #detailCollege, #detailCourse, #detailEmail, #detailContact, #detailStudentStatus').text('--');
+    $('#detailRemarks').text('Loading...');
+    $('#detailRecordedBy, #detailDateBorrowed, #detailLastUpdated').text('--');
+    $('#detailItemsBody').html('<tr><td colspan="9" class="text-center py-3"><div class="spinner-border spinner-border-sm text-danger"></div></td></tr>');
+    $('#detailTimelineBody').html('<tr><td colspan="3" class="text-center py-3"><div class="spinner-border spinner-border-sm text-danger"></div></td></tr>');
+    
+    detailsModal.show();
+    
+    $.get('/SupportAdmin/Dashboard/GetTransactionDetails?code=' + encodeURIComponent(code), function(res) {
+        if (res.success) {
+            const d = res.data;
+            
+            $('#detailTxnCode').text(d.transactionCode || '--');
+            $('#detailStudentId').text(d.student?.idNumber || '--');
+            $('#detailStudentName').text(d.student?.name || '--');
+            $('#detailCollege').text(d.student?.college || '--');
+            $('#detailCourse').text(d.student?.course || '--');
+            $('#detailEmail').text(d.student?.email || '--');
+            $('#detailContact').text(d.student?.contactNo || '--');
+            $('#detailStudentStatus').html(`<span class="badge bg-${d.student?.status === 'active' ? 'success' : 'secondary'}">${d.student?.status || '--'}</span>`);
+            $('#detailRemarks').text(d.remarks || 'No remarks');
+            $('#detailRecordedBy').text(d.recordedBy || '--');
+            $('#detailDateBorrowed').text(d.dateBorrowed ? new Date(d.dateBorrowed).toLocaleString() : '--');
+            $('#detailLastUpdated').text(d.lastUpdated ? new Date(d.lastUpdated).toLocaleString() : '--');
+            
+            if (d.items && d.items.length > 0) {
+                let itemsHtml = '';
+                d.items.forEach(function(item) {
+                    itemsHtml += `<tr>
+                        <td>${item.category || '-'}</td>
+                        <td>${item.equipment || '-'}</td>
+                        <td>${item.serialNo || '-'}</td>
+                        <td><span class="badge bg-${getStatusColor(item.status)}">${item.status || '-'}</span></td>
+                        <td>${item.dateBorrowed ? new Date(item.dateBorrowed).toLocaleDateString() : '-'}</td>
+                        <td>${item.dueDate ? new Date(item.dueDate).toLocaleDateString() : '-'}</td>
+                        <td>${item.dateReturned ? new Date(item.dateReturned).toLocaleDateString() : 'N/A'}</td>
+                        <td>${item.returnCondition || 'N/A'}</td>
+                        <td>${item.lastUpdated ? new Date(item.lastUpdated).toLocaleString() : '-'}</td>
+                    </tr>`;
+                });
+                $('#detailItemsBody').html(itemsHtml);
+            } else {
+                $('#detailItemsBody').html('<tr><td colspan="9" class="text-center text-muted">No items found</td></tr>');
+            }
+            
+            if (d.timeline && d.timeline.length > 0) {
+                let timelineHtml = '';
+                d.timeline.forEach(function(t) {
+                    timelineHtml += `<tr>
+                        <td>${t.date ? new Date(t.date).toLocaleString() : '-'}</td>
+                        <td>${t.action || '-'}</td>
+                        <td>${t.by || '-'}</td>
+                    </tr>`;
+                });
+                $('#detailTimelineBody').html(timelineHtml);
+            } else {
+                $('#detailTimelineBody').html('<tr><td colspan="3" class="text-center text-muted">No timeline data</td></tr>');
+            }
+        } else {
+            Toast.error(res.message || 'Transaction not found');
+            detailsModal.hide();
+        }
+    }).fail(function() {
+        Toast.error('Failed to load transaction details');
+        detailsModal.hide();
     });
 }
 

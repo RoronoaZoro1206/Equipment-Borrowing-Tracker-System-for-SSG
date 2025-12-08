@@ -89,6 +89,79 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
 
         #region Equipment Type CRUD
 
+        // GET: Admin/Equipment/GetCategories (API)
+        [HttpGet("GetCategories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            try
+            {
+                var equipment = await _equipmentRepo.GetAllAsync();
+                var categories = equipment
+                    .Select(e => e.EquipmentCategory)
+                    .Distinct()
+                    .OrderBy(c => c)
+                    .ToList();
+
+                return Json(new { success = true, data = categories });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching equipment categories");
+                return Json(new { success = false, message = "Failed to fetch categories" });
+            }
+        }
+
+        // GET: Admin/Equipment/GetByCategory?category=xxx
+        [HttpGet("GetByCategory")]
+        public async Task<IActionResult> GetByCategory([FromQuery] string category)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(category))
+                    return Json(new { success = false, message = "Category is required" });
+
+                var equipment = await _equipmentRepo.GetAllAsync();
+                var filtered = equipment
+                    .Where(e => e.EquipmentCategory.Equals(category, StringComparison.OrdinalIgnoreCase))
+                    .Select(e => new
+                    {
+                        e.EquipmentId,
+                        e.EquipmentName,
+                        e.EquipmentCategory
+                    })
+                    .ToList();
+
+                return Json(new { success = true, data = filtered });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching equipment by category {Category}", category);
+                return Json(new { success = false, message = "Failed to fetch equipment" });
+            }
+        }
+
+        // GET: Admin/Equipment/GetAvailableUnits?equipmentId=xxx
+        [HttpGet("GetAvailableUnits")]
+        public async Task<IActionResult> GetAvailableUnitsQuery([FromQuery] int equipmentId)
+        {
+            try
+            {
+                var units = await _unitRepo.GetAvailableUnitsAsync(equipmentId);
+                var result = units.Select(u => new
+                {
+                    u.EunitId,
+                    u.EunitSerialNo,
+                    Condition = u.EunitCondition ? "Good" : "Damaged"
+                });
+                return Json(new { success = true, data = result });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching available units for equipment {EquipmentId}", equipmentId);
+                return Json(new { success = false, message = "Failed to fetch available units" });
+            }
+        }
+
         // GET: Admin/Equipment/GetAll
         [HttpGet("GetAll")]
         public async Task<IActionResult> GetAll()
@@ -100,15 +173,14 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
 
                 foreach (var e in equipment)
                 {
-                    var availableStock = await _equipmentRepo.GetAvailableStockAsync(e.EquipmentId);
                     result.Add(new
                     {
                         e.EquipmentId,
                         e.EquipmentName,
                         e.EquipmentCategory,
                         e.EquipmentQuantity,
-                        AvailableStock = availableStock,
-                        EquipmentDateAdded = e.EquipmentDateAdded.ToString("yyyy-MM-dd")
+                        EquipmentDateAdded = e.EquipmentDateAdded.ToString("yyyy-MM-dd HH:mm"),
+                        EquipmentLastUpdated = e.EquipmentLastUpdated.ToString("yyyy-MM-dd HH:mm")
                     });
                 }
 

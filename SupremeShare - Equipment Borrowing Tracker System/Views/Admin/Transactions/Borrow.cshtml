@@ -3,169 +3,394 @@
     Layout = "~/Views/Shared/_MainLayout.cshtml";
 }
 
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <div class="d-flex align-items-center gap-3">
-            <div class="page-icon-borrow">
-                <i class="bi bi-box-arrow-up"></i>
+<!-- Vertical Stack Layout Container -->
+<div class="borrow-page-container">
+    <!-- Section 1: Header -->
+    <div class="borrow-header-section">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-3">
+                <div class="page-icon">
+                    <i class="bi bi-box-arrow-up"></i>
+                </div>
+                <div>
+                    <h2 class="page-title mb-0">Borrow an Item</h2>
+                    <p class="text-muted mb-0 small">Process equipment borrowing transactions</p>
+                </div>
             </div>
-            <div>
-                <h2 class="page-title mb-0">New Borrow Transaction</h2>
-                <p class="text-muted mb-0 small">Process equipment borrowing for students</p>
-            </div>
+            <a href="/Admin/Transactions" class="btn btn-outline-secondary btn-back">
+                <i class="bi bi-arrow-left me-1"></i>Back
+            </a>
         </div>
-        <a href="/Admin/Transactions" class="btn btn-back-borrow">
-            <i class="bi bi-arrow-left me-1"></i>Back to Transactions
-        </a>
     </div>
 
-    <div class="row g-4">
-        <!-- Borrow Form -->
-        <div class="col-lg-8">
-            <div class="borrow-card">
-                <div class="borrow-card-header">
-                    <i class="bi bi-clipboard-check me-2"></i>Borrow Form
+    <!-- Section 2: Horizontal Stepper (Full Width) -->
+    <div class="borrow-stepper-section">
+        <div class="stepper-card">
+            <div class="stepper-steps">
+                <div class="stepper-step active" id="step1Indicator">
+                    <div class="step-circle"><i class="bi bi-check"></i></div>
+                    <div class="step-text">
+                        <span class="step-title">Borrower Details</span>
+                        <span class="step-desc">Select a student</span>
+                    </div>
                 </div>
-                <div class="borrow-card-body">
+                <div class="step-line"></div>
+                <div class="stepper-step" id="step2Indicator">
+                    <div class="step-circle">2</div>
+                    <div class="step-text">
+                        <span class="step-title">Transaction Details</span>
+                        <span class="step-desc">Add equipment items</span>
+                    </div>
+                </div>
+                <div class="step-line"></div>
+                <div class="stepper-step" id="step3Indicator">
+                    <div class="step-circle">3</div>
+                    <div class="step-text">
+                        <span class="step-title">Summary</span>
+                        <span class="step-desc">Review & confirm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Step Content (Full Width Vertical Stack) -->
+    <div class="borrow-content-section">
+        <!-- Step 1: Select Borrower -->
+        <div class="step-panel" id="step1Content">
+            <!-- Select Borrower Card -->
+            <div class="content-card">
+                <div class="card-header-bar">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Select Borrower</span>
+                    </div>
+                    <button class="btn btn-primary-red btn-sm" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                        <i class="bi bi-plus-circle me-1"></i>Add Student
+                    </button>
+                </div>
+                <div class="card-body-content">
+                    <!-- Filters -->
+                    <div class="filters-bar">
+                        <div class="filter-group">
+                            <label class="filter-label"><i class="bi bi-funnel me-1"></i>Filters:</label>
+                            <select id="filterCollege" class="filter-select">
+                                <option value="">All Colleges</option>
+                            </select>
+                            <select id="filterCourse" class="filter-select">
+                                <option value="">All Courses</option>
+                            </select>
+                            <select id="filterStatus" class="filter-select">
+                                <option value="">All Status</option>
+                                <option value="true">Active</option>
+                                <option value="false">Blocked</option>
+                            </select>
+                            <button class="btn btn-clear-filter" id="btnClearFilters" title="Clear Filters">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Students Table -->
+                    <div class="table-responsive">
+                        <table class="table table-students" id="studentsTable">
+                            <thead>
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Full Name</th>
+                                    <th>College</th>
+                                    <th>Course</th>
+                                    <th>E-mail</th>
+                                    <th>Contact No.</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Borrower Details Card -->
+            <div class="content-card mt-3">
+                <div class="card-header-bar bg-light">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-person-lines-fill text-danger"></i>
+                        <span>Borrower Details</span>
+                    </div>
+                    <span class="text-muted small" id="borrowerSelectionHint">Select a student from the table to populate these fields.</span>
+                </div>
+                <div class="card-body-content">
+                    <div class="borrower-form-grid">
+                        <div class="form-field">
+                            <label>Student ID</label>
+                            <input id="detailStudentIdNumber" type="text" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label>Last Name</label>
+                            <input id="detailLastName" type="text" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label>First Name</label>
+                            <input id="detailFirstName" type="text" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label>Middle Name</label>
+                            <input id="detailMiddleName" type="text" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label>Suffix</label>
+                            <input id="detailSuffix" type="text" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label>College</label>
+                            <input id="detailCollege" type="text" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label>Course</label>
+                            <input id="detailCourse" type="text" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label>E-mail</label>
+                            <input id="detailEmail" type="email" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label>Contact No.</label>
+                            <input id="detailContact" type="text" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label>Status</label>
+                            <div class="status-pill" id="detailStatus">Not selected</div>
+                        </div>
+                    </div>
+                    <div class="form-footer">
+                        <small class="text-muted">Review details then proceed to the next step.</small>
+                        <button type="button" class="btn btn-primary-red" id="btnProceedStep2" disabled>
+                            Next <i class="bi bi-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Transaction Details -->
+        <div class="step-panel d-none" id="step2Content">
+            <div class="content-card">
+                <div class="card-header-bar header-primary">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-clipboard-data"></i>
+                        <span>Transaction Details</span>
+                    </div>
+                    <span class="borrower-badge" id="selectedBorrowerBadge">
+                        <i class="bi bi-person-check me-1"></i>
+                        <span id="selectedBorrowerName">-</span>
+                    </span>
+                </div>
+                <div class="card-body-content">
                     <form id="borrowForm">
                         @Html.AntiForgeryToken()
-                        
-                        <!-- Step 1: Select Student -->
-                        <div class="form-step mb-4">
-                            <div class="step-header">
-                                <span class="step-number">1</span>
-                                <span class="step-title">Select Student (Borrower)</span>
+                        <input type="hidden" name="StudentId" id="selectedStudentId">
+
+                        <!-- Transaction Info -->
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <label>Transaction Code</label>
+                                <input type="text" id="transactionCode" readonly placeholder="Auto-generated">
                             </div>
-                            <div class="step-content">
-                                <div class="search-box">
-                                    <i class="bi bi-search search-icon"></i>
-                                    <input type="text" id="studentSearch" class="search-input" placeholder="Search by Student ID Number or Name...">
-                                    <button type="button" class="btn btn-search" id="btnSearchStudent">Search</button>
-                                </div>
-                                <div id="studentResults" class="student-results"></div>
-                                <div id="selectedStudent" class="selected-item d-none">
-                                    <div class="selected-icon"><i class="bi bi-person-check-fill"></i></div>
-                                    <div class="selected-info">
-                                        <span class="selected-label">Selected Student</span>
-                                        <span class="selected-value" id="studentInfo"></span>
-                                    </div>
-                                    <button type="button" class="btn-clear-selection" onclick="clearStudent()"><i class="bi bi-x-lg"></i></button>
-                                    <input type="hidden" name="StudentId" id="studentId">
-                                </div>
+                            <div class="info-box">
+                                <label>Processed by</label>
+                                <input type="text" id="processedBy" readonly value="@Context.Session.GetString("FullName")">
+                            </div>
+                            <div class="info-box">
+                                <label>Date Borrowed</label>
+                                <input type="text" id="dateBorrowed" readonly>
+                            </div>
+                            <div class="info-box">
+                                <label>Last Updated</label>
+                                <input type="text" id="lastUpdated" readonly>
                             </div>
                         </div>
 
-                        <!-- Step 2: Select Equipment -->
-                        <div class="form-step mb-4">
-                            <div class="step-header">
-                                <span class="step-number">2</span>
-                                <span class="step-title">Select Equipment</span>
+                        <!-- Remarks -->
+                        <div class="form-group mt-3">
+                            <label>Remarks <span class="text-muted">(Optional)</span></label>
+                            <textarea id="remarks" name="Remarks" rows="2" placeholder="Add any notes about this transaction..."></textarea>
+                        </div>
+
+                        <div class="section-divider">
+                            <span><i class="bi bi-box-seam me-2"></i>Borrowing Information</span>
+                        </div>
+
+                        <!-- Equipment Selection -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label>Equipment Category <span class="text-danger">*</span></label>
+                                <select id="equipmentCategory">
+                                    <option value="">Select Category</option>
+                                </select>
                             </div>
-                            <div class="step-content">
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label-borrow">Equipment Type</label>
-                                        <select id="equipmentSelect" class="form-select-borrow">
-                                            <option value="">-- Select Equipment --</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label-borrow">Available Unit</label>
-                                        <select id="unitSelect" class="form-select-borrow" name="UnitId" disabled>
-                                            <option value="">-- Select Unit --</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div id="selectedUnit" class="selected-item success d-none mt-3">
-                                    <div class="selected-icon success"><i class="bi bi-box-seam-fill"></i></div>
-                                    <div class="selected-info">
-                                        <span class="selected-label">Selected Unit</span>
-                                        <span class="selected-value" id="unitInfo"></span>
-                                    </div>
-                                </div>
+                            <div class="col-md-4">
+                                <label>Equipment <span class="text-danger">*</span></label>
+                                <select id="equipmentSelect" disabled>
+                                    <option value="">Select Equipment</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label>Serial No. <span class="text-danger">*</span></label>
+                                <select id="serialNoSelect" name="UnitId" disabled>
+                                    <option value="">Select Serial No.</option>
+                                </select>
                             </div>
                         </div>
 
-                        <!-- Step 3: Set Due Date -->
-                        <div class="form-step mb-4">
-                            <div class="step-header">
-                                <span class="step-number">3</span>
-                                <span class="step-title">Set Due Date</span>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label>Due Date <span class="text-danger">*</span></label>
+                                <input type="datetime-local" name="DueDate" id="dueDate" required>
                             </div>
-                            <div class="step-content">
-                                <div class="row g-3 align-items-end">
-                                    <div class="col-md-6">
-                                        <label class="form-label-borrow">Due Date</label>
-                                        <input type="datetime-local" name="DueDate" id="dueDate" class="form-control-borrow" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label-borrow">Quick Select</label>
-                                        <div class="quick-select-group">
-                                            <button type="button" class="btn-quick" data-days="1">1 Day</button>
-                                            <button type="button" class="btn-quick" data-days="3">3 Days</button>
-                                            <button type="button" class="btn-quick" data-days="7">1 Week</button>
-                                        </div>
-                                    </div>
+                            <div class="col-md-4">
+                                <label>Quick Due Date</label>
+                                <div class="quick-date-btns">
+                                    <button type="button" class="btn-quick" data-days="1">1 Day</button>
+                                    <button type="button" class="btn-quick" data-days="3">3 Days</button>
+                                    <button type="button" class="btn-quick" data-days="7">1 Week</button>
                                 </div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="button" id="btnAddItem" class="btn btn-primary-red w-100" disabled>
+                                    <i class="bi bi-plus-circle me-1"></i>Add to List
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Submit -->
-                        <button type="submit" class="btn btn-submit-borrow" id="btnSubmit" disabled>
-                            <i class="bi bi-check-circle me-2"></i>Process Borrow Transaction
-                        </button>
+                        <!-- Items Table - Borrowing Information -->
+                        <div class="table-responsive borrowing-info-table">
+                            <table class="table table-items" id="itemsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Equipment Category</th>
+                                        <th>Equipment</th>
+                                        <th>Serial No.</th>
+                                        <th>Current Status</th>
+                                        <th>Due Date</th>
+                                        <th>Date Returned</th>
+                                        <th>Return Condition</th>
+                                        <th>Last Updated</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="empty-row">
+                                        <td colspan="9" class="text-center py-4">
+                                            <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mb-0 mt-2">No items added yet</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="form-footer mt-4">
+                            <button type="button" class="btn btn-outline-secondary" id="btnBackStep1">
+                                <i class="bi bi-arrow-left me-1"></i>Back
+                            </button>
+                            <button type="button" class="btn btn-primary-red" id="btnNextStep3" disabled>
+                                Review Summary <i class="bi bi-arrow-right ms-1"></i>
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- Summary Panel -->
-        <div class="col-lg-4">
-            <div class="summary-card">
-                <div class="summary-header">
-                    <i class="bi bi-receipt me-2"></i>Transaction Summary
-                </div>
-                <div class="summary-body">
-                    <div class="summary-row">
-                        <span class="summary-label">Student:</span>
-                        <span class="summary-value" id="summaryStudent">-</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Equipment:</span>
-                        <span class="summary-value" id="summaryEquipment">-</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Serial No:</span>
-                        <span class="summary-value" id="summarySerial">-</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">Due Date:</span>
-                        <span class="summary-value" id="summaryDue">-</span>
+        <!-- Step 3: Summary -->
+        <div class="step-panel d-none" id="step3Content">
+            <div class="content-card">
+                <div class="card-header-bar header-success">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle"></i>
+                        <span>Transaction Summary</span>
                     </div>
                 </div>
-            </div>
+                <div class="card-body-content">
+                    <!-- Borrower Summary -->
+                    <div class="summary-section">
+                        <h6><i class="bi bi-person me-2"></i>Borrower Information</h6>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <span class="label">Student ID</span>
+                                <span class="value" id="sumStudentId">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Full Name</span>
+                                <span class="value" id="sumFullName">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">College</span>
+                                <span class="value" id="sumCollege">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Course</span>
+                                <span class="value" id="sumCourse">-</span>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="instructions-card mt-3">
-                <div class="instructions-header">
-                    <i class="bi bi-lightbulb me-2"></i>Instructions
-                </div>
-                <div class="instructions-body">
-                    <div class="instruction-item">
-                        <span class="instruction-num">1</span>
-                        <span>Search and select the student borrower</span>
+                    <!-- Transaction Summary -->
+                    <div class="summary-section">
+                        <h6><i class="bi bi-receipt me-2"></i>Transaction Details</h6>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <span class="label">Transaction Code</span>
+                                <span class="value fw-bold" id="sumTransactionCode">Auto-generated</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Processed by</span>
+                                <span class="value" id="sumProcessedBy">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Date Borrowed</span>
+                                <span class="value" id="sumDateBorrowed">-</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="label">Remarks</span>
+                                <span class="value" id="sumRemarks">-</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="instruction-item">
-                        <span class="instruction-num">2</span>
-                        <span>Choose equipment type and available unit</span>
+
+                    <!-- Items Summary - Borrowing Information -->
+                    <div class="summary-section">
+                        <h6><i class="bi bi-box-seam me-2"></i>Borrowing Information</h6>
+                        <div class="table-responsive borrowing-info-table">
+                            <table class="table table-summary" id="summaryItemsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Equipment Category</th>
+                                        <th>Equipment</th>
+                                        <th>Serial No.</th>
+                                        <th>Current Status</th>
+                                        <th>Due Date</th>
+                                        <th>Date Returned</th>
+                                        <th>Return Condition</th>
+                                        <th>Last Updated</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="instruction-item">
-                        <span class="instruction-num">3</span>
-                        <span>Set the due date for return</span>
-                    </div>
-                    <div class="instruction-item">
-                        <span class="instruction-num">4</span>
-                        <span>Click "Process Borrow Transaction"</span>
+
+                    <!-- Navigation -->
+                    <div class="form-footer mt-4">
+                        <button type="button" class="btn btn-outline-secondary" id="btnBackStep2">
+                            <i class="bi bi-arrow-left me-1"></i>Back
+                        </button>
+                        <button type="button" class="btn btn-success" id="btnConfirmBorrow">
+                            <i class="bi bi-check-circle me-1"></i>Confirm & Submit
+                        </button>
                     </div>
                 </div>
             </div>
@@ -173,701 +398,1500 @@
     </div>
 </div>
 
+<!-- Add Student Modal -->
+<div class="modal fade" id="addStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Add New Student</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addStudentForm">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Student ID Number <span class="text-danger">*</span></label>
+                            <input type="text" name="StudentIdNumber" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">College <span class="text-danger">*</span></label>
+                            <input type="text" name="College" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" name="FirstName" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Middle Name</label>
+                            <input type="text" name="MiddleName" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" name="LastName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Course</label>
+                            <input type="text" name="Course" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="Email" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact No.</label>
+                            <input type="text" name="ContactNo" class="form-control">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary-red" id="btnSaveStudent">
+                    <i class="bi bi-check-circle me-1"></i>Save Student
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Student Modal -->
+<div class="modal fade" id="editStudentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Student Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editStudentForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="StudentId" id="editStudentId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Student ID Number <span class="text-danger">*</span></label>
+                            <input type="text" name="StudentIdNumber" id="editStudentIdNumber" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">College <span class="text-danger">*</span></label>
+                            <input type="text" name="College" id="editCollege" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">First Name <span class="text-danger">*</span></label>
+                            <input type="text" name="FirstName" id="editFirstName" class="form-control" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Middle Name</label>
+                            <input type="text" name="MiddleName" id="editMiddleName" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                            <input type="text" name="LastName" id="editLastName" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Course</label>
+                            <input type="text" name="Course" id="editCourse" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="Email" id="editEmail" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact No.</label>
+                            <input type="text" name="ContactNo" id="editContactNo" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select name="Status" id="editStatus" class="form-select" disabled>
+                                <option value="true">Active</option>
+                                <option value="false">Blocked</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="btnUpdateStudent">
+                    <i class="bi bi-check-circle me-1"></i>Save Changes
+                </button>
+                <button type="button" class="btn btn-success" id="btnSelectStudent">
+                    <i class="bi bi-check2-square me-1"></i>Select as Borrower
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <style>
 /* ===========================================
-   Borrow Page - Red & White Luxury Theme
+   VERTICAL STACK LAYOUT - NO HORIZONTAL OVERLAP
    =========================================== */
 
-/* Page Icon */
-.page-icon-borrow {
-    width: 56px;
-    height: 56px;
+/* Main Container - Full Width Vertical Stack */
+.borrow-page-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 16px;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+/* Section 1: Header */
+.borrow-header-section {
+    width: 100%;
+    padding: 0;
+}
+
+.page-icon {
+    width: 50px;
+    height: 50px;
     background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
-    border-radius: 16px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
+    font-size: 1.3rem;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.25);
+}
+
+.page-title {
+    font-family: 'Playfair Display', serif;
     font-size: 1.5rem;
-    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.25);
-}
-
-/* Back Button */
-.btn-back-borrow {
-    background: white;
-    color: var(--primary-red);
-    border: 2px solid var(--primary-red);
-    padding: 10px 20px;
-    border-radius: 10px;
     font-weight: 600;
-    transition: all 0.3s ease;
+    color: var(--text-dark);
 }
 
-.btn-back-borrow:hover {
-    background: var(--primary-red);
-    color: white;
+.btn-back {
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-weight: 500;
 }
 
-/* Borrow Card */
-.borrow-card {
+/* Section 2: Stepper - Full Width */
+.borrow-stepper-section {
+    width: 100%;
+}
+
+.stepper-card {
     background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-    border: 1px solid rgba(139, 0, 0, 0.08);
-}
-
-.borrow-card-header {
-    padding: 18px 24px;
-    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
-    color: white;
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-.borrow-card-body {
-    padding: 24px;
-}
-
-/* Form Steps */
-.form-step {
-    background: #fafafa;
     border-radius: 12px;
-    padding: 20px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 16px 24px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.step-header {
+.stepper-steps {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid rgba(139, 0, 0, 0.1);
+    justify-content: center;
+    gap: 0;
+    width: 100%;
 }
 
-.step-number {
-    width: 28px;
-    height: 28px;
-    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
-    color: white;
+.stepper-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+}
+
+.step-circle {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
     font-size: 0.85rem;
-}
-
-.step-title {
     font-weight: 600;
-    color: var(--text-dark);
-    font-size: 1rem;
-}
-
-.step-content {
-    padding-left: 40px;
-}
-
-/* Search Box */
-.search-box {
-    display: flex;
-    align-items: center;
-    background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    padding: 4px;
+    background: #e5e7eb;
+    color: #6b7280;
+    flex-shrink: 0;
     transition: all 0.3s ease;
 }
 
-.search-box:focus-within {
-    border-color: var(--primary-red);
-    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
-}
-
-.search-icon {
-    padding: 0 12px;
-    color: #9ca3af;
-}
-
-.search-input {
-    flex: 1;
-    border: none;
-    outline: none;
-    padding: 10px 0;
-    font-size: 0.9rem;
-}
-
-.btn-search {
+.stepper-step.active .step-circle {
     background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
     color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-search:hover {
     box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
-    color: white;
 }
 
-/* Student Results */
-.student-results {
-    max-height: 200px;
-    overflow-y: auto;
-    margin-top: 12px;
-}
-
-.student-item {
-    display: block;
-    padding: 12px 16px;
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    color: inherit;
-}
-
-.student-item:hover {
-    border-color: var(--primary-red);
-    background: rgba(139, 0, 0, 0.02);
-    transform: translateX(4px);
-}
-
-.student-item .student-id {
-    font-weight: 700;
-    color: var(--primary-red);
-}
-
-.student-item .student-name {
-    color: var(--text-dark);
-}
-
-.student-item .student-details {
-    font-size: 0.8rem;
-    color: #6b7280;
-    margin-top: 4px;
-}
-
-.student-blocked {
-    background: #fef2f2;
-    border-color: #fecaca;
-    cursor: not-allowed;
-}
-
-.student-blocked .blocked-badge {
-    background: #ef4444;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    font-weight: 600;
-}
-
-/* Selected Item */
-.selected-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
-    border: 2px solid #3b82f6;
-    border-radius: 10px;
-    margin-top: 12px;
-}
-
-.selected-item.success {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
-    border-color: #22c55e;
-}
-
-.selected-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.1rem;
-}
-
-.selected-icon.success {
+.stepper-step.completed .step-circle {
     background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
 }
 
-.selected-info {
-    flex: 1;
+.step-text {
     display: flex;
     flex-direction: column;
 }
 
-.selected-label {
-    font-size: 0.7rem;
+.step-title {
+    font-weight: 600;
+    font-size: 0.9rem;
     color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
-.selected-value {
-    font-weight: 600;
+.stepper-step.active .step-title,
+.stepper-step.completed .step-title {
     color: var(--text-dark);
 }
 
-.btn-clear-selection {
-    background: transparent;
-    border: none;
-    color: #6b7280;
-    padding: 8px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.step-desc {
+    font-size: 0.75rem;
+    color: #9ca3af;
 }
 
-.btn-clear-selection:hover {
-    background: #ef4444;
+.step-line {
+    flex: 1;
+    height: 2px;
+    background: #e5e7eb;
+    max-width: 100px;
+}
+
+/* Section 3: Content - Full Width */
+.borrow-content-section {
+    width: 100%;
+}
+
+.step-panel {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Content Card */
+.content-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.card-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    font-weight: 600;
+    color: var(--text-dark);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.card-header-bar.header-primary {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
     color: white;
 }
 
-/* Form Controls */
-.form-label-borrow {
+.card-header-bar.header-success {
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+}
+
+.card-body-content {
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Filters Bar */
+.filters-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    margin-bottom: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-label {
     font-weight: 600;
     font-size: 0.85rem;
-    color: var(--text-dark);
-    margin-bottom: 8px;
-    display: block;
+    color: var(--primary-red);
+    margin: 0;
 }
 
-.form-select-borrow,
-.form-control-borrow {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.85rem;
     background: white;
+    min-width: 130px;
 }
 
-.form-select-borrow:focus,
-.form-control-borrow:focus {
+.filter-select:focus {
+    border-color: var(--primary-red);
+    outline: none;
+}
+
+.btn-clear-filter {
+    background: transparent;
+    border: 1px solid #d1d5db;
+    color: #6b7280;
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.btn-clear-filter:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+/* Table Container - Full Width */
+.table-container {
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Tables */
+.table-students,
+.table-items,
+.table-summary {
+    width: 100%;
+    margin-bottom: 0;
+    border-collapse: collapse;
+}
+
+.table-students thead th,
+.table-summary thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 10px;
+    border: none;
+    white-space: nowrap;
+}
+
+/* Borrowing Information Table - Maroon Theme */
+.table-items thead th {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    padding: 12px 8px;
+    border: none;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.table-items tbody td {
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.table-items tbody tr:hover {
+    background: rgba(139, 0, 0, 0.04);
+}
+
+/* Borrowing Info Table Container */
+.borrowing-info-table {
+    border: 1px solid rgba(139, 0, 0, 0.15);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Serial Code Styling */
+.serial-code {
+    background: rgba(139, 0, 0, 0.08);
+    color: var(--primary-red);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'Consolas', monospace;
+}
+
+/* Status Badge - Borrowed */
+.status-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.borrowed {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+}
+
+/* Remove Item Button */
+.btn-remove-item {
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.table-students tbody td,
+.table-items tbody td,
+.table-summary tbody td {
+    padding: 12px 10px;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.table-students tbody tr:hover,
+.table-summary tbody tr:hover {
+    background: rgba(139, 0, 0, 0.03);
+}
+
+/* Borrower Form Grid */
+.borrower-form-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.form-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 6px;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: #f9fafb;
+    box-sizing: border-box;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
     border-color: var(--primary-red);
     outline: none;
     box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
 }
 
-.form-select-borrow:disabled {
-    background: #f3f4f6;
-    cursor: not-allowed;
-}
-
-/* Quick Select */
-.quick-select-group {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-quick {
-    flex: 1;
-    padding: 12px 16px;
-    background: white;
-    border: 2px solid #e5e7eb;
+.status-pill {
+    padding: 10px 14px;
     border-radius: 8px;
+    border: 1px solid #d1d5db;
     font-weight: 600;
-    font-size: 0.85rem;
-    color: var(--text-dark);
-    cursor: pointer;
-    transition: all 0.3s ease;
+    color: #6b7280;
+    background: #f9fafb;
+    text-align: center;
 }
 
-.btn-quick:hover {
-    border-color: var(--primary-red);
-    color: var(--primary-red);
+.status-pill.active {
+    border-color: #16a34a;
+    color: #16a34a;
+    background: rgba(22, 163, 74, 0.08);
 }
 
-.btn-quick.active {
-    background: var(--primary-red);
-    border-color: var(--primary-red);
-    color: white;
+.status-pill.blocked {
+    border-color: #dc2626;
+    color: #dc2626;
+    background: rgba(220, 38, 38, 0.08);
 }
 
-/* Submit Button */
-.btn-submit-borrow {
-    width: 100%;
-    padding: 16px 24px;
+/* Form Footer */
+.form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    margin-top: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* Buttons */
+.btn-primary-red {
     background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
     color: white;
     border: none;
-    border-radius: 12px;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.25);
-}
-
-.btn-submit-borrow:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(139, 0, 0, 0.35);
-}
-
-.btn-submit-borrow:disabled {
-    background: #d1d5db;
-    box-shadow: none;
-    cursor: not-allowed;
-}
-
-/* Summary Card */
-.summary-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-    border: 1px solid rgba(139, 0, 0, 0.08);
-}
-
-.summary-header {
-    padding: 16px 20px;
-    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-    color: white;
+    padding: 10px 20px;
+    border-radius: 8px;
     font-weight: 600;
+    transition: all 0.3s ease;
 }
 
-.summary-body {
-    padding: 20px;
+.btn-primary-red:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3);
+    color: white;
 }
 
-.summary-row {
+.btn-primary-red:disabled {
+    background: #d1d5db;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Info Grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    width: 100%;
+}
+
+.info-box {
     display: flex;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    flex-direction: column;
 }
 
-.summary-row:last-child {
+.info-box label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.info-box input {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f9fafb;
+    font-size: 0.9rem;
+}
+
+/* Form Group */
+.form-group {
+    width: 100%;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+/* Section Divider */
+.section-divider {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    color: var(--primary-red);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.section-divider::before,
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(139, 0, 0, 0.2);
+}
+
+.section-divider span {
+    padding: 0 16px;
+}
+
+/* Quick Date Buttons */
+.quick-date-btns {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-quick {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-quick:hover {
+    background: var(--primary-red);
+    color: white;
+    border-color: var(--primary-red);
+}
+
+/* Borrower Badge */
+.borrower-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+/* Summary Section */
+.summary-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.summary-section:last-of-type {
     border-bottom: none;
 }
 
-.summary-label {
-    color: #6b7280;
-    font-size: 0.85rem;
-}
-
-.summary-value {
+.summary-section h6 {
     font-weight: 600;
-    color: var(--text-dark);
-    text-align: right;
-}
-
-/* Instructions Card */
-.instructions-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-    border: 1px solid rgba(139, 0, 0, 0.08);
-}
-
-.instructions-header {
-    padding: 16px 20px;
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-    color: white;
-    font-weight: 600;
-}
-
-.instructions-body {
-    padding: 20px;
-}
-
-.instruction-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 10px 0;
-}
-
-.instruction-num {
-    width: 24px;
-    height: 24px;
-    background: rgba(139, 0, 0, 0.1);
     color: var(--primary-red);
-    border-radius: 50%;
+    margin-bottom: 16px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.summary-item {
     display: flex;
+    flex-direction: column;
+}
+
+.summary-item .label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.summary-item .value {
+    font-size: 0.95rem;
+    color: var(--text-dark);
+}
+
+/* Action Buttons - Maroon Theme */
+.action-btn-group {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+
+.btn-action {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
-    font-size: 0.75rem;
-    flex-shrink: 0;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
 }
 
-.instruction-item span:last-child {
-    font-size: 0.85rem;
-    color: #4b5563;
-    line-height: 1.5;
+.btn-action:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Edit Button - Muted Gold/Bronze */
+.btn-action-edit {
+    background: linear-gradient(135deg, #C9A84C 0%, #A67C00 100%);
+    color: white;
+    box-shadow: 0 2px 6px rgba(169, 124, 0, 0.25);
+}
+
+.btn-action-edit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(169, 124, 0, 0.35);
+}
+
+/* Select Button - Maroon Primary */
+.btn-action-select {
+    background: linear-gradient(135deg, var(--primary-red, #8B0000) 0%, #5c0000 100%);
+    color: white;
+    box-shadow: 0 2px 6px rgba(139, 0, 0, 0.25);
+}
+
+.btn-action-select:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.4);
+}
+
+.btn-action-select:disabled {
+    background: #9ca3af;
+    box-shadow: none;
+}
+
+/* Tooltip for action buttons - Show on left side to prevent cutoff */
+.btn-action[data-tooltip] {
+    position: relative;
+}
+
+.btn-action[data-tooltip]::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-left-color: #1f2937;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    margin-right: 2px;
+    z-index: 1001;
+}
+
+.btn-action[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    transform: translateY(-50%);
+    padding: 6px 10px;
+    background: #1f2937;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    margin-right: 10px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-action[data-tooltip]:hover::before,
+.btn-action[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Ensure table has proper overflow for tooltips */
+.table-responsive {
+    overflow: visible !important;
+}
+
+.table-students {
+    overflow: visible;
+}
+
+.table-students tbody td:last-child {
+    overflow: visible;
+    position: relative;
+}
+
+.action-btn-group {
+    position: relative;
+    z-index: 10;
 }
 
 /* Responsive */
-@@media (max-width: 991px) {
-    .step-content {
-        padding-left: 0;
+@@media (max-width: 1200px) {
+    .borrower-form-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    .info-grid, .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@@media (max-width: 992px) {
+    .borrower-form-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .stepper-steps {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .step-line {
+        display: none;
     }
 }
 
 @@media (max-width: 768px) {
-    .quick-select-group {
+    .borrower-form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .info-grid, .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    .stepper-step {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+}
+
+@@media (max-width: 576px) {
+    .borrow-page-container {
+        padding: 12px;
+    }
+    .borrower-form-grid {
+        grid-template-columns: 1fr;
+    }
+    .form-footer {
         flex-direction: column;
     }
-    
-    .search-box {
-        flex-wrap: wrap;
-    }
-    
-    .search-input {
+    .form-footer .btn {
         width: 100%;
-        order: 1;
     }
-    
-    .search-icon {
-        order: 0;
-    }
-    
-    .btn-search {
-        order: 2;
-        width: 100%;
-        margin-top: 8px;
-    }
+}
+
+/* DataTables Styling Fixes */
+.card-body-content .dataTables_wrapper {
+    padding: 0;
+}
+
+.card-body-content .dataTables_length,
+.card-body-content .dataTables_filter {
+    margin-bottom: 16px;
+}
+
+.card-body-content .dataTables_length select {
+    padding: 6px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    margin: 0 6px;
+}
+
+.card-body-content .dataTables_filter input {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    margin-left: 6px;
+}
+
+.card-body-content .dataTables_filter input:focus {
+    border-color: var(--primary-red);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1);
+}
+
+.card-body-content .dataTables_info {
+    padding-top: 16px;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+.card-body-content .dataTables_paginate {
+    padding-top: 16px;
+}
+
+.card-body-content .dataTables_paginate .paginate_button {
+    padding: 6px 12px;
+    margin: 0 2px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #374151 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.card-body-content .dataTables_paginate .paginate_button:hover {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+    color: white !important;
+}
+
+.card-body-content .dataTables_paginate .paginate_button.current {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+    color: white !important;
+}
+
+.card-body-content .dataTables_paginate .paginate_button.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.card-body-content .dataTables_paginate .paginate_button.disabled:hover {
+    background: white;
+    border-color: #d1d5db;
+    color: #374151 !important;
+}
+
+/* Remove default DataTables border */
+.table-students.dataTable {
+    border-collapse: collapse !important;
+}
+
+/* Responsive table wrapper */
+.table-responsive {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Modal Header - Maroon Theme */
+#addStudentModal .modal-header {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
 }
 </style>
 
+
 @section Scripts {
 <script>
+// State
+let selectedStudent = null;
+let borrowItems = [];
+let studentsTable = null;
+
 $(document).ready(function() {
-    // Set default due date to 7 days from now
-    const defaultDue = new Date();
-    defaultDue.setDate(defaultDue.getDate() + 7);
-    $('#dueDate').val(defaultDue.toISOString().slice(0, 16));
-    $('#summaryDue').text(defaultDue.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }));
-
-    // Load equipment types
-    $.get('/Admin/Equipment/GetAll', function(res) {
-        if (res.success) {
-            res.data.forEach(function(e) {
-                if (e.availableStock > 0) {
-                    $('#equipmentSelect').append('<option value="' + e.equipmentId + '" data-name="' + e.equipmentName + '">' + e.equipmentName + ' (' + e.availableStock + ' available)</option>');
-                }
-            });
-        }
-    });
-
-    // Search student
-    $('#btnSearchStudent').click(searchStudent);
-    $('#studentSearch').keypress(function(e) { 
-        if (e.which === 13) { 
-            e.preventDefault(); 
-            searchStudent(); 
-        }
-    });
-
-    function searchStudent() {
-        var q = $('#studentSearch').val().trim();
-        if (q.length < 2) {
-            showToast('Please enter at least 2 characters', 'warning');
-            return;
-        }
-        
-        $('#studentResults').html('<div class="text-center py-3"><div class="spinner-border spinner-border-sm text-danger"></div> Searching...</div>');
-        
-        $.get('/Admin/Students/Search?q=' + encodeURIComponent(q), function(res) {
-            if (res.success) {
-                var html = '';
-                res.data.forEach(function(s) {
-                    if (s.studentStatus) {
-                        html += '<a href="#" class="student-item" data-id="' + s.studentId + '" data-number="' + s.studentIdNumber + '" data-name="' + s.fullName + '">' +
-                                    '<span class="student-id">' + s.studentIdNumber + '</span> - <span class="student-name">' + s.fullName + '</span>' +
-                                    '<div class="student-details">' + s.studentCollege + (s.studentCourse ? ' - ' + s.studentCourse : '') + '</div>' +
-                                '</a>';
-                    } else {
-                        html += '<div class="student-item student-blocked">' +
-                                    '<span class="student-id">' + s.studentIdNumber + '</span> - <span class="student-name">' + s.fullName + '</span>' +
-                                    '<span class="blocked-badge ms-2">BLOCKED</span>' +
-                                    '<div class="student-details text-danger">Cannot borrow equipment</div>' +
-                                '</div>';
-                    }
-                });
-                $('#studentResults').html(html || '<div class="text-center text-muted py-3">No students found</div>');
-            }
-        });
-    }
-
-    // Select student
-    $(document).on('click', '.student-item:not(.student-blocked)', function(e) {
-        e.preventDefault();
-        var id = $(this).data('id');
-        var number = $(this).data('number');
-        var name = $(this).data('name');
-        
-        $('#studentId').val(id);
-        $('#studentInfo').text(number + ' - ' + name);
-        $('#selectedStudent').removeClass('d-none');
-        $('#studentResults').empty();
-        $('#studentSearch').val('');
-        $('#summaryStudent').text(name);
-        
-        showToast('Student selected', 'success');
-        checkFormComplete();
-    });
-
-    // Equipment type change - load available units
-    $('#equipmentSelect').change(function() {
-        var equipmentId = $(this).val();
-        var equipmentName = $(this).find(':selected').data('name');
-        
-        $('#unitSelect').empty().append('<option value="">-- Select Unit --</option>').prop('disabled', true);
-        $('#selectedUnit').addClass('d-none');
-        $('#summaryEquipment').text(equipmentName || '-');
-        $('#summarySerial').text('-');
-
-        if (equipmentId) {
-            $.get('/Admin/Equipment/AvailableUnits/' + equipmentId, function(res) {
-                if (res.success && res.data.length > 0) {
-                    res.data.forEach(function(u) {
-                        var condition = u.condition ? 'Good' : 'Damaged';
-                        $('#unitSelect').append('<option value="' + u.eunitId + '" data-serial="' + u.eunitSerialNo + '">' + u.eunitSerialNo + ' (' + condition + ')</option>');
-                    });
-                    $('#unitSelect').prop('disabled', false);
-                } else {
-                    $('#unitSelect').append('<option value="">No available units</option>');
-                }
-            });
-        }
-        checkFormComplete();
-    });
-
-    // Unit selection
-    $('#unitSelect').change(function() {
-        var serial = $(this).find(':selected').data('serial');
-        if ($(this).val()) {
-            $('#unitInfo').text(serial);
-            $('#selectedUnit').removeClass('d-none');
-            $('#summarySerial').text(serial);
-            showToast('Unit selected: ' + serial, 'success');
-        } else {
-            $('#selectedUnit').addClass('d-none');
-            $('#summarySerial').text('-');
-        }
-        checkFormComplete();
-    });
-
-    // Due date quick select
-    $('.btn-quick').click(function() {
-        $('.btn-quick').removeClass('active');
-        $(this).addClass('active');
-        
-        var days = $(this).data('days');
-        var due = new Date();
-        due.setDate(due.getDate() + days);
-        $('#dueDate').val(due.toISOString().slice(0, 16));
-        $('#summaryDue').text(due.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }));
-        checkFormComplete();
-    });
-
-    $('#dueDate').change(function() {
-        $('.btn-quick').removeClass('active');
-        var date = new Date($(this).val());
-        $('#summaryDue').text(date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }));
-        checkFormComplete();
-    });
-
-    function checkFormComplete() {
-        var studentId = $('#studentId').val();
-        var unitId = $('#unitSelect').val();
-        var dueDate = $('#dueDate').val();
-        $('#btnSubmit').prop('disabled', !(studentId && unitId && dueDate));
-    }
-
-    // Submit form
-    $('#borrowForm').submit(function(e) {
-        e.preventDefault();
-        
-        var studentName = $('#summaryStudent').text();
-        var equipment = $('#summaryEquipment').text();
-        var serial = $('#summarySerial').text();
-        
-        Swal.fire({
-            title: 'Confirm Borrow Transaction',
-            html: '<div class="text-start">' +
-                  '<p><strong>Student:</strong> ' + studentName + '</p>' +
-                  '<p><strong>Equipment:</strong> ' + equipment + '</p>' +
-                  '<p><strong>Serial No:</strong> ' + serial + '</p>' +
-                  '<p><strong>Due Date:</strong> ' + $('#summaryDue').text() + '</p>' +
-                  '</div>',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#8b0000',
-            cancelButtonColor: '#6b7280',
-            confirmButtonText: '<i class="bi bi-check-circle me-1"></i>Process Transaction',
-            cancelButtonText: 'Cancel'
-        }).then(function(result) {
-            if (result.isConfirmed) {
-                var $btn = $('#btnSubmit');
-                $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Processing...');
-                
-                $.post('/Admin/Transactions/ProcessBorrow', $('#borrowForm').serialize(), function(res) {
-                    if (res.success) {
-                        Swal.fire({
-                            title: 'Success!',
-                            html: 'Transaction processed successfully.<br><strong>Code: ' + res.transactionCode + '</strong>',
-                            icon: 'success',
-                            confirmButtonColor: '#8b0000'
-                        }).then(function() {
-                            window.location.href = '/Admin/Transactions';
-                        });
-                    } else {
-                        $btn.prop('disabled', false).html('<i class="bi bi-check-circle me-2"></i>Process Borrow Transaction');
-                        showToast(res.message, 'error');
-                    }
-                }).fail(function() {
-                    $btn.prop('disabled', false).html('<i class="bi bi-check-circle me-2"></i>Process Borrow Transaction');
-                    showToast('An error occurred', 'error');
-                });
-            }
-        });
-    });
+    initStudentsTable();
+    loadFilters();
+    loadEquipmentCategories();
+    setDefaultDates();
+    bindEvents();
 });
 
-function clearStudent() {
-    $('#studentId').val('');
-    $('#studentInfo').text('');
-    $('#selectedStudent').addClass('d-none');
-    $('#summaryStudent').text('-');
-    $('#btnSubmit').prop('disabled', true);
+function initStudentsTable() {
+    studentsTable = $('#studentsTable').DataTable({
+        ajax: {
+            url: '/Admin/Students/GetAll',
+            dataSrc: function(json) {
+                return json.success ? json.data : [];
+            }
+        },
+        columns: [
+            { data: 'studentIdNumber' },
+            { data: 'fullName' },
+            { data: 'studentCollege' },
+            { data: 'studentCourse', defaultContent: '-' },
+            { data: 'studentEmail', defaultContent: '-' },
+            { data: 'studentContactNo', defaultContent: '-' },
+            { 
+                data: 'studentStatus',
+                render: function(data) {
+                    return data 
+                        ? '<span class="badge bg-success">Active</span>' 
+                        : '<span class="badge bg-danger">Blocked</span>';
+                }
+            },
+            {
+                data: null,
+                orderable: false,
+                className: 'text-center',
+                render: function(data) {
+                    const isBlocked = !data.studentStatus;
+                    return `<div class="action-btn-group">
+                        <button class="btn-action btn-action-edit btn-edit-student" data-id="${data.studentId}" data-tooltip="Edit Student">
+                            <i class="bi bi-pencil-fill"></i>
+                        </button>
+                        <button class="btn-action btn-action-select btn-select-student" data-id="${data.studentId}" data-tooltip="${isBlocked ? 'Student Blocked' : 'Select as Borrower'}" ${isBlocked ? 'disabled' : ''}>
+                            <i class="bi bi-check2-circle"></i>
+                        </button>
+                    </div>`;
+                }
+            }
+        ],
+        responsive: true,
+        pageLength: 10,
+        order: [[1, 'asc']],
+        language: {
+            emptyTable: "No students found",
+            search: "Search students...",
+            lengthMenu: "Show _MENU_",
+            info: "Showing _START_ to _END_ of _TOTAL_ students"
+        }
+    });
 }
 
-function showToast(message, type) {
-    var bgColors = {
-        success: 'linear-gradient(135deg, #22c55e, #16a34a)',
-        error: 'linear-gradient(135deg, #ef4444, #dc2626)',
-        warning: 'linear-gradient(135deg, #f59e0b, #d97706)',
-        info: 'linear-gradient(135deg, #8b0000, #5c0000)'
-    };
-    
-    Toastify({
-        text: message,
-        duration: 3000,
-        gravity: "top",
-        position: "right",
-        style: {
-            background: bgColors[type] || bgColors.info,
-            borderRadius: '10px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+function loadFilters() {
+    $.get('/Admin/Students/GetColleges', function(res) {
+        if (res.success) {
+            res.data.forEach(c => {
+                $('#filterCollege').append(`<option value="${c}">${c}</option>`);
+            });
         }
-    }).showToast();
+    });
+}
+
+function loadEquipmentCategories() {
+    $.get('/Admin/Equipment/GetCategories', function(res) {
+        if (res.success) {
+            res.data.forEach(c => {
+                $('#equipmentCategory').append(`<option value="${c}">${c}</option>`);
+            });
+        }
+    });
+}
+
+function setDefaultDates() {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    $('#dateBorrowed').val(now.toLocaleString());
+    $('#lastUpdated').val(now.toLocaleString());
+    $('#dueDate').val(formatDateTimeLocal(tomorrow));
+}
+
+function formatDateTimeLocal(date) {
+    return date.toISOString().slice(0, 16);
+}
+
+function bindEvents() {
+    // Filter events
+    $('#filterCollege, #filterCourse, #filterStatus').on('change', applyFilters);
+    $('#btnClearFilters').on('click', clearFilters);
+    
+    // Select student from table
+    $('#studentsTable').on('click', '.btn-select-student', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = $(this).data('id');
+        selectStudentById(id);
+    });
+    
+    // Edit student from table
+    $('#studentsTable').on('click', '.btn-edit-student', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = $(this).data('id');
+        openEditStudentModal(id);
+    });
+    
+    // Step navigation
+    $('#btnProceedStep2').on('click', goToStep2);
+    $('#btnBackStep1').on('click', goToStep1);
+    $('#btnNextStep3').on('click', goToStep3);
+    $('#btnBackStep2').on('click', goToStep2);
+    
+    // Equipment selection
+    $('#equipmentCategory').on('change', loadEquipmentByCategory);
+    $('#equipmentSelect').on('change', loadAvailableUnits);
+    $('#serialNoSelect').on('change', validateAddItem);
+    
+    // Quick date buttons
+    $('.btn-quick').on('click', function() {
+        const days = $(this).data('days');
+        const date = new Date();
+        date.setDate(date.getDate() + days);
+        $('#dueDate').val(formatDateTimeLocal(date));
+    });
+    
+    // Add item
+    $('#btnAddItem').on('click', addItemToList);
+    
+    // Confirm borrow
+    $('#btnConfirmBorrow').on('click', submitBorrow);
+    
+    // Add student
+    $('#btnSaveStudent').on('click', saveNewStudent);
+    
+    // Update student
+    $('#btnUpdateStudent').on('click', updateStudent);
+    $('#btnSelectStudent').on('click', selectStudentFromModal);
+}
+
+function applyFilters() {
+    const college = $('#filterCollege').val();
+    const course = $('#filterCourse').val();
+    const status = $('#filterStatus').val();
+    
+    studentsTable.column(2).search(college);
+    studentsTable.column(3).search(course);
+    if (status !== '') {
+        studentsTable.column(6).search(status === 'true' ? 'Active' : 'Blocked');
+    } else {
+        studentsTable.column(6).search('');
+    }
+    studentsTable.draw();
+}
+
+function clearFilters() {
+    $('#filterCollege, #filterCourse, #filterStatus').val('');
+    studentsTable.search('').columns().search('').draw();
+}
+
+function selectStudentById(id) {
+    $.get(`/Admin/Students/GetById/${id}`, function(res) {
+        if (res.success) {
+            selectedStudent = res.data;
+            populateBorrowerDetails(res.data);
+            $('#btnProceedStep2').prop('disabled', false);
+            $('#borrowerSelectionHint').text('Student selected. Click Next to proceed.');
+        }
+    });
+}
+
+function populateBorrowerDetails(s) {
+    $('#detailStudentIdNumber').val(s.studentIdNumber);
+    $('#detailLastName').val(s.studentLastName);
+    $('#detailFirstName').val(s.studentFirstName);
+    $('#detailMiddleName').val(s.studentMiddleName || '');
+    $('#detailSuffix').val(s.studentSuffix || '');
+    $('#detailCollege').val(s.studentCollege);
+    $('#detailCourse').val(s.studentCourse || '');
+    $('#detailEmail').val(s.studentEmail || '');
+    $('#detailContact').val(s.studentContactNo || '');
+    
+    const statusPill = $('#detailStatus');
+    statusPill.removeClass('active blocked');
+    if (s.studentStatus) {
+        statusPill.addClass('active').text('Active');
+    } else {
+        statusPill.addClass('blocked').text('Blocked');
+    }
+}
+
+function goToStep1() {
+    $('#step1Content').removeClass('d-none');
+    $('#step2Content, #step3Content').addClass('d-none');
+    updateStepIndicators(1);
+}
+
+function goToStep2() {
+    if (!selectedStudent) {
+        Swal.fire('Error', 'Please select a student first', 'error');
+        return;
+    }
+    
+    $('#step2Content').removeClass('d-none');
+    $('#step1Content, #step3Content').addClass('d-none');
+    updateStepIndicators(2);
+    
+    $('#selectedStudentId').val(selectedStudent.studentId);
+    $('#selectedBorrowerName').text(selectedStudent.fullName);
+}
+
+function goToStep3() {
+    if (borrowItems.length === 0) {
+        Swal.fire('Error', 'Please add at least one item', 'error');
+        return;
+    }
+    
+    $('#step3Content').removeClass('d-none');
+    $('#step1Content, #step2Content').addClass('d-none');
+    updateStepIndicators(3);
+    
+    populateSummary();
+}
+
+function updateStepIndicators(step) {
+    $('#step1Indicator, #step2Indicator, #step3Indicator').removeClass('active completed');
+    
+    if (step >= 1) $('#step1Indicator').addClass(step > 1 ? 'completed' : 'active');
+    if (step >= 2) $('#step2Indicator').addClass(step > 2 ? 'completed' : 'active');
+    if (step >= 3) $('#step3Indicator').addClass('active');
+}
+
+function loadEquipmentByCategory() {
+    const category = $('#equipmentCategory').val();
+    $('#equipmentSelect').html('<option value="">Select Equipment</option>').prop('disabled', true);
+    $('#serialNoSelect').html('<option value="">Select Serial No.</option>').prop('disabled', true);
+    
+    if (!category) return;
+    
+    $.get(`/Admin/Equipment/GetByCategory?category=${encodeURIComponent(category)}`, function(res) {
+        if (res.success) {
+            res.data.forEach(e => {
+                $('#equipmentSelect').append(`<option value="${e.equipmentId}">${e.equipmentName}</option>`);
+            });
+            $('#equipmentSelect').prop('disabled', false);
+        }
+    });
+}
+
+function loadAvailableUnits() {
+    const equipmentId = $('#equipmentSelect').val();
+    $('#serialNoSelect').html('<option value="">Select Serial No.</option>').prop('disabled', true);
+    
+    if (!equipmentId) return;
+    
+    $.get(`/Admin/Equipment/GetAvailableUnits?equipmentId=${equipmentId}`, function(res) {
+        if (res.success) {
+            res.data.forEach(u => {
+                $('#serialNoSelect').append(`<option value="${u.eunitId}">${u.eunitSerialNo}</option>`);
+            });
+            $('#serialNoSelect').prop('disabled', false);
+        }
+    });
+}
+
+function validateAddItem() {
+    const hasUnit = $('#serialNoSelect').val();
+    const hasDueDate = $('#dueDate').val();
+    $('#btnAddItem').prop('disabled', !hasUnit || !hasDueDate);
+}
+
+function addItemToList() {
+    const unitId = $('#serialNoSelect').val();
+    const serialNo = $('#serialNoSelect option:selected').text();
+    const equipmentName = $('#equipmentSelect option:selected').text();
+    const category = $('#equipmentCategory option:selected').text();
+    const dueDate = $('#dueDate').val();
+    
+    if (!unitId || !dueDate) return;
+    
+    // Check if already added
+    if (borrowItems.find(i => i.unitId == unitId)) {
+        Swal.fire('Warning', 'This item is already in the list', 'warning');
+        return;
+    }
+    
+    borrowItems.push({
+        unitId: unitId,
+        serialNo: serialNo,
+        equipmentName: equipmentName,
+        category: category,
+        dueDate: dueDate,
+        lastUpdated: new Date().toISOString()
+    });
+    
+    renderItemsTable();
+    resetEquipmentSelection();
+    $('#btnNextStep3').prop('disabled', false);
+}
+
+function renderItemsTable() {
+    const tbody = $('#itemsTable tbody');
+    tbody.empty();
+    
+    if (borrowItems.length === 0) {
+        tbody.html(`<tr class="empty-row">
+            <td colspan="9" class="text-center py-4">
+                <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
+                <p class="text-muted mb-0 mt-2">No items added yet</p>
+            </td>
+        </tr>`);
+        $('#btnNextStep3').prop('disabled', true);
+        return;
+    }
+    
+    borrowItems.forEach((item, idx) => {
+        tbody.append(`<tr>
+            <td>${item.category}</td>
+            <td>${item.equipmentName}</td>
+            <td><code class="serial-code">${item.serialNo}</code></td>
+            <td><span class="status-badge borrowed">Borrowed</span></td>
+            <td>${formatDateShort(item.dueDate)}</td>
+            <td><span class="text-muted">N/A</span></td>
+            <td><span class="text-muted">N/A</span></td>
+            <td>${formatDateShort(item.lastUpdated)}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-danger btn-remove-item" onclick="removeItem(${idx})" title="Remove">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>`);
+    });
+}
+
+function formatDateShort(dateStr) {
+    if (!dateStr) return 'N/A';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+}
+
+function removeItem(idx) {
+    borrowItems.splice(idx, 1);
+    renderItemsTable();
+}
+
+function resetEquipmentSelection() {
+    $('#equipmentCategory').val('');
+    $('#equipmentSelect').html('<option value="">Select Equipment</option>').prop('disabled', true);
+    $('#serialNoSelect').html('<option value="">Select Serial No.</option>').prop('disabled', true);
+    $('#btnAddItem').prop('disabled', true);
+}
+
+function populateSummary() {
+    $('#sumStudentId').text(selectedStudent.studentIdNumber);
+    $('#sumFullName').text(selectedStudent.fullName);
+    $('#sumCollege').text(selectedStudent.studentCollege);
+    $('#sumCourse').text(selectedStudent.studentCourse || '-');
+    $('#sumProcessedBy').text($('#processedBy').val());
+    $('#sumDateBorrowed').text($('#dateBorrowed').val());
+    $('#sumRemarks').text($('#remarks').val() || 'No remarks');
+    
+    const tbody = $('#summaryItemsTable tbody');
+    tbody.empty();
+    borrowItems.forEach(item => {
+        tbody.append(`<tr>
+            <td>${item.category}</td>
+            <td>${item.equipmentName}</td>
+            <td><code class="serial-code">${item.serialNo}</code></td>
+            <td><span class="status-badge borrowed">Borrowed</span></td>
+            <td>${formatDateShort(item.dueDate)}</td>
+            <td><span class="text-muted">N/A</span></td>
+            <td><span class="text-muted">N/A</span></td>
+            <td>${formatDateShort(item.lastUpdated)}</td>
+        </tr>`);
+    });
+}
+
+function submitBorrow() {
+    if (!selectedStudent || borrowItems.length === 0) {
+        Swal.fire('Error', 'Invalid transaction data', 'error');
+        return;
+    }
+    
+    Swal.fire({
+        title: 'Confirm Transaction',
+        text: `Process borrow for ${selectedStudent.fullName} with ${borrowItems.length} item(s)?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#8B0000',
+        confirmButtonText: 'Yes, Process'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            processBorrowTransaction();
+        }
+    });
+}
+
+function processBorrowTransaction() {
+    const token = $('input[name="__RequestVerificationToken"]').val();
+    let processed = 0;
+    let errors = [];
+    
+    borrowItems.forEach(item => {
+        $.ajax({
+            url: '/Admin/Transactions/ProcessBorrow',
+            method: 'POST',
+            data: {
+                __RequestVerificationToken: token,
+                StudentId: selectedStudent.studentId,
+                UnitId: item.unitId,
+                DueDate: item.dueDate
+            },
+            success: function(res) {
+                processed++;
+                if (!res.success) errors.push(res.message);
+                checkComplete();
+            },
+            error: function() {
+                processed++;
+                errors.push('Failed to process item');
+                checkComplete();
+            }
+        });
+    });
+    
+    function checkComplete() {
+        if (processed === borrowItems.length) {
+            if (errors.length === 0) {
+                Swal.fire('Success', 'Borrow transaction processed successfully!', 'success')
+                    .then(() => window.location.href = '/Admin/Transactions');
+            } else {
+                Swal.fire('Partial Success', `Processed with ${errors.length} error(s)`, 'warning');
+            }
+        }
+    }
+}
+
+function saveNewStudent() {
+    const form = $('#addStudentForm');
+    const token = form.find('input[name="__RequestVerificationToken"]').val();
+    const data = form.serialize();
+    
+    $.post('/Admin/Students/Create', data, function(res) {
+        if (res.success) {
+            Swal.fire('Success', 'Student added successfully', 'success');
+            $('#addStudentModal').modal('hide');
+            form[0].reset();
+            studentsTable.ajax.reload();
+        } else {
+            Swal.fire('Error', res.message, 'error');
+        }
+    });
+}
+
+function updateStudent() {
+    const form = $('#editStudentForm');
+    const data = form.serialize();
+    
+    $.post('/Admin/Students/Update', data, function(res) {
+        if (res.success) {
+            Swal.fire('Success', 'Student updated successfully', 'success');
+            $('#editStudentModal').modal('hide');
+            studentsTable.ajax.reload();
+        } else {
+            Swal.fire('Error', res.message, 'error');
+        }
+    });
+}
+
+function selectStudentFromModal() {
+    const id = $('#editStudentId').val();
+    $('#editStudentModal').modal('hide');
+    selectStudentById(id);
+}
+
+function openEditStudentModal(id) {
+    $.get(`/Admin/Students/GetById/${id}`, function(res) {
+        if (res.success) {
+            const s = res.data;
+            $('#editStudentId').val(s.studentId);
+            $('#editStudentIdNumber').val(s.studentIdNumber);
+            $('#editFirstName').val(s.studentFirstName);
+            $('#editMiddleName').val(s.studentMiddleName || '');
+            $('#editLastName').val(s.studentLastName);
+            $('#editCollege').val(s.studentCollege);
+            $('#editCourse').val(s.studentCourse || '');
+            $('#editEmail').val(s.studentEmail || '');
+            $('#editContactNo').val(s.studentContactNo || '');
+            $('#editStatus').val(s.studentStatus ? 'true' : 'false');
+            
+            $('#editStudentModal').modal('show');
+        } else {
+            Swal.fire('Error', res.message || 'Failed to load student', 'error');
+        }
+    }).fail(function() {
+        Swal.fire('Error', 'Failed to load student data', 'error');
+    });
 }
 </script>
 }

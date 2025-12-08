@@ -55,6 +55,65 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
             }
         }
 
+        // GET: SupportAdmin/Students/GetColleges (API)
+        [HttpGet("GetColleges")]
+        public async Task<IActionResult> GetColleges()
+        {
+            try
+            {
+                var students = await _studentRepo.GetAllAsync();
+                var colleges = students
+                    .Where(s => !string.IsNullOrWhiteSpace(s.StudentCollege))
+                    .Select(s => s.StudentCollege)
+                    .Distinct()
+                    .OrderBy(c => c)
+                    .ToList();
+                return Json(new { success = true, data = colleges });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching colleges");
+                return Json(new { success = false, message = "Failed to fetch colleges" });
+            }
+        }
+
+        // GET: SupportAdmin/Students/GetById/{id}
+        [HttpGet("GetById/{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            try
+            {
+                var student = await _studentRepo.GetByIdAsync(id);
+                if (student == null)
+                    return Json(new { success = false, message = "Student not found" });
+
+                return Json(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        student.StudentId,
+                        student.StudentIdNumber,
+                        student.StudentFirstName,
+                        student.StudentLastName,
+                        student.StudentMiddleName,
+                        student.StudentSuffix,
+                        student.StudentCollege,
+                        student.StudentCourse,
+                        student.StudentEmail,
+                        student.StudentContactNo,
+                        student.StudentStatus,
+                        student.FullName
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching student {StudentId}", id);
+                return Json(new { success = false, message = "Failed to load student data" });
+            }
+        }
+
         // GET: SupportAdmin/Students/Get/{id}
         [HttpGet("Get/{id}")]
         public async Task<IActionResult> Get(int id)

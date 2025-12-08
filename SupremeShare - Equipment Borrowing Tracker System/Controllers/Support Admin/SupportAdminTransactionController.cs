@@ -80,8 +80,9 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
 
                 var query = @"
                     SELECT t.transaction_id, t.transaction_code, t.transaction_date_borrowed,
+                           t.transaction_remarks, t.transaction_last_updated,
                            s.student_id_number, s.student_first_name, s.student_last_name,
-                           u.user_username,
+                           CONCAT(u.user_first_name, ' ', u.user_last_name) as recorded_by,
                            COUNT(b.borrow_id) as item_count,
                            STRING_AGG(DISTINCT b.borrow_status, ', ') as statuses
                     FROM transaction t
@@ -89,7 +90,8 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
                     JOIN ""USER"" u ON t.user_id = u.user_id
                     LEFT JOIN borrow_record b ON t.transaction_id = b.transaction_id
                     GROUP BY t.transaction_id, s.student_id_number, s.student_first_name, 
-                             s.student_last_name, u.user_username
+                             s.student_last_name, u.user_first_name, u.user_last_name,
+                             t.transaction_remarks, t.transaction_last_updated
                     ORDER BY t.transaction_id DESC
                     LIMIT 100";
 
@@ -99,9 +101,13 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
                     TransactionId = Convert.ToInt32(row["transaction_id"]),
                     TransactionCode = row["transaction_code"]?.ToString(),
                     DateBorrowed = Convert.ToDateTime(row["transaction_date_borrowed"]).ToString("yyyy-MM-dd HH:mm"),
+                    LastUpdated = row["transaction_last_updated"] != DBNull.Value 
+                        ? Convert.ToDateTime(row["transaction_last_updated"]).ToString("yyyy-MM-dd HH:mm") 
+                        : null,
+                    Remarks = row["transaction_remarks"]?.ToString(),
                     StudentIdNumber = row["student_id_number"]?.ToString(),
                     StudentName = $"{row["student_first_name"]} {row["student_last_name"]}",
-                    ProcessedBy = row["user_username"]?.ToString(),
+                    ProcessedBy = row["recorded_by"]?.ToString(),
                     ItemCount = Convert.ToInt32(row["item_count"]),
                     Statuses = row["statuses"]?.ToString()
                 });
@@ -415,6 +421,201 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
             {
                 _logger.LogError(ex, "Error updating overdue records");
                 return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: SupportAdmin/Transactions/UpdateRemarks
+        [HttpPost("UpdateRemarks")]
+        public async Task<IActionResult> UpdateRemarks([FromForm] int transactionId, [FromForm] string? remarks)
+        {
+            try
+            {
+                var query = @"UPDATE transaction 
+                              SET transaction_remarks = @remarks, 
+                                  transaction_last_updated = NOW() 
+                              WHERE transaction_id = @transactionId";
+                var parameters = new NpgsqlParameter[]
+                {
+                    new("@remarks", (object?)remarks ?? DBNull.Value),
+                    new("@transactionId", transactionId)
+                };
+
+                await _db.ExecuteNonQueryAsync(query, parameters);
+
+                var userId = HttpContext.Session.GetInt32("UserId") ?? 1;
+                await _auditService.LogActionAsync(userId, "TRANSACTION_REMARKS_UPDATED", null,
+                    new { TransactionId = transactionId, Remarks = remarks });
+
+                _logger.LogInformation("Transaction {TransactionId} remarks updated by support admin", transactionId);
+                return Json(new { success = true, message = "Remarks updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating transaction remarks");
+                return Json(new { success = false, message = "Failed to update remarks" });
+            }
+        }
+
+        // POST: SupportAdmin/Transactions/SendTransactionEmail
+        [HttpPost("SendTransactionEmail")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendTransactionEmail([FromForm] string transactionCode, [FromForm] string studentEmail, [FromForm] string studentName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(studentEmail))
+                    return Json(new { success = false, message = "Student email is required" });
+
+                // Get transaction details
+                var transaction = await _transactionRepo.GetByCodeAsync(transactionCode);
+                if (transaction == null)
+                    return Json(new { success = false, message = "Transaction not found" });
+
+                var borrowRecords = await _borrowRepo.GetByTransactionIdAsync(transaction.TransactionId);
+                
+                // Build items list for email
+                var itemsList = new System.Text.StringBuilder();
+                foreach (var record in borrowRecords)
+                {
+                    var unit = await _unitRepo.GetByIdAsync(record.EunitId);
+                    var equipment = unit != null ? await _equipmentRepo.GetByIdAsync(unit.EquipmentId) : null;
+                    itemsList.AppendLine($"• {equipment?.EquipmentName ?? "Unknown"} (Serial: {unit?.EunitSerialNo ?? "N/A"}) - Due: {record.BorrowDueDate:MMM dd, yyyy}");
+                }
+
+                // Send email using SMTP
+                var emailSent = await SendTransactionEmailAsync(
+                    studentEmail, 
+                    studentName, 
+                    transactionCode, 
+                    transaction.TransactionDateBorrowed, 
+                    itemsList.ToString()
+                );
+
+                if (emailSent)
+                {
+                    var userId = HttpContext.Session.GetInt32("UserId") ?? 1;
+                    await _auditService.LogActionAsync(userId, "TRANSACTION_EMAIL_SENT", null,
+                        new { TransactionCode = transactionCode, StudentEmail = studentEmail });
+
+                    _logger.LogInformation("Transaction email sent for {TransactionCode} to {Email}", transactionCode, studentEmail);
+                    return Json(new { success = true, message = "Email sent successfully" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Failed to send email. Please check SMTP configuration." });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending transaction email");
+                return Json(new { success = false, message = "Failed to send email" });
+            }
+        }
+
+        private async Task<bool> SendTransactionEmailAsync(string toEmail, string studentName, string transactionCode, DateTime dateBorrowed, string itemsList)
+        {
+            try
+            {
+                var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST") ?? "smtp.gmail.com";
+                var smtpPort = int.TryParse(Environment.GetEnvironmentVariable("SMTP_PORT"), out var port) ? port : 587;
+                var smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? "";
+                var smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "";
+                var fromEmail = Environment.GetEnvironmentVariable("SMTP_FROM_EMAIL") ?? smtpUsername;
+                var fromName = Environment.GetEnvironmentVariable("SMTP_FROM_NAME") ?? "SupremeShare System";
+
+                if (string.IsNullOrEmpty(smtpUsername) || string.IsNullOrEmpty(smtpPassword))
+                {
+                    _logger.LogWarning("SMTP credentials not configured");
+                    return false;
+                }
+
+                var subject = $"SupremeShare - Borrowing Transaction Confirmation [{transactionCode}]";
+                var body = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+</head>
+<body style='margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333333; background-color: #f4f4f4;'>
+    <table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0' style='background-color: #f4f4f4;'>
+        <tr>
+            <td align='center' style='padding: 40px 20px;'>
+                <table role='presentation' width='600' cellspacing='0' cellpadding='0' border='0' style='background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
+                    <tr>
+                        <td style='background-color: #8B0000; padding: 30px 40px; text-align: center;'>
+                            <h1 style='margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;'>SupremeShare</h1>
+                            <p style='margin: 10px 0 0 0; color: #ffcccc; font-size: 14px;'>Equipment Borrowing Tracker System</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style='padding: 40px;'>
+                            <h2 style='margin: 0 0 20px 0; color: #333333; font-size: 22px;'>Borrowing Transaction Confirmed</h2>
+                            <p style='margin: 0 0 15px 0; color: #555555;'>Hello <strong>{studentName}</strong>,</p>
+                            <p style='margin: 0 0 25px 0; color: #555555;'>Your borrowing transaction has been successfully processed. Please keep this transaction code for your reference.</p>
+                            
+                            <table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'>
+                                <tr>
+                                    <td style='padding: 20px; background-color: #f8f9fa; border: 2px solid #8B0000; border-radius: 8px; text-align: center;'>
+                                        <p style='margin: 0 0 5px 0; color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;'>Transaction Code</p>
+                                        <p style='margin: 0; color: #8B0000; font-size: 24px; font-weight: bold; font-family: Consolas, monospace; letter-spacing: 2px;'>{transactionCode}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <div style='margin: 25px 0; padding: 20px; background-color: #f9f9f9; border-radius: 6px; border-left: 4px solid #8B0000;'>
+                                <p style='margin: 0 0 10px 0; color: #333333; font-weight: bold;'>Transaction Details:</p>
+                                <p style='margin: 0 0 5px 0; color: #555555;'><strong>Date Borrowed:</strong> {dateBorrowed:MMMM dd, yyyy 'at' hh:mm tt}</p>
+                                <p style='margin: 15px 0 5px 0; color: #333333; font-weight: bold;'>Borrowed Items:</p>
+                                <div style='color: #555555; white-space: pre-line;'>{itemsList}</div>
+                            </div>
+                            
+                            <table role='presentation' width='100%' cellspacing='0' cellpadding='0' border='0'>
+                                <tr>
+                                    <td style='padding: 15px; background-color: #fff3cd; border: 1px solid #ffc107; border-radius: 6px;'>
+                                        <p style='margin: 0; color: #856404; font-size: 14px;'><strong>⚠️ Important:</strong> Please return the borrowed items on or before the due date to avoid penalties.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style='background-color: #f9f9f9; padding: 25px 40px; text-align: center; border-top: 1px solid #eeeeee;'>
+                            <p style='margin: 0 0 5px 0; color: #888888; font-size: 12px;'>© 2025 SupremeShare - Cebu Technological University Main Campus</p>
+                            <p style='margin: 0; color: #aaaaaa; font-size: 11px;'>This is an automated message. Please do not reply.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>";
+
+                using var client = new System.Net.Mail.SmtpClient(smtpHost, smtpPort)
+                {
+                    EnableSsl = true,
+                    Credentials = new System.Net.NetworkCredential(smtpUsername, smtpPassword),
+                    DeliveryMethod = System.Net.Mail.SmtpDeliveryMethod.Network,
+                    Timeout = 30000
+                };
+
+                var mailMessage = new System.Net.Mail.MailMessage
+                {
+                    From = new System.Net.Mail.MailAddress(fromEmail, fromName),
+                    Subject = subject,
+                    Body = body,
+                    IsBodyHtml = true
+                };
+                mailMessage.To.Add(toEmail);
+
+                await client.SendMailAsync(mailMessage);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send transaction email to {Email}", toEmail);
+                return false;
             }
         }
 

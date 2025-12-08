@@ -103,16 +103,18 @@
                 <table class="table table-equip mb-0" id="equipmentTable">
                     <thead>
                         <tr>
-                            <th>Name</th>
+                            <th>No.</th>
                             <th>Category</th>
-                            <th class="text-center">Total</th>
-                            <th class="text-center">Available</th>
-                            <th>Actions</th>
+                            <th>Equipment</th>
+                            <th class="text-center">Quantity</th>
+                            <th>Date Added</th>
+                            <th>Last Updated</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td colspan="5" class="text-center py-5">
+                            <td colspan="7" class="text-center py-5">
                                 <div class="spinner-border text-danger" role="status"></div>
                                 <p class="text-muted mt-2 mb-0">Loading equipment...</p>
                             </td>
@@ -199,16 +201,16 @@
     </div>
 </div>
 
-<!-- Add Unit Modal -->
-<div class="modal fade" id="addUnitModal" tabindex="-1">
+<!-- Add Unit Modal - Note: Units should be added from Equipment Units page -->
+<div class="modal fade" id="addUnitModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-equip">
             <form id="addUnitForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="EquipmentId" id="addUnitEquipmentId">
-                <div class="modal-header header-success">
+                <div class="modal-header">
                     <h5 class="modal-title"><i class="bi bi-plus-square me-2"></i>Add Equipment Unit</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -233,7 +235,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success" id="addUnitBtn">
+                    <button type="submit" class="btn btn-submit-equip" id="addUnitBtn">
                         <i class="bi bi-plus-circle me-1"></i>Add Unit
                     </button>
                 </div>
@@ -560,9 +562,6 @@
 .btn-view-units { color: var(--primary-red); border-color: var(--primary-red); }
 .btn-view-units:hover { background: var(--primary-red); color: white; }
 
-.btn-add-unit { color: #22c55e; border-color: #22c55e; }
-.btn-add-unit:hover { background: #22c55e; color: white; }
-
 .btn-edit-equip { color: #f59e0b; border-color: #f59e0b; }
 .btn-edit-equip:hover { background: #f59e0b; color: white; }
 
@@ -590,7 +589,6 @@
 .modal-equip { border-radius: 16px; overflow: hidden; border: none; }
 .modal-equip .modal-header { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; border: none; padding: 20px 24px; }
 .modal-equip .modal-header.header-warning { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-.modal-equip .modal-header.header-success { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
 .modal-equip .modal-body { padding: 24px; }
 .modal-equip .modal-footer { border-top: 1px solid rgba(0, 0, 0, 0.05); padding: 16px 24px; }
 
@@ -805,9 +803,10 @@ function initEquipmentTable() {
         },
         columns: [
             { 
-                data: 'equipmentName',
+                data: 'equipmentId',
+                className: 'text-center',
                 render: function(data) {
-                    return '<strong>' + data + '</strong>';
+                    return '<span class="fw-bold">' + data + '</span>';
                 }
             },
             { 
@@ -817,14 +816,25 @@ function initEquipmentTable() {
                 }
             },
             { 
+                data: 'equipmentName',
+                render: function(data) {
+                    return '<strong>' + data + '</strong>';
+                }
+            },
+            { 
                 data: 'equipmentQuantity',
                 className: 'text-center'
             },
             { 
-                data: 'availableStock',
-                className: 'text-center',
+                data: 'equipmentDateAdded',
                 render: function(data) {
-                    return '<span class="badge bg-success">' + data + '</span>';
+                    return '<span class="text-muted small">' + data + '</span>';
+                }
+            },
+            { 
+                data: 'equipmentLastUpdated',
+                render: function(data) {
+                    return '<span class="text-muted small">' + data + '</span>';
                 }
             },
             {
@@ -835,9 +845,6 @@ function initEquipmentTable() {
                         <div class="btn-action-group">
                             <button class="btn btn-sm btn-outline-info btn-action btn-view-units" data-id="${data}" data-name="${row.equipmentName}" title="View Units">
                                 <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-outline-success btn-action btn-add-unit" data-id="${data}" title="Add Unit">
-                                <i class="bi bi-plus"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-primary btn-action btn-edit" data-id="${data}" title="Edit">
                                 <i class="bi bi-pencil"></i>
@@ -1115,9 +1122,27 @@ function initEquipmentTable() {
         }
     });
     
+    // Clean up when add unit modal is closed
+    $('#addUnitModal').on('hidden.bs.modal', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+    });
+    
     // Clean up when view units modal is closed
     $('#viewUnitsModal').on('hidden.bs.modal', function() {
         currentEquipmentId = null;
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+    });
+    
+    // Clean up when create equipment modal is closed
+    $('#createEquipmentModal').on('hidden.bs.modal', function() {
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open').css('padding-right', '');
+    });
+    
+    // Clean up when edit equipment modal is closed
+    $('#editEquipmentModal').on('hidden.bs.modal', function() {
         $('.modal-backdrop').remove();
         $('body').removeClass('modal-open').css('padding-right', '');
     });
@@ -1263,111 +1288,7 @@ function setupFormHandlers() {
         });
     });
 
-    // Form submissions
-    $('#createEquipmentForm').submit(function(e) {
-        e.preventDefault();
-        var $btn = $('#createEquipBtn');
-        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Creating...');
-        
-        $.post('/Admin/Equipment/Create', $(this).serialize(), function(res) {
-            $btn.prop('disabled', false).html('<i class="bi bi-plus-circle me-1"></i>Create');
-            if (res.success) {
-                bootstrap.Modal.getInstance('#createEquipmentModal').hide();
-                $('#createEquipmentForm')[0].reset();
-                equipmentTable.ajax.reload();
-                loadStats();
-                showToast('Equipment created', 'success');
-            } else {
-                showToast(res.message, 'error');
-            }
-        });
-    });
-
-    $('#editEquipmentForm').submit(function(e) {
-        e.preventDefault();
-        var $btn = $('#editEquipBtn');
-        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
-        
-        $.post('/Admin/Equipment/Update', $(this).serialize(), function(res) {
-            $btn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i>Save Changes');
-            if (res.success) {
-                bootstrap.Modal.getInstance('#editEquipmentModal').hide();
-                equipmentTable.ajax.reload();
-                showToast('Equipment updated', 'success');
-            } else {
-                showToast(res.message, 'error');
-            }
-        });
-    });
-
-    $('#addUnitForm').submit(function(e) {
-        e.preventDefault();
-        var $btn = $('#addUnitBtn');
-        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Adding...');
-        
-        $.post('/Admin/Equipment/CreateUnit', $(this).serialize(), function(res) {
-            $btn.prop('disabled', false).html('<i class="bi bi-plus-circle me-1"></i>Add Unit');
-            if (res.success) {
-                bootstrap.Modal.getInstance('#addUnitModal').hide();
-                $('#addUnitForm')[0].reset();
-                equipmentTable.ajax.reload();
-                loadStats();
-                showToast('Unit added', 'success');
-            } else {
-                showToast(res.message, 'error');
-            }
-        });
-    });
-
-    $('#editUnitForm').submit(function(e) {
-        e.preventDefault();
-        var $btn = $('#editUnitBtn');
-        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
-        
-        $.post('/Admin/Equipment/UpdateUnit', $(this).serialize(), function(res) {
-            $btn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i>Save Changes');
-            if (res.success) {
-                // Close edit unit modal
-                var editModal = bootstrap.Modal.getInstance(document.getElementById('editUnitModal'));
-                if (editModal) editModal.hide();
-                
-                // Reload units in the view modal if open
-                if (currentEquipmentId) {
-                    // Small delay to let modal close properly
-                    setTimeout(function() {
-                        loadUnitsOnly(currentEquipmentId);
-                    }, 300);
-                }
-                equipmentTable.ajax.reload();
-                loadStats();
-                Toast.success('Unit updated', 'success');
-            } else {
-                Toast.error(res.message);
-            }
-        });
-    });
-    
-    // Clean up modal backdrops when modals are hidden
-    $('#editUnitModal').on('hidden.bs.modal', function() {
-        // Remove extra backdrops (keep one if view units modal is open)
-        var backdrops = $('.modal-backdrop');
-        if (backdrops.length > 1) {
-            backdrops.slice(1).remove();
-        }
-        
-        // If view units modal is not visible, clean up completely
-        if (!$('#viewUnitsModal').hasClass('show')) {
-            $('.modal-backdrop').remove();
-            $('body').removeClass('modal-open').css('padding-right', '');
-        }
-    });
-    
-    // Clean up when view units modal is closed
-    $('#viewUnitsModal').on('hidden.bs.modal', function() {
-        currentEquipmentId = null;
-        $('.modal-backdrop').remove();
-        $('body').removeClass('modal-open').css('padding-right', '');
-    });
+    // Note: Form submissions and modal cleanup are handled above in the main script section
 }
 
 function loadUnits(equipmentId) {

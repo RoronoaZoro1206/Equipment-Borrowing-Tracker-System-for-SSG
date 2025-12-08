@@ -84,6 +84,15 @@
         @RenderBody()
     </main>
 
+    <!-- Scroll to Top Button with Progress Ring -->
+    <button class="scroll-to-top" id="scrollToTop" aria-label="Scroll to top">
+        <svg class="progress-ring" viewBox="0 0 50 50">
+            <circle class="progress-ring-bg" cx="25" cy="25" r="22"></circle>
+            <circle class="progress-ring-fill" cx="25" cy="25" r="22" id="progressRing"></circle>
+        </svg>
+        <i class="bi bi-arrow-up arrow-icon"></i>
+    </button>
+
     @if (Context.Session.GetInt32("UserId") == null)
     {
         <!-- Public Footer -->
