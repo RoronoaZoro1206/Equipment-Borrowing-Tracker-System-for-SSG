@@ -523,7 +523,39 @@
     </div>
 </div>
 
-
+<!-- Success Modal with Transaction Code -->
+<div class="modal fade" id="successModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content success-modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="success-icon-wrapper">
+                    <i class="bi bi-check-circle-fill success-icon"></i>
+                </div>
+                <h4 class="success-title mt-4">Transaction Successful!</h4>
+                <p class="success-subtitle text-muted">The borrowing transaction has been processed.</p>
+                
+                <div class="transaction-code-box">
+                    <label class="code-label">Transaction Code</label>
+                    <div class="code-display">
+                        <span id="successTransactionCode" class="code-value">-</span>
+                        <button type="button" class="btn btn-copy-code" id="btnCopyCode" title="Copy to clipboard">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="success-actions mt-4">
+                    <button type="button" class="btn btn-outline-primary btn-action-success" id="btnSendEmail">
+                        <i class="bi bi-envelope me-2"></i>Send via Email
+                    </button>
+                    <button type="button" class="btn btn-primary-red btn-action-success" id="btnDone">
+                        <i class="bi bi-check-lg me-2"></i>Done
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <style>
 /* ===========================================
@@ -1377,6 +1409,119 @@
     background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
     color: white;
 }
+
+/* Success Modal Styles */
+.success-modal-content {
+    border-radius: 20px;
+    border: none;
+    overflow: hidden;
+}
+
+.success-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    animation: successPulse 0.5s ease-out;
+}
+
+.success-icon {
+    font-size: 2.5rem;
+    color: white;
+}
+
+@@keyframes successPulse {
+    0% { transform: scale(0); opacity: 0; }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.success-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.success-subtitle {
+    font-size: 0.95rem;
+}
+
+.transaction-code-box {
+    background: linear-gradient(135deg, #fafafa 0%, #f3f4f6 100%);
+    border: 2px solid rgba(139, 0, 0, 0.15);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 24px auto;
+    max-width: 320px;
+}
+
+.code-label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.code-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.code-value {
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-red);
+    letter-spacing: 2px;
+}
+
+.btn-copy-code {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #6b7280;
+    transition: all 0.3s ease;
+}
+
+.btn-copy-code:hover {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+    color: white;
+}
+
+.btn-copy-code.copied {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: white;
+}
+
+.success-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-action-success {
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-action-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
 </style>
 
 
@@ -1796,6 +1941,7 @@ function processBorrowTransaction() {
     const token = $('input[name="__RequestVerificationToken"]').val();
     let processed = 0;
     let errors = [];
+    let lastTransactionCode = null;
     
     borrowItems.forEach(item => {
         $.ajax({
@@ -1809,6 +1955,9 @@ function processBorrowTransaction() {
             },
             success: function(res) {
                 processed++;
+                if (res.success && res.transactionCode) {
+                    lastTransactionCode = res.transactionCode;
+                }
                 if (!res.success) errors.push(res.message);
                 checkComplete();
             },
@@ -1822,15 +1971,133 @@ function processBorrowTransaction() {
     
     function checkComplete() {
         if (processed === borrowItems.length) {
-            if (errors.length === 0) {
-                Swal.fire('Success', 'Borrow transaction processed successfully!', 'success')
-                    .then(() => window.location.href = '/Admin/Transactions');
+            if (errors.length === 0 && lastTransactionCode) {
+                showSuccessModal(lastTransactionCode);
+            } else if (errors.length === 0) {
+                Swal.fire({ 
+                    title: '<span style="font-family: Playfair Display, serif; font-weight: 700;">Success</span>', 
+                    text: 'Borrow transaction processed successfully!', 
+                    icon: 'success', 
+                    confirmButtonColor: '#8B0000' 
+                }).then(() => window.location.href = '/Admin/Transactions');
             } else {
-                Swal.fire('Partial Success', `Processed with ${errors.length} error(s)`, 'warning');
+                Swal.fire({ 
+                    title: 'Partial Success', 
+                    text: `Processed with ${errors.length} error(s)`, 
+                    icon: 'warning', 
+                    confirmButtonColor: '#8B0000' 
+                });
             }
         }
     }
 }
+
+function showSuccessModal(transactionCode) {
+    $('#successTransactionCode').text(transactionCode);
+    
+    const hasEmail = selectedStudent && selectedStudent.studentEmail;
+    $('#btnSendEmail').prop('disabled', !hasEmail);
+    if (!hasEmail) {
+        $('#btnSendEmail').attr('title', 'Student has no email address');
+    } else {
+        $('#btnSendEmail').attr('title', '');
+    }
+    
+    $('#successModal').modal('show');
+}
+
+// Copy transaction code to clipboard
+$('#btnCopyCode').on('click', function() {
+    const code = $('#successTransactionCode').text();
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = $(this);
+        btn.addClass('copied');
+        btn.find('i').removeClass('bi-clipboard').addClass('bi-check-lg');
+        
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Copied to clipboard!',
+            showConfirmButton: false,
+            timer: 2000
+        });
+        
+        setTimeout(() => {
+            btn.removeClass('copied');
+            btn.find('i').removeClass('bi-check-lg').addClass('bi-clipboard');
+        }, 2000);
+    }).catch(() => {
+        const textArea = document.createElement('textarea');
+        textArea.value = code;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+    });
+});
+
+// Send transaction details via email
+$('#btnSendEmail').on('click', function() {
+    const btn = $(this);
+    const transactionCode = $('#successTransactionCode').text();
+    
+    if (!selectedStudent || !selectedStudent.studentEmail) {
+        Swal.fire({
+            title: 'Error',
+            text: 'Student email address is not available',
+            icon: 'error',
+            confirmButtonColor: '#8B0000'
+        });
+        return;
+    }
+    
+    btn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-2"></i>Sending...');
+    
+    $.ajax({
+        url: '/Admin/Transactions/SendTransactionEmail',
+        method: 'POST',
+        data: {
+            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val(),
+            transactionCode: transactionCode,
+            studentEmail: selectedStudent.studentEmail,
+            studentName: selectedStudent.fullName
+        },
+        success: function(res) {
+            if (res.success) {
+                Swal.fire({
+                    title: '<span style="font-family: Playfair Display, serif; font-weight: 700;">Email Sent!</span>',
+                    text: 'Transaction details have been sent to the student\'s email.',
+                    icon: 'success',
+                    confirmButtonColor: '#8B0000'
+                });
+                btn.html('<i class="bi bi-check-circle me-2"></i>Email Sent');
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: res.message || 'Failed to send email',
+                    icon: 'error',
+                    confirmButtonColor: '#8B0000'
+                });
+                btn.prop('disabled', false).html('<i class="bi bi-envelope me-2"></i>Send via Email');
+            }
+        },
+        error: function() {
+            Swal.fire({
+                title: 'Error',
+                text: 'Failed to send email. Please try again.',
+                icon: 'error',
+                confirmButtonColor: '#8B0000'
+            });
+            btn.prop('disabled', false).html('<i class="bi bi-envelope me-2"></i>Send via Email');
+        }
+    });
+});
+
+// Done button - redirect to transactions list
+$('#btnDone').on('click', function() {
+    window.location.href = '/Admin/Transactions';
+});
 
 function saveNewStudent() {
     const form = $('#addStudentForm');

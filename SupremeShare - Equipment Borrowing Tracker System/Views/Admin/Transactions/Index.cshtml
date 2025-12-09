@@ -19,9 +19,6 @@
             <a href="/Admin/Transactions/Borrow" class="btn btn-add-txn">
                 <i class="bi bi-box-arrow-up me-1"></i>New Borrow
             </a>
-            <a href="/Admin/Transactions/Return" class="btn btn-return-txn">
-                <i class="bi bi-box-arrow-in-down me-1"></i>Process Return
-            </a>
         </div>
     </div>
 
@@ -94,13 +91,19 @@
             <!-- Filter Row -->
             <div class="filter-row-txn mb-3">
                 <div class="filter-group-txn">
-                    <label class="filter-label-txn"><i class="bi bi-funnel me-1"></i>Filter:</label>
+                    <label class="filter-label-txn"><i class="bi bi-funnel me-1"></i>Filters:</label>
                     <select id="filterStatus" class="filter-select-txn">
                         <option value="">All Status</option>
                         <option value="borrowed">Borrowed</option>
                         <option value="returned">Returned</option>
                         <option value="overdue">Overdue</option>
                         <option value="lost">Lost</option>
+                    </select>
+                    <select id="filterDateRange" class="filter-select-txn">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
                     </select>
                     <button class="btn btn-clear-filter-txn" id="btnClearFilters" title="Clear">
                         <i class="bi bi-x-circle"></i>
@@ -140,66 +143,112 @@
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content modal-txn">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Transaction: <span id="detailCode"></span></h5>
+                <h5 class="modal-title"><i class="bi bi-receipt me-2"></i>Transaction Details</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" id="detailsContent">
                 @Html.AntiForgeryToken()
-                
-                <!-- Transaction Info -->
-                <div class="txn-info-grid mb-4">
-                    <div class="txn-info-card">
-                        <div class="txn-info-icon"><i class="bi bi-person-badge"></i></div>
-                        <div class="txn-info-content">
-                            <span class="txn-info-label">Student</span>
-                            <span class="txn-info-value" id="detailStudent">-</span>
-                        </div>
-                    </div>
-                    <div class="txn-info-card">
-                        <div class="txn-info-icon"><i class="bi bi-building"></i></div>
-                        <div class="txn-info-content">
-                            <span class="txn-info-label">College</span>
-                            <span class="txn-info-value" id="detailCollege">-</span>
-                        </div>
-                    </div>
-                    <div class="txn-info-card">
-                        <div class="txn-info-icon"><i class="bi bi-calendar-event"></i></div>
-                        <div class="txn-info-content">
-                            <span class="txn-info-label">Date Borrowed</span>
-                            <span class="txn-info-value" id="detailDate">-</span>
-                        </div>
-                    </div>
-                    <div class="txn-info-card">
-                        <div class="txn-info-icon"><i class="bi bi-chat-left-text"></i></div>
-                        <div class="txn-info-content">
-                            <span class="txn-info-label">Remarks</span>
-                            <span class="txn-info-value" id="detailRemarks">-</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Borrowed Items -->
-                <div class="txn-items-section">
-                    <h6 class="txn-items-title"><i class="bi bi-box-seam me-2"></i>Borrowed Items</h6>
-                    <div class="table-responsive">
-                        <table class="table table-items-txn mb-0" id="detailItemsTable">
-                            <thead>
-                                <tr>
-                                    <th>Equipment</th>
-                                    <th>Serial No</th>
-                                    <th>Due Date</th>
-                                    <th>Status</th>
-                                    <th>Returned</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
+                <div class="text-center py-4">
+                    <div class="spinner-border text-danger" role="status"></div>
+                    <p class="text-muted mt-2">Loading details...</p>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Borrow Record Modal -->
+<div class="modal fade" id="editBorrowModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-txn">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Borrow Record</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="editBorrowContent">
+                <form id="editBorrowForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="editBorrowId" name="borrowId">
+                    
+                    <!-- Read-only Info -->
+                    <div class="edit-info-section mb-4">
+                        <h6 class="edit-section-title"><i class="bi bi-info-circle me-2"></i>Item Information (Read-only)</h6>
+                        <div class="edit-info-grid">
+                            <div class="edit-info-item">
+                                <label>Transaction Code</label>
+                                <span id="editTransactionCode" class="fw-bold text-danger">-</span>
+                            </div>
+                            <div class="edit-info-item">
+                                <label>Student</label>
+                                <span id="editStudentInfo">-</span>
+                            </div>
+                            <div class="edit-info-item">
+                                <label>Equipment</label>
+                                <span id="editEquipmentName" class="fw-bold">-</span>
+                            </div>
+                            <div class="edit-info-item">
+                                <label>Serial Number</label>
+                                <code id="editSerialNo">-</code>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Editable Fields -->
+                    <div class="edit-fields-section">
+                        <h6 class="edit-section-title"><i class="bi bi-pencil me-2"></i>Editable Fields</h6>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Current Status <span class="text-danger">*</span></label>
+                                <select class="form-select edit-select" id="editStatus" name="status" required>
+                                    <option value="borrowed">Borrowed</option>
+                                    <option value="returned">Returned</option>
+                                    <option value="overdue">Overdue</option>
+                                    <option value="lost">Lost</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Due Date <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control edit-input" id="editDueDate" name="dueDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Date Returned</label>
+                                <input type="datetime-local" class="form-control edit-input" id="editDateReturned" name="dateReturned">
+                                <small class="text-muted">Leave empty if not yet returned</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Return Condition</label>
+                                <div class="condition-select-group">
+                                    <label class="condition-option good">
+                                        <input type="radio" name="returnCondition" value="true">
+                                        <span><i class="bi bi-check-circle-fill me-1"></i>Good</span>
+                                    </label>
+                                    <label class="condition-option damaged">
+                                        <input type="radio" name="returnCondition" value="false">
+                                        <span><i class="bi bi-x-circle-fill me-1"></i>Damaged</span>
+                                    </label>
+                                    <label class="condition-option none">
+                                        <input type="radio" name="returnCondition" value="" checked>
+                                        <span><i class="bi bi-dash-circle me-1"></i>N/A</span>
+                                    </label>
+                                </div>
+                                <small class="text-muted">Set condition when item is returned</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="edit-note-box mt-4">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span>The <strong>Last Updated</strong> field will automatically update when changes are saved.</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-save-edit" id="btnSaveEdit">
+                            <i class="bi bi-check-lg me-1"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -513,6 +562,85 @@
     font-weight: 600;
 }
 
+.btn-edit-txn { color: #f59e0b; border-color: #f59e0b; }
+.btn-edit-txn:hover { background: #f59e0b; color: white; }
+
+/* Edit Modal Styles */
+.edit-info-section { background: #f8f9fa; border-radius: 12px; padding: 20px; border: 1px solid rgba(139, 0, 0, 0.1); }
+.edit-section-title { font-weight: 600; color: var(--primary-red); margin-bottom: 16px; display: flex; align-items: center; }
+.edit-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.edit-info-item { display: flex; flex-direction: column; gap: 4px; }
+.edit-info-item label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+.edit-info-item span, .edit-info-item code { font-size: 0.9rem; color: var(--text-dark); }
+.edit-fields-section { background: white; border-radius: 12px; padding: 20px; border: 2px solid rgba(139, 0, 0, 0.15); }
+.edit-select, .edit-input { border: 2px solid #e5e7eb; border-radius: 8px; padding: 10px 14px; transition: all 0.3s ease; }
+.edit-select:focus, .edit-input:focus { border-color: var(--primary-red); box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); outline: none; }
+.condition-select-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.condition-option { cursor: pointer; margin: 0; }
+.condition-option input { display: none; }
+.condition-option span { display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px; border: 2px solid #e5e7eb; font-size: 0.85rem; font-weight: 500; transition: all 0.3s ease; }
+.condition-option.good input:checked + span { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-color: #22c55e; color: #16a34a; }
+.condition-option.damaged input:checked + span { background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border-color: #ef4444; color: #dc2626; }
+.condition-option.none input:checked + span { background: #f3f4f6; border-color: #9ca3af; color: #6b7280; }
+.condition-option span:hover { border-color: #9ca3af; }
+.edit-note-box { padding: 12px 16px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 10px; font-size: 0.85rem; color: #92400e; display: flex; align-items: center; }
+.btn-save-edit { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; border: none; padding: 10px 24px; border-radius: 10px; font-weight: 600; transition: all 0.3s ease; }
+.btn-save-edit:hover { box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3); color: white; }
+.item-selector-list { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; }
+.item-selector-card { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; background: #f8f9fa; border: 2px solid #e5e7eb; border-radius: 10px; cursor: pointer; transition: all 0.3s ease; }
+.item-selector-card:hover { border-color: var(--primary-red); background: rgba(139, 0, 0, 0.05); transform: translateX(4px); }
+.item-selector-info { display: flex; flex-direction: column; }
+.item-selector-popup { width: 450px !important; }
+
+/* Enhanced Details Modal Styles */
+.modal-txn .modal-body { padding: 24px; background: #f8f9fa; }
+
+/* Transaction Header Card */
+.trans-header-card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); border: 1px solid rgba(139, 0, 0, 0.08); }
+.trans-code-display { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; color: var(--primary-red); margin-bottom: 16px; }
+.borrower-info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+.borrower-info-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #fafafa; border-radius: 10px; }
+.borrower-info-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1rem; }
+.borrower-info-content { display: flex; flex-direction: column; }
+.borrower-info-label { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+.borrower-info-value { font-weight: 600; color: var(--text-dark); font-size: 0.9rem; }
+
+/* Remarks Section */
+.remarks-section { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); border: 1px solid rgba(139, 0, 0, 0.08); }
+.remarks-title { font-weight: 600; color: var(--primary-red); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.remarks-textarea { width: 100%; min-height: 80px; padding: 12px 16px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; resize: vertical; transition: all 0.3s ease; }
+.remarks-textarea:focus { border-color: var(--primary-red); outline: none; box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
+.remarks-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+.btn-save-remarks { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; transition: all 0.3s ease; }
+.btn-save-remarks:hover { box-shadow: 0 4px 12px rgba(139, 0, 0, 0.3); color: white; }
+.btn-save-remarks:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Borrowing Information Table */
+.borrow-info-section { background: white; border-radius: 16px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); border: 1px solid rgba(139, 0, 0, 0.08); }
+.borrow-info-header { background: linear-gradient(135deg, #fafafa 0%, #fff 100%); padding: 16px 20px; border-bottom: 1px solid rgba(139, 0, 0, 0.1); }
+.borrow-info-title { font-weight: 600; color: var(--primary-red); margin: 0; display: flex; align-items: center; gap: 8px; }
+.table-borrow-info thead th { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 10px; border: none; }
+.table-borrow-info tbody td { padding: 12px 10px; vertical-align: middle; border-bottom: 1px solid rgba(0, 0, 0, 0.05); font-size: 0.85rem; }
+.table-borrow-info tbody tr:hover { background: rgba(139, 0, 0, 0.03); }
+
+/* Condition Badges */
+.badge-condition { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; }
+.badge-condition.good { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; }
+.badge-condition.damaged { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+
+/* Timeline Section */
+.timeline-section { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); border: 1px solid rgba(139, 0, 0, 0.08); }
+.timeline-title { font-weight: 600; color: var(--primary-red); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.timeline-list { position: relative; padding-left: 24px; }
+.timeline-list::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--primary-red), #e5e7eb); }
+.timeline-item { position: relative; padding-bottom: 20px; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot { position: absolute; left: -20px; top: 4px; width: 12px; height: 12px; background: var(--primary-red); border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px var(--primary-red); }
+.timeline-content { background: #fafafa; padding: 12px 16px; border-radius: 10px; }
+.timeline-action { font-weight: 600; color: var(--text-dark); font-size: 0.9rem; }
+.timeline-meta { display: flex; gap: 16px; margin-top: 4px; font-size: 0.75rem; color: #6b7280; }
+.timeline-meta span { display: flex; align-items: center; gap: 4px; }
+
 /* Responsive */
 @@media (max-width: 991px) {
     .stat-card-txn { padding: 16px; }
@@ -683,7 +811,10 @@ function initTransactionsTable() {
                 data: null,
                 orderable: false,
                 render: function(data, type, row) {
-                    return '<button class="btn btn-sm btn-outline-primary btn-action-txn btn-view-txn" data-id="' + row.transactionId + '" title="View Details"><i class="bi bi-eye me-1"></i>View</button>';
+                    return '<div class="d-flex gap-1">' +
+                        '<button class="btn btn-sm btn-outline-primary btn-action-txn btn-view-txn" data-id="' + row.transactionId + '" title="View Details"><i class="bi bi-eye me-1"></i>Open</button>' +
+                        '<button class="btn btn-sm btn-outline-warning btn-action-txn btn-edit-txn" data-id="' + row.transactionId + '" title="Edit"><i class="bi bi-pencil"></i></button>' +
+                    '</div>';
                 }
             }
         ]
@@ -814,7 +945,7 @@ function setupEventHandlers() {
 }
 
 function loadTransactionDetails(id) {
-    $('#detailItemsTable tbody').html('<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-danger" role="status"></div></td></tr>');
+    $('#detailsContent').html('<div class="text-center py-4"><div class="spinner-border text-danger" role="status"></div><p class="text-muted mt-2">Loading details...</p></div>');
     
     var detailsModalEl = document.getElementById('detailsModal');
     var detailsModal = bootstrap.Modal.getInstance(detailsModalEl) || new bootstrap.Modal(detailsModalEl);
@@ -822,50 +953,285 @@ function loadTransactionDetails(id) {
     
     $.get('/Admin/Transactions/GetDetails/' + id, function(res) {
         if (res.success) {
-            var data = res.data;
-            
-            // Populate header info
-            $('#detailCode').text(data.transactionCode);
-            $('#detailStudent').text(data.student.fullName + ' (' + data.student.studentIdNumber + ')');
-            $('#detailCollege').text(data.student.studentCollege || '-');
-            $('#detailDate').text(formatDate(data.transactionDateBorrowed));
-            $('#detailRemarks').text(data.transactionRemarks || 'No remarks');
-            
-            // Populate items table
-            var html = '';
-            data.items.forEach(function(item) {
-                var statusBadge = '<span class="badge-status-txn ' + item.borrowStatus + '">' + item.borrowStatus + '</span>';
-                var returnedDate = item.borrowDateReturned ? formatDate(item.borrowDateReturned) : '-';
-                var canReturn = item.borrowStatus === 'borrowed' || item.borrowStatus === 'overdue';
-                var canMarkLost = item.borrowStatus === 'borrowed' || item.borrowStatus === 'overdue';
-                
-                var actions = '';
-                if (canReturn) {
-                    actions += '<button class="btn btn-item-return me-1" data-id="' + item.borrowId + '" data-serial="' + item.serialNo + '"><i class="bi bi-box-arrow-in-down me-1"></i>Return</button>';
-                }
-                if (canMarkLost) {
-                    actions += '<button class="btn btn-item-lost" data-id="' + item.borrowId + '" data-serial="' + item.serialNo + '"><i class="bi bi-x-octagon me-1"></i>Lost</button>';
-                }
-                if (!canReturn && !canMarkLost) {
-                    actions = '<span class="text-muted small">-</span>';
-                }
-                
-                html += '<tr>' +
-                    '<td><strong>' + item.equipmentName + '</strong></td>' +
-                    '<td><span class="text-danger">' + item.serialNo + '</span></td>' +
-                    '<td>' + formatDate(item.borrowDueDate) + (item.daysOverdue > 0 && item.borrowStatus !== 'returned' ? ' <span class="text-danger small">(' + item.daysOverdue + ' days overdue)</span>' : '') + '</td>' +
-                    '<td>' + statusBadge + '</td>' +
-                    '<td>' + returnedDate + '</td>' +
-                    '<td>' + actions + '</td>' +
-                '</tr>';
-            });
-            
-            $('#detailItemsTable tbody').html(html || '<tr><td colspan="6" class="text-center text-muted py-4">No items found</td></tr>');
+            renderTransactionDetails(res.data);
         } else {
-            showToast(res.message, 'error');
+            $('#detailsContent').html('<div class="alert alert-danger">Failed to load transaction details.</div>');
+        }
+    }).fail(function() {
+        $('#detailsContent').html('<div class="alert alert-danger">An error occurred. Please try again.</div>');
+    });
+}
+
+function renderTransactionDetails(d) {
+    var itemsHtml = '';
+    d.items.forEach(function(i) {
+        var statusClass = i.borrowStatus === 'returned' ? 'returned' : i.borrowStatus === 'overdue' ? 'overdue' : i.borrowStatus === 'lost' ? 'lost' : 'borrowed';
+        var conditionHtml = i.borrowReturnCondition !== null 
+            ? (i.borrowReturnCondition ? '<span class="badge-condition good"><i class="bi bi-check-circle-fill me-1"></i>Good</span>' : '<span class="badge-condition damaged"><i class="bi bi-x-circle-fill me-1"></i>Damaged</span>')
+            : '<span class="text-muted">-</span>';
+        var dateReturned = i.borrowDateReturned ? formatDate(i.borrowDateReturned) : '<span class="text-muted">-</span>';
+        var canReturn = i.borrowStatus === 'borrowed' || i.borrowStatus === 'overdue';
+        var canMarkLost = i.borrowStatus === 'borrowed' || i.borrowStatus === 'overdue';
+        
+        var actions = '';
+        if (canReturn) {
+            actions += '<button class="btn btn-item-return me-1" data-id="' + i.borrowId + '" data-serial="' + i.serialNo + '"><i class="bi bi-box-arrow-in-down me-1"></i>Return</button>';
+        }
+        if (canMarkLost) {
+            actions += '<button class="btn btn-item-lost" data-id="' + i.borrowId + '" data-serial="' + i.serialNo + '"><i class="bi bi-x-octagon me-1"></i>Lost</button>';
+        }
+        if (!canReturn && !canMarkLost) {
+            actions = '<span class="text-muted small">-</span>';
+        }
+        
+        itemsHtml += '<tr>' +
+            '<td><strong>' + (i.equipmentName || '-') + '</strong></td>' +
+            '<td><code class="text-danger">' + (i.serialNo || '-') + '</code></td>' +
+            '<td><span class="badge-status-txn ' + statusClass + '">' + i.borrowStatus + '</span></td>' +
+            '<td>' + formatDate(i.borrowDueDate) + (i.daysOverdue > 0 && i.borrowStatus !== 'returned' ? ' <span class="text-danger small">(' + i.daysOverdue + ' days)</span>' : '') + '</td>' +
+            '<td>' + dateReturned + '</td>' +
+            '<td>' + conditionHtml + '</td>' +
+            '<td>' + actions + '</td>' +
+        '</tr>';
+    });
+
+    var timelineHtml = '<div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-content"><div class="timeline-action">Borrowing Transaction Recorded</div><div class="timeline-meta"><span><i class="bi bi-calendar3"></i>' + formatDate(d.transactionDateBorrowed) + '</span><span><i class="bi bi-person"></i>System</span></div></div></div>';
+
+    var html = 
+        '<!-- Transaction Header -->' +
+        '<div class="trans-header-card">' +
+            '<div class="trans-code-display"><i class="bi bi-receipt me-2"></i>' + d.transactionCode + '</div>' +
+            '<div class="borrower-info-grid">' +
+                '<div class="borrower-info-item"><div class="borrower-info-icon"><i class="bi bi-person-badge"></i></div><div class="borrower-info-content"><span class="borrower-info-label">Student ID</span><span class="borrower-info-value">' + (d.student.studentIdNumber || '-') + '</span></div></div>' +
+                '<div class="borrower-info-item"><div class="borrower-info-icon"><i class="bi bi-person"></i></div><div class="borrower-info-content"><span class="borrower-info-label">Borrower Name</span><span class="borrower-info-value">' + (d.student.fullName || '-') + '</span></div></div>' +
+                '<div class="borrower-info-item"><div class="borrower-info-icon"><i class="bi bi-building"></i></div><div class="borrower-info-content"><span class="borrower-info-label">College</span><span class="borrower-info-value">' + (d.student.studentCollege || '-') + '</span></div></div>' +
+                '<div class="borrower-info-item"><div class="borrower-info-icon"><i class="bi bi-calendar-event"></i></div><div class="borrower-info-content"><span class="borrower-info-label">Date Borrowed</span><span class="borrower-info-value">' + formatDate(d.transactionDateBorrowed) + '</span></div></div>' +
+            '</div>' +
+        '</div>' +
+        
+        '<!-- Remarks Section -->' +
+        '<div class="remarks-section">' +
+            '<div class="remarks-title"><i class="bi bi-chat-left-text"></i>Remarks</div>' +
+            '<textarea class="remarks-textarea" id="remarksInput" placeholder="Add remarks for this transaction...">' + (d.transactionRemarks || '') + '</textarea>' +
+            '<div class="remarks-actions">' +
+                '<button class="btn btn-save-remarks" id="btnSaveRemarks" data-id="' + d.transactionId + '"><i class="bi bi-check-lg me-1"></i>Save Remarks</button>' +
+            '</div>' +
+        '</div>' +
+        
+        '<!-- Borrowing Information Table -->' +
+        '<div class="borrow-info-section">' +
+            '<div class="borrow-info-header"><h6 class="borrow-info-title"><i class="bi bi-box-seam"></i>Borrowing Information</h6></div>' +
+            '<div class="table-responsive">' +
+                '<table class="table table-borrow-info mb-0">' +
+                    '<thead><tr><th>Equipment</th><th>Serial No.</th><th>Status</th><th>Due Date</th><th>Date Returned</th><th>Condition</th><th>Actions</th></tr></thead>' +
+                    '<tbody>' + (itemsHtml || '<tr><td colspan="7" class="text-center text-muted py-4">No items found</td></tr>') + '</tbody>' +
+                '</table>' +
+            '</div>' +
+        '</div>' +
+        
+        '<!-- Timeline Section -->' +
+        '<div class="timeline-section">' +
+            '<div class="timeline-title"><i class="bi bi-clock-history"></i>Timeline</div>' +
+            '<div class="timeline-list">' + timelineHtml + '</div>' +
+        '</div>';
+
+    $('#detailsContent').html(html);
+}
+
+// Save Remarks
+$(document).on('click', '#btnSaveRemarks', function() {
+    var $btn = $(this);
+    var transactionId = $btn.data('id');
+    var remarks = $('#remarksInput').val();
+    
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+    
+    $.post('/Admin/Transactions/UpdateRemarks', {
+        transactionId: transactionId,
+        remarks: remarks
+    }, function(res) {
+        $btn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Save Remarks');
+        if (res.success) {
+            showToast('Remarks saved successfully', 'success');
+            transactionsTable.ajax.reload(null, false);
+        } else {
+            showToast(res.message || 'Failed to save remarks', 'error');
+        }
+    }).fail(function() {
+        $btn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Save Remarks');
+        showToast('An error occurred', 'error');
+    });
+});
+
+// Edit button click - opens edit modal with transaction items
+let currentEditData = null;
+
+$(document).on('click', '.btn-edit-txn', function(e) {
+    e.stopPropagation();
+    var transactionId = $(this).data('id');
+    openEditModal(transactionId);
+});
+
+function openEditModal(transactionId) {
+    $.get('/Admin/Transactions/GetDetails/' + transactionId, function(res) {
+        if (res.success && res.data.items && res.data.items.length > 0) {
+            currentEditData = res.data;
+            
+            if (res.data.items.length > 1) {
+                showItemSelector(res.data);
+            } else {
+                var item = res.data.items[0];
+                populateEditModal(res.data, item);
+                new bootstrap.Modal('#editBorrowModal').show();
+            }
+        } else {
+            showToast('No borrow records found for this transaction', 'warning');
+        }
+    }).fail(function() {
+        showToast('Failed to load transaction details', 'error');
+    });
+}
+
+function showItemSelector(transaction) {
+    var itemsHtml = '<div class="item-selector-list">';
+    transaction.items.forEach(function(item, index) {
+        var statusClass = item.borrowStatus === 'returned' ? 'success' : item.borrowStatus === 'overdue' ? 'danger' : item.borrowStatus === 'lost' ? 'dark' : 'primary';
+        itemsHtml += '<div class="item-selector-card" data-index="' + index + '">' +
+            '<div class="item-selector-info">' +
+                '<strong>' + (item.equipmentName || 'Unknown') + '</strong>' +
+                '<small class="text-muted d-block">Serial: ' + (item.serialNo || '-') + '</small>' +
+            '</div>' +
+            '<span class="badge bg-' + statusClass + '">' + item.borrowStatus + '</span>' +
+        '</div>';
+    });
+    itemsHtml += '</div>';
+    
+    Swal.fire({
+        title: 'Select Item to Edit',
+        html: itemsHtml,
+        showCancelButton: true,
+        showConfirmButton: false,
+        cancelButtonText: 'Cancel',
+        cancelButtonColor: '#6b7280',
+        customClass: { popup: 'item-selector-popup' },
+        didOpen: function() {
+            $('.item-selector-card').on('click', function() {
+                var index = $(this).data('index');
+                Swal.close();
+                var item = currentEditData.items[index];
+                populateEditModal(currentEditData, item);
+                new bootstrap.Modal('#editBorrowModal').show();
+            });
         }
     });
 }
+
+function populateEditModal(transaction, item) {
+    $('#editBorrowId').val(item.borrowId);
+    $('#editTransactionCode').text(transaction.transactionCode);
+    $('#editStudentInfo').text(transaction.student.studentIdNumber + ' - ' + transaction.student.fullName);
+    $('#editEquipmentName').text(item.equipmentName || '-');
+    $('#editSerialNo').text(item.serialNo || '-');
+    
+    $('#editStatus').val(item.borrowStatus);
+    
+    if (item.borrowDueDate) {
+        var dueDate = new Date(item.borrowDueDate);
+        $('#editDueDate').val(formatDateTimeLocal(dueDate));
+    }
+    
+    if (item.borrowDateReturned) {
+        var returnedDate = new Date(item.borrowDateReturned);
+        $('#editDateReturned').val(formatDateTimeLocal(returnedDate));
+    } else {
+        $('#editDateReturned').val('');
+    }
+    
+    if (item.borrowReturnCondition === true) {
+        $('input[name="returnCondition"][value="true"]').prop('checked', true);
+    } else if (item.borrowReturnCondition === false) {
+        $('input[name="returnCondition"][value="false"]').prop('checked', true);
+    } else {
+        $('input[name="returnCondition"][value=""]').prop('checked', true);
+    }
+}
+
+function formatDateTimeLocal(date) {
+    var year = date.getFullYear();
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+    var hours = String(date.getHours()).padStart(2, '0');
+    var minutes = String(date.getMinutes()).padStart(2, '0');
+    return year + '-' + month + '-' + day + 'T' + hours + ':' + minutes;
+}
+
+// Handle edit form submission
+$('#editBorrowForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    var $btn = $('#btnSaveEdit');
+    var borrowId = $('#editBorrowId').val();
+    var status = $('#editStatus').val();
+    var dueDate = $('#editDueDate').val();
+    var dateReturned = $('#editDateReturned').val();
+    var returnCondition = $('input[name="returnCondition"]:checked').val();
+    
+    if (status === 'returned' && !dateReturned) {
+        showToast('Please set Date Returned when status is Returned', 'warning');
+        return;
+    }
+    
+    $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
+    
+    $.ajax({
+        url: '/Admin/Transactions/UpdateBorrowRecord',
+        method: 'POST',
+        data: {
+            borrowId: borrowId,
+            status: status,
+            dueDate: dueDate,
+            dateReturned: dateReturned || null,
+            returnCondition: returnCondition === '' ? null : returnCondition,
+            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+        },
+        success: function(res) {
+            $btn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Save Changes');
+            if (res.success) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Borrow record updated successfully',
+                    icon: 'success',
+                    confirmButtonColor: '#8B0000'
+                });
+                bootstrap.Modal.getInstance(document.getElementById('editBorrowModal')).hide();
+                transactionsTable.ajax.reload(null, false);
+                loadStats();
+            } else {
+                showToast(res.message || 'Failed to update record', 'error');
+            }
+        },
+        error: function() {
+            $btn.prop('disabled', false).html('<i class="bi bi-check-lg me-1"></i>Save Changes');
+            showToast('An error occurred while saving', 'error');
+        }
+    });
+});
+
+// Auto-set date returned when status changes to 'returned'
+$('#editStatus').on('change', function() {
+    if ($(this).val() === 'returned' && !$('#editDateReturned').val()) {
+        var now = new Date();
+        $('#editDateReturned').val(formatDateTimeLocal(now));
+    }
+});
+
+// Modal cleanup for edit modal
+$('#editBorrowModal').on('hidden.bs.modal', function() {
+    currentEditData = null;
+    $('#editBorrowForm')[0].reset();
+    $('.modal-backdrop').remove();
+    $('body').removeClass('modal-open').css('padding-right', '');
+});
 
 function formatDate(dateStr) {
     if (!dateStr) return '-';

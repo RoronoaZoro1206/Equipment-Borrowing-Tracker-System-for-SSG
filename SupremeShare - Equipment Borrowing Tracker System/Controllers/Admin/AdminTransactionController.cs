@@ -427,6 +427,89 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
             }
         }
 
+        // POST: Admin/Transactions/UpdateBorrowRecord
+        [HttpPost("UpdateBorrowRecord")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateBorrowRecord(
+            [FromForm] int borrowId,
+            [FromForm] string status,
+            [FromForm] DateTime dueDate,
+            [FromForm] DateTime? dateReturned,
+            [FromForm] string? returnCondition)
+        {
+            try
+            {
+                var borrowRecord = await _borrowRepo.GetByIdAsync(borrowId);
+                if (borrowRecord == null)
+                    return Json(new { success = false, message = "Borrow record not found" });
+
+                var userId = HttpContext.Session.GetInt32("UserId") ?? 1;
+                var oldStatus = borrowRecord.BorrowStatus;
+
+                // Parse return condition
+                bool? condition = null;
+                if (!string.IsNullOrEmpty(returnCondition))
+                {
+                    condition = returnCondition.ToLower() == "true";
+                }
+
+                // Build update query
+                var query = @"UPDATE borrow_record 
+                              SET borrow_status = @status,
+                                  borrow_due_date = @dueDate,
+                                  borrow_date_returned = @dateReturned,
+                                  borrow_return_condition = @returnCondition,
+                                  borrow_last_updated = NOW()
+                              WHERE borrow_id = @borrowId";
+
+                var parameters = new NpgsqlParameter[]
+                {
+                    new("@status", status),
+                    new("@dueDate", dueDate),
+                    new("@dateReturned", (object?)dateReturned ?? DBNull.Value),
+                    new("@returnCondition", (object?)condition ?? DBNull.Value),
+                    new("@borrowId", borrowId)
+                };
+
+                await _db.ExecuteNonQueryAsync(query, parameters);
+
+                // If status changed to 'returned', update equipment unit status
+                if (status == "returned" && oldStatus != "returned")
+                {
+                    // If condition is false (damaged), set to 'for review', otherwise 'available'
+                    var unitQuery = @"UPDATE equipment_unit 
+                                      SET eunit_status = CASE WHEN @condition = false THEN 'for review' ELSE 'available' END
+                                      WHERE eunit_id = (SELECT eunit_id FROM borrow_record WHERE borrow_id = @borrowId)";
+                    await _db.ExecuteNonQueryAsync(unitQuery, new NpgsqlParameter[]
+                    {
+                        new("@condition", (object?)condition ?? DBNull.Value),
+                        new("@borrowId", borrowId)
+                    });
+                }
+
+                // Update parent transaction's last_updated
+                var txnQuery = @"UPDATE transaction 
+                                 SET transaction_last_updated = NOW() 
+                                 WHERE transaction_id = (SELECT transaction_id FROM borrow_record WHERE borrow_id = @borrowId)";
+                await _db.ExecuteNonQueryAsync(txnQuery, new[] { new NpgsqlParameter("@borrowId", borrowId) });
+
+                await _auditService.LogActionAsync(userId, "BORROW_RECORD_UPDATED", null,
+                    new { BorrowId = borrowId, OldStatus = oldStatus, NewStatus = status, DueDate = dueDate, DateReturned = dateReturned, ReturnCondition = condition });
+
+                _logger.LogInformation("Borrow record {BorrowId} updated: Status={Status}, DueDate={DueDate}", borrowId, status, dueDate);
+
+                // Send real-time notification
+                await _notificationService.NotifyStatsUpdated();
+
+                return Json(new { success = true, message = "Borrow record updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating borrow record");
+                return Json(new { success = false, message = "Failed to update borrow record: " + ex.Message });
+            }
+        }
+
         // GET: Admin/Transactions/Stats
         [HttpGet("Stats")]
         public async Task<IActionResult> GetStats()
@@ -476,6 +559,142 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
             {
                 _logger.LogError(ex, "Error fetching stats");
                 return Json(new { success = false, message = "Failed to fetch stats" });
+            }
+        }
+
+        // POST: Admin/Transactions/UpdateRemarks
+        [HttpPost("UpdateRemarks")]
+        public async Task<IActionResult> UpdateRemarks([FromForm] int transactionId, [FromForm] string? remarks)
+        {
+            try
+            {
+                var query = @"UPDATE transaction 
+                              SET transaction_remarks = @remarks, 
+                                  transaction_last_updated = NOW() 
+                              WHERE transaction_id = @transactionId";
+                var parameters = new NpgsqlParameter[]
+                {
+                    new("@remarks", (object?)remarks ?? DBNull.Value),
+                    new("@transactionId", transactionId)
+                };
+
+                await _db.ExecuteNonQueryAsync(query, parameters);
+
+                var userId = HttpContext.Session.GetInt32("UserId") ?? 1;
+                await _auditService.LogActionAsync(userId, "TRANSACTION_REMARKS_UPDATED", null,
+                    new { TransactionId = transactionId, Remarks = remarks });
+
+                _logger.LogInformation("Transaction {TransactionId} remarks updated", transactionId);
+                return Json(new { success = true, message = "Remarks updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating transaction remarks");
+                return Json(new { success = false, message = "Failed to update remarks" });
+            }
+        }
+
+        // POST: Admin/Transactions/SendTransactionEmail
+        [HttpPost("SendTransactionEmail")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendTransactionEmail([FromForm] string transactionCode, [FromForm] string studentEmail, [FromForm] string studentName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(studentEmail))
+                    return Json(new { success = false, message = "Student email is required" });
+
+                var transaction = await _transactionRepo.GetByCodeAsync(transactionCode);
+                if (transaction == null)
+                    return Json(new { success = false, message = "Transaction not found" });
+
+                var borrowRecords = await _borrowRepo.GetByTransactionIdAsync(transaction.TransactionId);
+                
+                var itemsList = new System.Text.StringBuilder();
+                foreach (var record in borrowRecords)
+                {
+                    var unit = await _unitRepo.GetByIdAsync(record.EunitId);
+                    var equipment = unit != null ? await _equipmentRepo.GetByIdAsync(unit.EquipmentId) : null;
+                    itemsList.AppendLine($"• {equipment?.EquipmentName ?? "Unknown"} (Serial: {unit?.EunitSerialNo ?? "N/A"}) - Due: {record.BorrowDueDate:MMM dd, yyyy}");
+                }
+
+                var emailSent = await SendTransactionEmailAsync(
+                    studentEmail, 
+                    studentName, 
+                    transactionCode, 
+                    transaction.TransactionDateBorrowed, 
+                    itemsList.ToString()
+                );
+
+                if (emailSent)
+                {
+                    var userId = HttpContext.Session.GetInt32("UserId") ?? 1;
+                    await _auditService.LogActionAsync(userId, "TRANSACTION_EMAIL_SENT", null,
+                        new { TransactionCode = transactionCode, StudentEmail = studentEmail });
+
+                    _logger.LogInformation("Transaction email sent for {TransactionCode} to {Email}", transactionCode, studentEmail);
+                    return Json(new { success = true, message = "Email sent successfully" });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Failed to send email. Please check SMTP configuration." });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending transaction email");
+                return Json(new { success = false, message = "Failed to send email" });
+            }
+        }
+
+        private async Task<bool> SendTransactionEmailAsync(string toEmail, string studentName, string transactionCode, DateTime dateBorrowed, string itemsList)
+        {
+            try
+            {
+                var smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST") ?? "smtp.gmail.com";
+                var smtpPort = int.TryParse(Environment.GetEnvironmentVariable("SMTP_PORT"), out var port) ? port : 587;
+                var smtpUser = Environment.GetEnvironmentVariable("SMTP_USER");
+                var smtpPass = Environment.GetEnvironmentVariable("SMTP_PASS");
+                var fromEmail = Environment.GetEnvironmentVariable("SMTP_FROM") ?? smtpUser;
+
+                if (string.IsNullOrEmpty(smtpUser) || string.IsNullOrEmpty(smtpPass))
+                {
+                    _logger.LogWarning("SMTP credentials not configured");
+                    return false;
+                }
+
+                using var client = new System.Net.Mail.SmtpClient(smtpHost, smtpPort)
+                {
+                    Credentials = new System.Net.NetworkCredential(smtpUser, smtpPass),
+                    EnableSsl = true
+                };
+
+                var subject = $"Equipment Borrowing Confirmation - {transactionCode}";
+                var body = $@"
+Dear {studentName},
+
+Your equipment borrowing transaction has been successfully processed.
+
+Transaction Code: {transactionCode}
+Date Borrowed: {dateBorrowed:MMMM dd, yyyy hh:mm tt}
+
+Items Borrowed:
+{itemsList}
+
+Please return the items on or before the due date to avoid penalties.
+
+Thank you,
+SupremeShare Equipment Borrowing System
+";
+
+                var message = new System.Net.Mail.MailMessage(fromEmail!, toEmail, subject, body);
+                await client.SendMailAsync(message);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send transaction email");
+                return false;
             }
         }
 

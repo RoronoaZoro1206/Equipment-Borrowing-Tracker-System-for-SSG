@@ -19,9 +19,6 @@
             <a href="/SupportAdmin/Transactions/Borrow" class="btn btn-action-borrow">
                 <i class="bi bi-box-arrow-up me-1"></i>New Borrow
             </a>
-            <a href="/SupportAdmin/Transactions/Return" class="btn btn-action-return">
-                <i class="bi bi-box-arrow-in-down me-1"></i>Process Return
-            </a>
         </div>
     </div>
 
@@ -72,9 +69,14 @@
                 <i class="bi bi-table"></i>
                 <span>Recent Transactions</span>
             </div>
-            <button class="btn btn-refresh-trans" id="btnRefresh" title="Refresh">
-                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
-            </button>
+            <div class="d-flex gap-2">
+                <button class="btn btn-update-overdue-trans" id="btnUpdateOverdue">
+                    <i class="bi bi-clock-history me-1"></i>Update Overdue
+                </button>
+                <button class="btn btn-refresh-trans" id="btnRefresh" title="Refresh">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+                </button>
+            </div>
         </div>
         <div class="trans-card-body">
             <!-- Filter Row -->
@@ -275,6 +277,15 @@
 .trans-card-body { padding: 24px; }
 .btn-refresh-trans { background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; transition: all 0.3s ease; }
 .btn-refresh-trans:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+.btn-update-overdue-trans { background: rgba(255, 255, 255, 0.2); border: none; color: white; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; transition: all 0.3s ease; }
+.btn-update-overdue-trans:hover { background: rgba(255, 255, 255, 0.3); color: white; }
+
+/* Item Action Buttons */
+.btn-item-return { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; transition: all 0.3s ease; }
+.btn-item-return:hover { box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3); color: white; transform: translateY(-1px); }
+
+/* Lost status badge */
+.status-badge-trans.lost { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
 
 /* Filter Row */
 .filter-row-trans { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 16px; background: linear-gradient(135deg, #fafafa 0%, #fff 100%); border-radius: 12px; border: 1px solid rgba(139, 0, 0, 0.08); }
@@ -538,7 +549,74 @@ function setupFilterHandlers() {
         loadStats();
         transactionsTable.ajax.reload();
     });
+    
+    // Update Overdue button handler
+    $('#btnUpdateOverdue').on('click', function() {
+        var $btn = $(this);
+        $btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Updating...');
+        
+        $.post('/SupportAdmin/Transactions/UpdateOverdue', { __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() }, function(res) {
+            $btn.prop('disabled', false).html('<i class="bi bi-clock-history me-1"></i>Update Overdue');
+            if (res.success) {
+                showToast('Overdue records updated', 'success');
+                transactionsTable.ajax.reload();
+                loadStats();
+            } else {
+                showToast(res.message, 'error');
+            }
+        }).fail(function() {
+            $btn.prop('disabled', false).html('<i class="bi bi-clock-history me-1"></i>Update Overdue');
+            showToast('Failed to update overdue records', 'error');
+        });
+    });
 }
+
+// Return item button handler
+$(document).on('click', '.btn-item-return', function() {
+    var borrowId = $(this).data('id');
+    var serial = $(this).data('serial');
+    
+    Swal.fire({
+        title: 'Process Return',
+        html: 'Return item <strong>' + serial + '</strong>?<br><br>' +
+              '<label class="form-label">Return Condition:</label>' +
+              '<select id="returnCondition" class="form-select">' +
+              '<option value="true">✓ Good Condition</option>' +
+              '<option value="false">✗ Damaged (will be sent for review)</option>' +
+              '</select>',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#22c55e',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: '<i class="bi bi-check-circle me-1"></i>Process Return',
+        cancelButtonText: 'Cancel',
+        preConfirm: function() {
+            return document.getElementById('returnCondition').value;
+        }
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            var condition = result.value === 'true';
+            $.post('/SupportAdmin/Transactions/ProcessReturn', {
+                BorrowId: borrowId,
+                Condition: condition,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            }, function(res) {
+                if (res.success) {
+                    showToast(res.message, 'success');
+                    if (currentTransactionId) {
+                        openTransactionDetails(currentTransactionId);
+                    }
+                    transactionsTable.ajax.reload();
+                    loadStats();
+                } else {
+                    showToast(res.message, 'error');
+                }
+            }).fail(function() {
+                showToast('Failed to process return', 'error');
+            });
+        }
+    });
+});
 
 function applyFilters() {
     var statusFilter = $('#filterStatus').val();
@@ -587,22 +665,28 @@ function openTransactionDetails(id) {
 function renderTransactionDetails(d) {
     var itemsHtml = '';
     d.items.forEach(function(i) {
-        var statusClass = i.borrowStatus === 'returned' ? 'returned' : i.borrowStatus === 'overdue' ? 'overdue' : 'borrowed';
+        var statusClass = i.borrowStatus === 'returned' ? 'returned' : i.borrowStatus === 'overdue' ? 'overdue' : i.borrowStatus === 'lost' ? 'lost' : 'borrowed';
         var conditionHtml = i.borrowReturnCondition !== null 
             ? (i.borrowReturnCondition ? '<span class="badge-condition good"><i class="bi bi-check-circle-fill me-1"></i>Good</span>' : '<span class="badge-condition damaged"><i class="bi bi-x-circle-fill me-1"></i>Damaged</span>')
             : '<span class="text-muted">-</span>';
         var dateReturned = i.borrowDateReturned ? formatDate(i.borrowDateReturned) : '<span class="text-muted">-</span>';
         var lastUpdated = i.borrowLastUpdated ? formatDate(i.borrowLastUpdated) : '<span class="text-muted">-</span>';
         
+        // Return button for active items (borrowed/overdue)
+        var canReturn = i.borrowStatus === 'borrowed' || i.borrowStatus === 'overdue';
+        var actionHtml = canReturn 
+            ? '<button class="btn btn-item-return" data-id="' + i.borrowId + '" data-serial="' + i.serialNo + '"><i class="bi bi-box-arrow-in-down me-1"></i>Return</button>'
+            : '<span class="text-muted small">-</span>';
+        
         itemsHtml += '<tr>' +
             '<td><span class="badge bg-secondary">' + (i.equipmentCategory || '-') + '</span></td>' +
             '<td><strong>' + (i.equipmentName || '-') + '</strong></td>' +
             '<td><code class="text-danger">' + (i.serialNo || '-') + '</code></td>' +
             '<td><span class="status-badge-trans ' + statusClass + '">' + i.borrowStatus + '</span></td>' +
-            '<td>' + formatDate(i.borrowDueDate) + '</td>' +
+            '<td>' + formatDate(i.borrowDueDate) + (i.daysOverdue > 0 && i.borrowStatus !== 'returned' ? ' <span class="text-danger small">(' + i.daysOverdue + ' days)</span>' : '') + '</td>' +
             '<td>' + dateReturned + '</td>' +
             '<td>' + conditionHtml + '</td>' +
-            '<td><small class="text-muted">' + lastUpdated + '</small></td>' +
+            '<td>' + actionHtml + '</td>' +
         '</tr>';
     });
 
@@ -699,7 +783,7 @@ function renderTransactionDetails(d) {
                             '<th>Due Date</th>' +
                             '<th>Date Returned</th>' +
                             '<th>Return Condition</th>' +
-                            '<th>Last Updated</th>' +
+                            '<th>Actions</th>' +
                         '</tr>' +
                     '</thead>' +
                     '<tbody>' + (itemsHtml || '<tr><td colspan="8" class="text-center text-muted py-4">No items found</td></tr>') + '</tbody>' +

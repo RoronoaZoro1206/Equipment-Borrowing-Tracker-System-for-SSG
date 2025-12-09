@@ -516,10 +516,11 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
                 await _db.ExecuteNonQueryAsync(query, parameters);
 
                 // If status changed to 'returned', update equipment unit status
+                // Damaged items go to 'for review' status per team agreement
                 if (status == "returned" && oldStatus != "returned")
                 {
                     var unitQuery = @"UPDATE equipment_unit 
-                                      SET eunit_status = CASE WHEN @condition = false THEN 'damaged' ELSE 'available' END
+                                      SET eunit_status = CASE WHEN @condition = false THEN 'for review' ELSE 'available' END
                                       WHERE eunit_id = (SELECT eunit_id FROM borrow_record WHERE borrow_id = @borrowId)";
                     await _db.ExecuteNonQueryAsync(unitQuery, new NpgsqlParameter[]
                     {
