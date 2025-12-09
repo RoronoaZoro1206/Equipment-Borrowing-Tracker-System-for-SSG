@@ -389,17 +389,18 @@ EXCEPTION WHEN OTHERS THEN RAISE NOTICE 'Transaction failed: %', SQLERRM; ROLLBA
 END;
 $$;
 
-2. sp_process_return_transaction: Updates return date, condition, and inventory count atomically.
+2. sp_process_return_boolean: Updates return date, condition, and inventory count atomically using boolean condition.
+   Damaged items (FALSE) go to 'for review' status per group agreement.
 
-CREATE OR REPLACE PROCEDURE sp_process_return_transaction(
-    p_borrow_id INT, p_return_condition VARCHAR(100)
+CREATE OR REPLACE PROCEDURE sp_process_return_boolean(
+    p_borrow_id INT, p_return_condition BOOLEAN, p_user_id INT
 ) LANGUAGE plpgsql AS $$
 DECLARE
     v_eunit_id INT; v_equipment_id INT; v_new_status VARCHAR(50);
 BEGIN
     SELECT b.eunit_id, u.equipment_id INTO v_eunit_id, v_equipment_id
     FROM borrow_record b JOIN equipment_unit u ON b.eunit_id = u.eunit_id
-    WHERE b.borrow_id = p_borrow_id;
+    WHERE b.borrow_id = p_borrow_id AND b.borrow_status IN ('borrowed', 'overdue');
 
     IF p_return_condition = 'Good' THEN v_new_status := 'available';
     ELSE v_new_status := 'for review'; END IF;

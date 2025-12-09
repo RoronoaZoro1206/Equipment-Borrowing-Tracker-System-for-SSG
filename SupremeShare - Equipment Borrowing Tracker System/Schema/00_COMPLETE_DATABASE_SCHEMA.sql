@@ -457,63 +457,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 
--- 3. sp_process_return_transaction
--- Uses VARCHAR condition ('Good' or 'Damaged')
-CREATE OR REPLACE PROCEDURE sp_process_return_transaction(
-    p_borrow_id INT,
-    p_return_condition VARCHAR(100)
-)
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    v_eunit_id INT;
-    v_equipment_id INT;
-    v_new_status VARCHAR(50);
-BEGIN
-    -- Get the Unit ID and Equipment ID from the borrow record
-    SELECT b.eunit_id, u.equipment_id
-    INTO v_eunit_id, v_equipment_id
-    FROM borrow_record b
-    JOIN equipment_unit u ON b.eunit_id = u.eunit_id
-    WHERE b.borrow_id = p_borrow_id;
-
-    -- Determine new unit status based on condition
-    IF p_return_condition = 'Good' THEN
-        v_new_status := 'available';
-    ELSE
-        v_new_status := 'for review';
-    END IF;
-
-    -- Update BORROW_RECORD
-    UPDATE borrow_record
-    SET borrow_date_returned = NOW(),
-        borrow_return_condition = (p_return_condition = 'Good'),
-        borrow_status = 'returned',
-        borrow_last_updated = NOW()
-    WHERE borrow_id = p_borrow_id;
-
-    -- Update EQUIPMENT_UNIT status
-    UPDATE equipment_unit
-    SET eunit_status = v_new_status,
-        eunit_condition = (p_return_condition = 'Good'),
-        eunit_last_updated = NOW()
-    WHERE eunit_id = v_eunit_id;
-
-    -- Update EQUIPMENT total quantity (only if available)
-    IF v_new_status = 'available' THEN
-        UPDATE equipment
-        SET equipment_quantity = equipment_quantity + 1, equipment_last_updated = NOW()
-        WHERE equipment_id = v_equipment_id;
-    END IF;
-
-EXCEPTION
-    WHEN OTHERS THEN
-        RAISE NOTICE 'Return processing failed: %', SQLERRM;
-        RAISE;
-END;
-$$;
-
--- 4. sp_process_return_boolean
+-- 3. sp_process_return_boolean 
 -- For C# app using boolean condition
 CREATE OR REPLACE PROCEDURE sp_process_return_boolean(
     p_borrow_id INT, 
@@ -541,7 +485,8 @@ BEGIN
     IF p_return_condition THEN 
         v_new_status := 'available';
     ELSE 
-        v_new_status := 'maintenance'; 
+        -- Changed from 'maintenance' to 'for review' per group agreement
+        v_new_status := 'for review'; 
     END IF;
 
     -- Update borrow record
@@ -560,6 +505,7 @@ BEGIN
     WHERE eunit_id = v_eunit_id;
 
     -- Increment equipment quantity only if returned in good condition
+    -- Items 'for review' are not counted as available stock
     IF p_return_condition THEN
         UPDATE equipment 
         SET equipment_quantity = equipment_quantity + 1, equipment_last_updated = NOW()
@@ -571,7 +517,7 @@ EXCEPTION WHEN OTHERS THEN
 END;
 $$;
 
--- 5. sp_update_overdue_statuses
+-- 4. sp_update_overdue_statuses
 -- Updates all borrowed items past due date to 'overdue'
 CREATE OR REPLACE PROCEDURE sp_update_overdue_statuses()
 LANGUAGE plpgsql
@@ -587,7 +533,7 @@ EXCEPTION
 END;
 $$;
 
--- 6. sp_mark_as_lost
+-- 5. sp_mark_as_lost
 -- Marks a borrow record as lost (triggers trg_enforce_lost_protocol)
 CREATE OR REPLACE PROCEDURE sp_mark_as_lost(
     p_borrow_id INT,
@@ -602,8 +548,7 @@ BEGIN
 END;
 $$;
 
---7.auto update status in admin status equipment unit
--- Run this in pgAdmin or your PostgreSQL client
+-- 6. sp_update_unit_condition (UPDATED for 'For Review' workflow)
 CREATE OR REPLACE PROCEDURE sp_update_unit_condition(
     p_unit_id INT,
     p_condition BOOLEAN,
@@ -624,10 +569,19 @@ BEGIN
         RAISE EXCEPTION 'Unit not found';
     END IF;
     
-    IF p_condition = TRUE AND v_old_status = 'maintenance' THEN
+    -- LOGIC UPDATE BASED ON CHAT:
+    -- 1. If we are fixing it (TRUE) and it was broken (Maintenance/For Review/Lost), make it Available.
+    IF p_condition = TRUE AND v_old_status IN ('maintenance', 'for review', 'lost') THEN
         v_new_status := 'available';
+
+    -- 2. If we mark it Damaged (FALSE) and it was Available, send to Maintenance.
     ELSIF p_condition = FALSE AND v_old_status = 'available' THEN
         v_new_status := 'maintenance';
+
+    -- 3. [NEW] If it is 'For Review' and we confirm it is Damaged (FALSE), move to Maintenance.
+    ELSIF p_condition = FALSE AND v_old_status = 'for review' THEN
+        v_new_status := 'maintenance';
+        
     ELSE
         v_new_status := v_old_status;
     END IF;

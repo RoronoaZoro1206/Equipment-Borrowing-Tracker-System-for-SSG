@@ -8,6 +8,7 @@ using SupremeShare___Equipment_Borrowing_Tracker_System.Data;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Models;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfaces;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Exceptions;
+using static SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfaces.IEquipmentUnitRepository;
 
 namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Implementations
 {
@@ -176,6 +177,100 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Impleme
             var parameters = new NpgsqlParameter[] { new("@id", eunitId) };
             var result = await _db.ExecuteScalarAsync(query, parameters);
             return Convert.ToInt32(result) > 0;
+        }
+
+        /// <summary>
+        /// Gets all equipment units with status 'for review' (returned damaged, pending admin decision)
+        /// </summary>
+        public async Task<IEnumerable<EquipmentUnitForReview>> GetUnitsForReviewAsync()
+        {
+            string query = @"
+                SELECT 
+                    eu.eunit_id,
+                    eu.equipment_id,
+                    eu.eunit_serial_no,
+                    e.equipment_name,
+                    e.equipment_category,
+                    eu.eunit_last_updated,
+                    br.borrow_date_returned,
+                    s.student_first_name,
+                    s.student_last_name,
+                    s.student_id_number
+                FROM equipment_unit eu
+                JOIN equipment e ON eu.equipment_id = e.equipment_id
+                LEFT JOIN borrow_record br ON br.eunit_id = eu.eunit_id 
+                    AND br.borrow_status = 'returned'
+                LEFT JOIN transaction t ON br.transaction_id = t.transaction_id
+                LEFT JOIN student s ON t.student_id = s.student_id
+                WHERE eu.eunit_status = 'for review'
+                ORDER BY eu.eunit_last_updated DESC";
+
+            var dt = await _db.ExecuteQueryAsync(query);
+            
+            return dt.AsEnumerable().Select(row => new EquipmentUnitForReview
+            {
+                EunitId = Convert.ToInt32(row["eunit_id"]),
+                EquipmentId = Convert.ToInt32(row["equipment_id"]),
+                EunitSerialNo = row["eunit_serial_no"]?.ToString() ?? "",
+                EquipmentName = row["equipment_name"]?.ToString() ?? "",
+                EquipmentCategory = row["equipment_category"]?.ToString() ?? "",
+                EunitLastUpdated = Convert.ToDateTime(row["eunit_last_updated"]),
+                ReturnedDate = row["borrow_date_returned"] != DBNull.Value 
+                    ? Convert.ToDateTime(row["borrow_date_returned"]) 
+                    : DateTime.MinValue,
+                ReturnedByStudentName = row["student_first_name"] != DBNull.Value && row["student_last_name"] != DBNull.Value
+                    ? $"{row["student_first_name"]} {row["student_last_name"]}"
+                    : null,
+                ReturnedByStudentIdNumber = row["student_id_number"]?.ToString()
+            });
+        }
+
+        /// <summary>
+        /// Admin processes a unit review using sp_update_unit_condition.
+        /// TRUE = Good (moves to 'available'), FALSE = Damaged (moves to 'maintenance')
+        /// </summary>
+        public async Task<ReviewProcessResult> ProcessUnitReviewAsync(int unitId, bool condition, int userId)
+        {
+            InputValidator.ValidateId(unitId, "Unit ID");
+            InputValidator.ValidateId(userId, "User ID");
+
+            // Verify unit exists and is in 'for review' status
+            var unit = await GetByIdAsync(unitId);
+            if (unit == null)
+                throw new NotFoundException("Equipment unit not found.");
+
+            if (unit.EunitStatus.ToLower() != "for review")
+                throw new ValidationException($"Unit is not pending review. Current status: {unit.EunitStatus}");
+
+            string query = "CALL sp_update_unit_condition(@p_unit_id, @p_condition, @p_user_id)";
+            var parameters = new NpgsqlParameter[]
+            {
+                new("@p_unit_id", unitId),
+                new("@p_condition", condition),
+                new("@p_user_id", userId)
+            };
+
+            await _db.ExecuteNonQueryAsync(query, parameters);
+
+            var newStatus = condition ? "available" : "maintenance";
+            var result = new ReviewProcessResult
+            {
+                Success = true,
+                NewStatus = newStatus,
+                Message = condition 
+                    ? "Unit marked as Good and is now available for borrowing." 
+                    : "Unit confirmed as Damaged and sent to maintenance."
+            };
+
+            await _auditService.LogActionAsync(userId, "UNIT_REVIEW_PROCESSED",
+                new { UnitId = unitId, SerialNo = unit.EunitSerialNo, OldStatus = "for review" },
+                new { NewStatus = newStatus, Condition = condition ? "Good" : "Damaged" });
+
+            _logger.LogInformation(
+                "Unit review processed: UnitId {UnitId}, SerialNo {SerialNo}, Decision {Decision}, NewStatus {NewStatus}",
+                unitId, unit.EunitSerialNo, condition ? "Good" : "Damaged", newStatus);
+
+            return result;
         }
 
         private void ValidateEquipmentUnit(EquipmentUnit unit)

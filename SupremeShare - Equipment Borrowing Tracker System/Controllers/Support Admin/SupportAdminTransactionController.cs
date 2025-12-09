@@ -376,7 +376,8 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
 
                 var userId = HttpContext.Session.GetInt32("UserId") ?? 1;
 
-                // Call stored procedure
+                // Call stored procedure (sp_process_return_boolean)
+                // If condition is FALSE (Damaged), unit status becomes 'for review'
                 var query = "CALL sp_process_return_boolean(@p_borrow_id, @p_return_condition, @p_user_id)";
                 var parameters = new NpgsqlParameter[]
                 {
@@ -388,16 +389,28 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
                 await _db.ExecuteNonQueryAsync(query, parameters);
 
                 var conditionText = request.Condition ? "Good" : "Damaged";
+                var sentForReview = !request.Condition;
+                
                 await _auditService.LogActionAsync(userId, "RETURN_PROCESSED_BY_SUPPORT", null,
-                    new { request.BorrowId, Condition = conditionText });
+                    new { request.BorrowId, Condition = conditionText, SentForReview = sentForReview });
 
-                _logger.LogInformation("Support Admin return processed: BorrowId {BorrowId}, Condition {Condition}",
-                    request.BorrowId, conditionText);
+                _logger.LogInformation("Support Admin return processed: BorrowId {BorrowId}, Condition {Condition}, SentForReview {SentForReview}",
+                    request.BorrowId, conditionText, sentForReview);
 
                 // Send real-time notification
                 await _notificationService.NotifyStatsUpdated();
 
-                return Json(new { success = true, message = $"Return processed. Condition: {conditionText}" });
+                // Return appropriate message based on condition
+                var message = request.Condition 
+                    ? "Item returned successfully and is now available." 
+                    : "Item returned and sent for review due to reported damage.";
+
+                return Json(new { 
+                    success = true, 
+                    message = message,
+                    sentForReview = sentForReview,
+                    condition = conditionText
+                });
             }
             catch (Exception ex)
             {
@@ -453,6 +466,88 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.SupportA
             {
                 _logger.LogError(ex, "Error updating transaction remarks");
                 return Json(new { success = false, message = "Failed to update remarks" });
+            }
+        }
+
+        // POST: SupportAdmin/Transactions/UpdateBorrowRecord
+        [HttpPost("UpdateBorrowRecord")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateBorrowRecord(
+            [FromForm] int borrowId,
+            [FromForm] string status,
+            [FromForm] DateTime dueDate,
+            [FromForm] DateTime? dateReturned,
+            [FromForm] string? returnCondition)
+        {
+            try
+            {
+                var borrowRecord = await _borrowRepo.GetByIdAsync(borrowId);
+                if (borrowRecord == null)
+                    return Json(new { success = false, message = "Borrow record not found" });
+
+                var userId = HttpContext.Session.GetInt32("UserId") ?? 1;
+                var oldStatus = borrowRecord.BorrowStatus;
+
+                // Parse return condition
+                bool? condition = null;
+                if (!string.IsNullOrEmpty(returnCondition))
+                {
+                    condition = returnCondition.ToLower() == "true";
+                }
+
+                // Build update query
+                var query = @"UPDATE borrow_record 
+                              SET borrow_status = @status,
+                                  borrow_due_date = @dueDate,
+                                  borrow_date_returned = @dateReturned,
+                                  borrow_return_condition = @returnCondition,
+                                  borrow_last_updated = NOW()
+                              WHERE borrow_id = @borrowId";
+
+                var parameters = new NpgsqlParameter[]
+                {
+                    new("@status", status),
+                    new("@dueDate", dueDate),
+                    new("@dateReturned", (object?)dateReturned ?? DBNull.Value),
+                    new("@returnCondition", (object?)condition ?? DBNull.Value),
+                    new("@borrowId", borrowId)
+                };
+
+                await _db.ExecuteNonQueryAsync(query, parameters);
+
+                // If status changed to 'returned', update equipment unit status
+                if (status == "returned" && oldStatus != "returned")
+                {
+                    var unitQuery = @"UPDATE equipment_unit 
+                                      SET eunit_status = CASE WHEN @condition = false THEN 'damaged' ELSE 'available' END
+                                      WHERE eunit_id = (SELECT eunit_id FROM borrow_record WHERE borrow_id = @borrowId)";
+                    await _db.ExecuteNonQueryAsync(unitQuery, new NpgsqlParameter[]
+                    {
+                        new("@condition", (object?)condition ?? DBNull.Value),
+                        new("@borrowId", borrowId)
+                    });
+                }
+
+                // Update parent transaction's last_updated
+                var txnQuery = @"UPDATE transaction 
+                                 SET transaction_last_updated = NOW() 
+                                 WHERE transaction_id = (SELECT transaction_id FROM borrow_record WHERE borrow_id = @borrowId)";
+                await _db.ExecuteNonQueryAsync(txnQuery, new[] { new NpgsqlParameter("@borrowId", borrowId) });
+
+                await _auditService.LogActionAsync(userId, "BORROW_RECORD_UPDATED", null,
+                    new { BorrowId = borrowId, OldStatus = oldStatus, NewStatus = status, DueDate = dueDate, DateReturned = dateReturned, ReturnCondition = condition });
+
+                _logger.LogInformation("Borrow record {BorrowId} updated: Status={Status}, DueDate={DueDate}", borrowId, status, dueDate);
+
+                // Send real-time notification
+                await _notificationService.NotifyStatsUpdated();
+
+                return Json(new { success = true, message = "Borrow record updated successfully" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating borrow record");
+                return Json(new { success = false, message = "Failed to update borrow record: " + ex.Message });
             }
         }
 

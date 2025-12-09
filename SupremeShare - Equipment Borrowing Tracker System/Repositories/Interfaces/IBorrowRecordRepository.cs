@@ -32,8 +32,23 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfa
         Task ProcessBorrowByEquipmentAsync(int studentId, int userId, int equipmentId, DateTime dueDate);
 
         /// <summary>
-        /// Process return using sp_process_return_transaction (VARCHAR condition: 'Good' or 'Damaged')
+        /// Process return using sp_process_return_boolean.
+        /// If condition is FALSE (Damaged), unit status becomes 'for review'.
         /// </summary>
-        Task ProcessReturnWithConditionAsync(int borrowId, string condition);
+        /// <param name="borrowId">The borrow record ID</param>
+        /// <param name="returnCondition">TRUE = Good (available), FALSE = Damaged (for review)</param>
+        /// <param name="userId">The user processing the return</param>
+        /// <returns>A result indicating if the item was sent for review</returns>
+        Task<ReturnProcessResult> ProcessReturnBooleanAsync(int borrowId, bool returnCondition, int userId);
+    }
+
+    /// <summary>
+    /// Result of processing a return operation
+    /// </summary>
+    public class ReturnProcessResult
+    {
+        public bool Success { get; set; }
+        public bool SentForReview { get; set; }
+        public string Message { get; set; } = string.Empty;
     }
 }

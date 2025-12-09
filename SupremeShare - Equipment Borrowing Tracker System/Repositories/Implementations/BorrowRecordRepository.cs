@@ -8,6 +8,7 @@ using SupremeShare___Equipment_Borrowing_Tracker_System.Data;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Models;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfaces;
 using SupremeShare___Equipment_Borrowing_Tracker_System.Exceptions;
+using static SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Interfaces.IBorrowRecordRepository;
 
 namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Implementations
 {
@@ -219,24 +220,38 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Repositories.Impleme
         }
 
         /// <summary>
-        /// Process return using sp_process_return_transaction (VARCHAR condition: 'Good' or 'Damaged')
+        /// Process return using sp_process_return_boolean.
+        /// If condition is FALSE (Damaged), unit status becomes 'for review'.
         /// </summary>
-        public async Task ProcessReturnWithConditionAsync(int borrowId, string condition)
+        public async Task<ReturnProcessResult> ProcessReturnBooleanAsync(int borrowId, bool returnCondition, int userId)
         {
             InputValidator.ValidateId(borrowId, "Borrow ID");
-            
-            if (string.IsNullOrWhiteSpace(condition) || (condition != "Good" && condition != "Damaged"))
-                throw new ValidationException("Condition must be 'Good' or 'Damaged'");
+            InputValidator.ValidateId(userId, "User ID");
 
-            string query = "CALL sp_process_return_transaction(@p_borrow_id, @p_return_condition)";
+            string query = "CALL sp_process_return_boolean(@p_borrow_id, @p_return_condition, @p_user_id)";
             var parameters = new NpgsqlParameter[]
             {
                 new("@p_borrow_id", borrowId),
-                new("@p_return_condition", condition)
+                new("@p_return_condition", returnCondition),
+                new("@p_user_id", userId)
             };
 
             await _db.ExecuteNonQueryAsync(query, parameters);
-            _logger.LogInformation("Return processed via sp_process_return_transaction: BorrowId {BorrowId}, Condition {Condition}", borrowId, condition);
+
+            var result = new ReturnProcessResult
+            {
+                Success = true,
+                SentForReview = !returnCondition, // If damaged (false), it's sent for review
+                Message = returnCondition 
+                    ? "Item returned successfully and is now available." 
+                    : "Item returned and sent for review due to reported damage."
+            };
+
+            _logger.LogInformation(
+                "Return processed via sp_process_return_boolean: BorrowId {BorrowId}, Condition {Condition}, SentForReview {SentForReview}", 
+                borrowId, returnCondition ? "Good" : "Damaged", result.SentForReview);
+
+            return result;
         }
 
         private void ValidateBorrowRecord(BorrowRecord record)

@@ -1,6 +1,7 @@
 -- ============================================
 -- Migration: Create Stored Procedures & Functions
 -- Date: 2025-11-30
+-- Updated: 2025-12-09 (Removed sp_process_return_transaction - unused legacy procedure)
 -- Description: Transaction processing stored routines
 -- Based on: 05_functions.sql, 06_procedures.sql, and md_files documentation
 -- ============================================
@@ -11,7 +12,7 @@
 
 -- 1. fn_get_available_stock
 CREATE OR REPLACE FUNCTION fn_get_available_stock(p_equipment_id INT)
-RETURNS INT AS $$
+RETURNS INT AS $
 DECLARE
     v_available_count INT;
 BEGIN
@@ -21,11 +22,11 @@ BEGIN
       AND eunit_status = 'available';
     RETURN COALESCE(v_available_count, 0);
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 -- 2. fn_count_borrow_status
 CREATE OR REPLACE FUNCTION fn_count_borrow_status(p_status_type VARCHAR)
-RETURNS INT AS $$
+RETURNS INT AS $
 DECLARE
     v_count INT;
 BEGIN
@@ -34,22 +35,22 @@ BEGIN
     WHERE borrow_status = p_status_type;
     RETURN COALESCE(v_count, 0);
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 -- 3. fn_check_student_eligibility
 CREATE OR REPLACE FUNCTION fn_check_student_eligibility(p_student_id INT)
-RETURNS BOOLEAN AS $$
+RETURNS BOOLEAN AS $
 DECLARE
     v_status BOOLEAN;
 BEGIN
     SELECT student_status INTO v_status FROM student WHERE student_id = p_student_id;
     RETURN COALESCE(v_status, FALSE);
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 -- 4. fn_calculate_days_overdue (additional helper)
 CREATE OR REPLACE FUNCTION fn_calculate_days_overdue(p_borrow_id INT)
-RETURNS INT AS $$
+RETURNS INT AS $
 DECLARE
     v_due_date TIMESTAMP;
     v_days INT;
@@ -59,7 +60,7 @@ BEGIN
     v_days := EXTRACT(DAY FROM (NOW() - v_due_date))::INT;
     RETURN GREATEST(v_days, 0);
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 -- =============================================
 -- TRIGGERS (from 05_functions.sql)
@@ -67,7 +68,7 @@ $$ LANGUAGE plpgsql;
 
 -- 5. Trigger: Enforce Lost Protocol
 CREATE OR REPLACE FUNCTION fn_trigger_enforce_lost()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $
 DECLARE
     v_student_id INT;
 BEGIN
@@ -80,7 +81,7 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_enforce_lost_protocol ON borrow_record;
 CREATE TRIGGER trg_enforce_lost_protocol
@@ -89,7 +90,7 @@ FOR EACH ROW EXECUTE FUNCTION fn_trigger_enforce_lost();
 
 -- 6. Trigger: Audit Borrow Status Changes
 CREATE OR REPLACE FUNCTION fn_trigger_audit_borrow_status()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $
 DECLARE
     v_current_user_id INT := 1; -- Default system admin
 BEGIN
@@ -100,7 +101,7 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_audit_borrow_status_change ON borrow_record;
 CREATE TRIGGER trg_audit_borrow_status_change
@@ -109,7 +110,7 @@ FOR EACH ROW EXECUTE FUNCTION fn_trigger_audit_borrow_status();
 
 -- 7. Trigger: Log Timeline Activity
 CREATE OR REPLACE FUNCTION fn_log_timeline_activity()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $
 DECLARE
     v_action_description VARCHAR(255);
     v_current_user_id INT;
@@ -137,7 +138,7 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_log_timeline_activity ON borrow_record;
 CREATE TRIGGER trg_log_timeline_activity
@@ -157,7 +158,7 @@ CREATE OR REPLACE PROCEDURE sp_process_borrow_transaction(
     p_due_date TIMESTAMP
 )
 LANGUAGE plpgsql
-AS $$
+AS $
 DECLARE
     v_transaction_id INT;
     v_eunit_id INT;
@@ -197,7 +198,7 @@ EXCEPTION WHEN OTHERS THEN
     RAISE NOTICE 'Transaction failed: %', SQLERRM;
     RAISE;
 END;
-$$;
+$;
 
 -- 9. sp_process_borrow_by_unit (for C# app that selects specific unit)
 CREATE OR REPLACE PROCEDURE sp_process_borrow_by_unit(
@@ -208,7 +209,7 @@ CREATE OR REPLACE PROCEDURE sp_process_borrow_by_unit(
     OUT p_transaction_id INT,
     OUT p_transaction_code VARCHAR
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql AS $
 DECLARE
     v_equipment_id INT;
 BEGIN
@@ -243,66 +244,16 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN 
     RAISE;
 END;
-$$;
+$;
 
--- 10. sp_process_return_transaction (from 06_procedures.sql)
-CREATE OR REPLACE PROCEDURE sp_process_return_transaction(
-    p_borrow_id INT,
-    p_return_condition VARCHAR(100)
-)
-LANGUAGE plpgsql AS $$
-DECLARE
-    v_eunit_id INT;
-    v_equipment_id INT;
-    v_new_status VARCHAR(50);
-BEGIN
-    -- Get the Unit ID and Equipment ID from the borrow record
-    SELECT b.eunit_id, u.equipment_id INTO v_eunit_id, v_equipment_id
-    FROM borrow_record b
-    JOIN equipment_unit u ON b.eunit_id = u.eunit_id
-    WHERE b.borrow_id = p_borrow_id;
-
-    -- Determine new unit status based on condition
-    IF p_return_condition = 'Good' THEN
-        v_new_status := 'available';
-    ELSE
-        v_new_status := 'for review';
-    END IF;
-
-    -- Update BORROW_RECORD
-    UPDATE borrow_record
-    SET borrow_date_returned = NOW(),
-        borrow_return_condition = (p_return_condition = 'Good'),
-        borrow_status = 'returned',
-        borrow_last_updated = NOW()
-    WHERE borrow_id = p_borrow_id;
-
-    -- Update EQUIPMENT_UNIT status
-    UPDATE equipment_unit
-    SET eunit_status = v_new_status,
-        eunit_condition = (p_return_condition = 'Good'),
-        eunit_last_updated = NOW()
-    WHERE eunit_id = v_eunit_id;
-
-    -- Update EQUIPMENT total quantity (only if available)
-    IF v_new_status = 'available' THEN
-        UPDATE equipment SET equipment_quantity = equipment_quantity + 1, equipment_last_updated = NOW()
-        WHERE equipment_id = v_equipment_id;
-    END IF;
-
-EXCEPTION WHEN OTHERS THEN
-    RAISE NOTICE 'Return processing failed: %', SQLERRM;
-    RAISE;
-END;
-$$;
-
--- 11. sp_process_return_boolean (for C# app using boolean condition)
+-- 10. sp_process_return_boolean (for C# app using boolean condition)
+-- Damaged items (FALSE) go to 'for review' status per group agreement
 CREATE OR REPLACE PROCEDURE sp_process_return_boolean(
     p_borrow_id INT, 
     p_return_condition BOOLEAN,
     p_user_id INT
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql AS $
 DECLARE
     v_eunit_id INT; 
     v_equipment_id INT; 
@@ -322,7 +273,8 @@ BEGIN
     IF p_return_condition THEN 
         v_new_status := 'available';
     ELSE 
-        v_new_status := 'maintenance'; 
+        -- Changed from 'maintenance' to 'for review' per group agreement
+        v_new_status := 'for review'; 
     END IF;
 
     -- Update borrow record
@@ -341,6 +293,7 @@ BEGIN
     WHERE eunit_id = v_eunit_id;
 
     -- Increment equipment quantity only if returned in good condition
+    -- Items 'for review' are not counted as available stock
     IF p_return_condition THEN
         UPDATE equipment SET equipment_quantity = equipment_quantity + 1, equipment_last_updated = NOW()
         WHERE equipment_id = v_equipment_id;
@@ -349,11 +302,11 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN 
     RAISE;
 END;
-$$;
+$;
 
--- 12. sp_update_overdue_statuses (from 06_procedures.sql)
+-- 11. sp_update_overdue_statuses (from 06_procedures.sql)
 CREATE OR REPLACE PROCEDURE sp_update_overdue_statuses()
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql AS $
 BEGIN
     UPDATE borrow_record
     SET borrow_status = 'overdue', borrow_last_updated = NOW()
@@ -361,18 +314,79 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN
     RAISE;
 END;
-$$;
+$;
 
--- 13. sp_mark_as_lost
+-- 12. sp_mark_as_lost
 CREATE OR REPLACE PROCEDURE sp_mark_as_lost(
     p_borrow_id INT,
     p_user_id INT
 )
-LANGUAGE plpgsql AS $$
+LANGUAGE plpgsql AS $
 BEGIN
     UPDATE borrow_record 
     SET borrow_status = 'lost', borrow_last_updated = NOW()
     WHERE borrow_id = p_borrow_id;
     -- Trigger trg_enforce_lost_protocol will handle blocking student and updating unit status
 END;
-$$;
+$;
+
+-- 13. sp_update_unit_condition (UPDATED for 'For Review' workflow)
+CREATE OR REPLACE PROCEDURE sp_update_unit_condition(
+    p_unit_id INT,
+    p_condition BOOLEAN,
+    p_user_id INT
+)
+LANGUAGE plpgsql AS $
+DECLARE
+    v_old_condition BOOLEAN;
+    v_old_status VARCHAR(50);
+    v_new_status VARCHAR(50);
+BEGIN
+    -- Get current unit state
+    SELECT eunit_condition, eunit_status 
+    INTO v_old_condition, v_old_status
+    FROM equipment_unit 
+    WHERE eunit_id = p_unit_id;
+    
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Unit not found';
+    END IF;
+    
+    -- LOGIC UPDATE BASED ON CHAT:
+    -- 1. If we are fixing it (TRUE) and it was broken (Maintenance/For Review/Lost), make it Available.
+    IF p_condition = TRUE AND v_old_status IN ('maintenance', 'for review', 'lost') THEN
+        v_new_status := 'available';
+
+    -- 2. If we mark it Damaged (FALSE) and it was Available, send to Maintenance.
+    ELSIF p_condition = FALSE AND v_old_status = 'available' THEN
+        v_new_status := 'maintenance';
+
+    -- 3. [NEW] If it is 'For Review' and we confirm it is Damaged (FALSE), move to Maintenance.
+    ELSIF p_condition = FALSE AND v_old_status = 'for review' THEN
+        v_new_status := 'maintenance';
+        
+    ELSE
+        v_new_status := v_old_status;
+    END IF;
+    
+    -- Update the unit
+    UPDATE equipment_unit 
+    SET eunit_condition = p_condition,
+        eunit_status = v_new_status,
+        eunit_last_updated = NOW()
+    WHERE eunit_id = p_unit_id;
+    
+    -- Log the change
+    INSERT INTO audit_log (user_id, audit_action, audit_old_data, audit_new_data, audit_logged_at)
+    VALUES (
+        p_user_id,
+        'Unit condition updated for ID ' || p_unit_id,
+        'Condition: ' || CASE WHEN v_old_condition THEN 'Good' ELSE 'Damaged' END || ', Status: ' || v_old_status,
+        'Condition: ' || CASE WHEN p_condition THEN 'Good' ELSE 'Damaged' END || ', Status: ' || v_new_status,
+        NOW()
+    );
+    
+EXCEPTION WHEN OTHERS THEN 
+    RAISE;
+END;
+$;

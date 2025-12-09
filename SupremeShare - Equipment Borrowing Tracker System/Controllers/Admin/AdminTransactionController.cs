@@ -321,23 +321,35 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                 var parameters = new NpgsqlParameter[]
                 {
                     new("@p_borrow_id", request.BorrowId),
-                    new("@p_return_condition", request.Condition), // true = Good, false = Damaged
+                    new("@p_return_condition", request.Condition), // true = Good, false = Damaged (for review)
                     new("@p_user_id", userId)
                 };
 
                 await _db.ExecuteNonQueryAsync(query, parameters);
 
                 var conditionText = request.Condition ? "Good" : "Damaged";
+                var sentForReview = !request.Condition;
+                
                 await _auditService.LogActionAsync(userId, "RETURN_PROCESSED", null,
-                    new { request.BorrowId, Condition = conditionText });
+                    new { request.BorrowId, Condition = conditionText, SentForReview = sentForReview });
 
-                _logger.LogInformation("Return processed: BorrowId {BorrowId}, Condition {Condition}",
-                    request.BorrowId, conditionText);
+                _logger.LogInformation("Return processed: BorrowId {BorrowId}, Condition {Condition}, SentForReview {SentForReview}",
+                    request.BorrowId, conditionText, sentForReview);
 
                 // Send real-time notification
                 await _notificationService.NotifyStatsUpdated();
 
-                return Json(new { success = true, message = $"Return processed. Condition: {conditionText}" });
+                // Return appropriate message based on condition
+                var message = request.Condition 
+                    ? "Item returned successfully and is now available." 
+                    : "Item returned and sent for review due to reported damage.";
+
+                return Json(new { 
+                    success = true, 
+                    message = message,
+                    sentForReview = sentForReview,
+                    condition = conditionText
+                });
             }
             catch (Exception ex)
             {

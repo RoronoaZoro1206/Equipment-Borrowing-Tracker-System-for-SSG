@@ -28,10 +28,10 @@ Student ID → Validate Student (fn_check_student_eligibility)
 
 RETURN FLOW:
 Scan/Search Borrow Record → Verify Student
-                         → Check Condition (Good/Damaged)
-                         → sp_process_return_transaction
+                         → Check Condition (Good/Damaged checkbox)
+                         → sp_process_return_boolean
                          → Unit Status: 'borrowed' → 'available'/'for review'
-                         → If Damaged: eunit_condition = FALSE
+                         → If Damaged: eunit_condition = FALSE, sent for Admin review
                          → Audit Log Entry
 
 LOST PROTOCOL (Trigger):

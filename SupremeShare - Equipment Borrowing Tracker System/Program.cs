@@ -85,14 +85,6 @@ builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 builder.Services.AddScoped<IDashboardNotificationService, DashboardNotificationService>();
 
 // ===========================================
-// Register Advanced Feature Services (Phase 8)
-// ===========================================
-builder.Services.AddScoped<IBulkOperationsService, BulkOperationsService>();
-builder.Services.AddScoped<IEquipmentConditionTrackingService, EquipmentConditionTrackingService>();
-builder.Services.AddScoped<ILostItemProtocolService, LostItemProtocolService>();
-builder.Services.AddScoped<IExportService, ExportService>();
-
-// ===========================================
 // Register Email Service
 // ===========================================
 builder.Services.AddScoped<IEmailService, EmailService>();
