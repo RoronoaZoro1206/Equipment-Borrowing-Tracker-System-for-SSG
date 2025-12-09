@@ -946,5 +946,24 @@ function showToast(message, type) {
         style: { background: bgColors[type] || bgColors.info, borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }
     }).showToast();
 }
+
+// SignalR real-time updates listener
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'transaction' || e.detail.type === 'all' || e.detail.type === 'stats' || e.detail.type === 'overdue') {
+        console.log('[SupportAdmin Transactions] SignalR update received:', e.detail.type);
+        loadStats();
+        if (transactionsTable) {
+            transactionsTable.ajax.reload(null, false);
+        }
+    }
+});
+
+// Expose loadTransactions globally for SignalR client compatibility
+window.loadTransactions = function() {
+    loadStats();
+    if (transactionsTable) {
+        transactionsTable.ajax.reload(null, false);
+    }
+};
 </script>
 }

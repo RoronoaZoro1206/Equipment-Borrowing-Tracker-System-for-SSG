@@ -379,5 +379,24 @@ function showToast(message, type) {
     var bgColors = { success: 'linear-gradient(135deg, #22c55e, #16a34a)', error: 'linear-gradient(135deg, #ef4444, #dc2626)', warning: 'linear-gradient(135deg, #f59e0b, #d97706)', info: 'linear-gradient(135deg, #8b0000, #5c0000)' };
     Toastify({ text: message, duration: 3000, gravity: "top", position: "right", style: { background: bgColors[type] || bgColors.info, borderRadius: '10px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' } }).showToast();
 }
+
+// SignalR global event listener (for compatibility with signalr-client.js)
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'equipment' || e.detail.type === 'all' || e.detail.type === 'stats') {
+        console.log('[SupportAdmin Equipment] SignalR update received:', e.detail.type);
+        loadStats();
+        if (equipmentTable) {
+            equipmentTable.ajax.reload(null, false);
+        }
+    }
+});
+
+// Expose loadEquipment globally for SignalR client compatibility
+window.loadEquipment = function() {
+    loadStats();
+    if (equipmentTable) {
+        equipmentTable.ajax.reload(null, false);
+    }
+};
 </script>
 }

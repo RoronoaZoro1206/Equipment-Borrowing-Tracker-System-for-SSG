@@ -658,5 +658,22 @@ function showToast(message, type) {
         }
     }).showToast();
 }
+
+// SignalR real-time updates listener
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'student' || e.detail.type === 'all' || e.detail.type === 'stats') {
+        console.log('[SupportAdmin Students] SignalR update received:', e.detail.type);
+        if (studentsTable) {
+            studentsTable.ajax.reload(null, false);
+        }
+    }
+});
+
+// Expose loadStudents globally for SignalR client compatibility
+window.loadStudents = function() {
+    if (studentsTable) {
+        studentsTable.ajax.reload(null, false);
+    }
+};
 </script>
 }

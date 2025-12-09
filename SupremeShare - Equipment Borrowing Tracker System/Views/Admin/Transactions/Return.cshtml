@@ -1232,5 +1232,17 @@ function showToast(message, type) {
         }
     }).showToast();
 }
+
+// SignalR real-time updates listener - refresh transaction data when changes occur
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'transaction' || e.detail.type === 'equipment' || e.detail.type === 'all' || e.detail.type === 'overdue') {
+        console.log('[Admin Return Page] SignalR update received:', e.detail.type);
+        // Refresh the transaction search if one is active
+        var searchInput = $('#searchTransaction').val();
+        if (searchInput && typeof searchTransaction === 'function') {
+            searchTransaction();
+        }
+    }
+});
 </script>
 }

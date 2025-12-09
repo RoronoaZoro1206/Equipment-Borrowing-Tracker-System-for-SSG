@@ -528,5 +528,24 @@ function refreshData() {
     unitsTable.ajax.reload();
     loadStats();
 }
+
+// SignalR real-time updates listener
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'equipment' || e.detail.type === 'transaction' || e.detail.type === 'all' || e.detail.type === 'stats') {
+        console.log('[Equipment Units] SignalR update received:', e.detail.type);
+        loadStats();
+        if (unitsTable) {
+            unitsTable.ajax.reload(null, false);
+        }
+    }
+});
+
+// Expose refreshTable globally for SignalR client compatibility
+window.refreshTable = function() {
+    loadStats();
+    if (unitsTable) {
+        unitsTable.ajax.reload(null, false);
+    }
+};
 </script>
 }

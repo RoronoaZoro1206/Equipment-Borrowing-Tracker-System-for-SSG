@@ -899,5 +899,24 @@ function showToast(message, type) {
         }
     }).showToast();
 }
+
+// SignalR real-time updates listener
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'transaction' || e.detail.type === 'all' || e.detail.type === 'stats' || e.detail.type === 'overdue') {
+        console.log('[Transactions] SignalR update received:', e.detail.type);
+        loadStats();
+        if (transactionsTable) {
+            transactionsTable.ajax.reload(null, false);
+        }
+    }
+});
+
+// Expose loadTransactions globally for SignalR client compatibility
+window.loadTransactions = function() {
+    loadStats();
+    if (transactionsTable) {
+        transactionsTable.ajax.reload(null, false);
+    }
+};
 </script>
 }

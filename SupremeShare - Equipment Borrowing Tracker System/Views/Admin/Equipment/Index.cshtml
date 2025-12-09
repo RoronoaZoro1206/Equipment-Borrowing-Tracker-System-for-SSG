@@ -1366,5 +1366,24 @@ function showToast(message, type) {
         }
     }).showToast();
 }
+
+// SignalR global event listener (for compatibility with signalr-client.js)
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'equipment' || e.detail.type === 'all' || e.detail.type === 'stats') {
+        console.log('[Equipment] SignalR update received:', e.detail.type);
+        loadStats();
+        if (equipmentTable) {
+            equipmentTable.ajax.reload(null, false);
+        }
+    }
+});
+
+// Expose loadEquipment globally for SignalR client compatibility
+window.loadEquipment = function() {
+    loadStats();
+    if (equipmentTable) {
+        equipmentTable.ajax.reload(null, false);
+    }
+};
 </script>
 }

@@ -238,6 +238,19 @@
             connection.start().catch(err => console.error('SignalR Error:', err));
         }
 
+        // SignalR global event listener (for compatibility with signalr-client.js)
+        document.addEventListener('signalr:update', function(e) {
+            if (e.detail.type === 'all' || e.detail.type === 'stats' || e.detail.type === 'transaction' || e.detail.type === 'overdue') {
+                console.log('[Dashboard] SignalR update received:', e.detail.type);
+                loadDashboardStats();
+                loadChartData();
+                loadRecentActivity();
+            }
+        });
+
+        // Expose loadDashboardStats globally for SignalR client compatibility
+        window.loadDashboardStats = loadDashboardStats;
+
         function loadDashboardStats() {
             $.get('/Admin/Reports/GetDashboardStats', function(res) {
                 if (res.success) {

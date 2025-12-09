@@ -384,5 +384,16 @@ function exportToExcel() {
     
     Toastify({ text: 'Report exported successfully!', duration: 3000, gravity: "top", position: "right", style: { background: 'linear-gradient(135deg, #22c55e, #16a34a)', borderRadius: '10px' } }).showToast();
 }
+
+// SignalR real-time updates listener
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'overdue' || e.detail.type === 'transaction' || e.detail.type === 'all' || e.detail.type === 'stats') {
+        console.log('[Overdue Report] SignalR update received:', e.detail.type);
+        loadOverdueData();
+    }
+});
+
+// Expose loadOverdueItems globally for SignalR client compatibility
+window.loadOverdueItems = loadOverdueData;
 </script>
 }

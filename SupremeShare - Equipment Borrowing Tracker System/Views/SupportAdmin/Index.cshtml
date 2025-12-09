@@ -272,18 +272,90 @@
 @section Scripts {
 <script>
 let statusModal, detailsModal;
+let signalRConnection;
 
 $(document).ready(function() {
     statusModal = new bootstrap.Modal('#statusRecordsModal');
     detailsModal = new bootstrap.Modal('#transactionDetailsModal');
     
     loadDashboardStats();
+    setupSignalR();
     
     // Enter key for search
     $('#transactionCode').keypress(function(e) {
         if (e.which == 13) searchTransaction();
     });
 });
+
+function setupSignalR() {
+    signalRConnection = new signalR.HubConnectionBuilder()
+        .withUrl("/hubs/dashboard")
+        .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+        .build();
+
+    signalRConnection.on("StatsUpdated", function() {
+        console.log('[SupportAdmin Dashboard] Stats updated');
+        loadDashboardStats();
+    });
+
+    signalRConnection.on("NewTransaction", function(data) {
+        console.log('[SupportAdmin Dashboard] New transaction:', data);
+        loadDashboardStats();
+        Toast.info('New transaction: ' + (data.transactionCode || 'Unknown'));
+    });
+
+    signalRConnection.on("OverdueAlert", function(count) {
+        if (count > 0) {
+            Toast.warning('⚠️ ' + count + ' item(s) are now overdue!');
+        }
+        loadDashboardStats();
+    });
+
+    signalRConnection.start()
+        .then(function() {
+            updateConnectionStatus(true);
+            console.log('[SupportAdmin Dashboard] SignalR connected');
+        })
+        .catch(function(err) {
+            updateConnectionStatus(false);
+            console.error('[SupportAdmin Dashboard] SignalR error:', err);
+        });
+
+    signalRConnection.onreconnecting(function() {
+        updateConnectionStatus(false);
+    });
+
+    signalRConnection.onreconnected(function() {
+        updateConnectionStatus(true);
+        loadDashboardStats();
+    });
+
+    signalRConnection.onclose(function() {
+        updateConnectionStatus(false);
+    });
+}
+
+function updateConnectionStatus(connected) {
+    var badge = document.getElementById('connectionStatus');
+    if (connected) {
+        badge.innerHTML = '<i class="bi bi-wifi"></i> Real-time Connected';
+        badge.className = 'connection-badge connected';
+    } else {
+        badge.innerHTML = '<i class="bi bi-wifi-off"></i> Reconnecting...';
+        badge.className = 'connection-badge disconnected';
+    }
+}
+
+// SignalR global event listener (for compatibility with signalr-client.js)
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'all' || e.detail.type === 'stats' || e.detail.type === 'transaction' || e.detail.type === 'overdue') {
+        console.log('[SupportAdmin Dashboard] SignalR update received:', e.detail.type);
+        loadDashboardStats();
+    }
+});
+
+// Expose loadDashboardStats globally for SignalR client compatibility
+window.loadDashboardStats = loadDashboardStats;
 
 function loadDashboardStats() {
     $.get('/SupportAdmin/Dashboard/GetStats', function(res) {

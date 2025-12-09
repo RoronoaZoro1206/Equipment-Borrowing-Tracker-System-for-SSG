@@ -742,5 +742,16 @@ $('#resetPasswordForm').submit(function(e) {
         }
     });
 });
+
+// SignalR real-time updates listener
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'user' || e.detail.type === 'all' || e.detail.type === 'stats') {
+        console.log('[Users] SignalR update received:', e.detail.type);
+        loadUsers();
+    }
+});
+
+// Expose loadUsers globally for SignalR client compatibility
+window.loadUsers = loadUsers;
 </script>
 }

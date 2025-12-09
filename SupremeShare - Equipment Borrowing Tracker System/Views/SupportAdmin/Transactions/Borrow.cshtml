@@ -2363,5 +2363,26 @@ function openEditStudentModal(id) {
         Swal.fire({ title: 'Error', text: 'Failed to load student data', icon: 'error', confirmButtonColor: '#8B0000' });
     });
 }
+
+// SignalR real-time updates listener - refresh equipment availability when changes occur
+document.addEventListener('signalr:update', function(e) {
+    if (e.detail.type === 'equipment' || e.detail.type === 'transaction' || e.detail.type === 'all') {
+        console.log('[SupportAdmin Borrow Page] SignalR update received:', e.detail.type);
+        // Refresh available units if equipment is selected
+        const equipmentId = $('#equipmentSelect').val();
+        if (equipmentId) {
+            loadAvailableUnits();
+        }
+        // Refresh students table for status updates
+        if (studentsTable) {
+            studentsTable.ajax.reload(null, false);
+        }
+    }
+    if (e.detail.type === 'student' || e.detail.type === 'all') {
+        if (studentsTable) {
+            studentsTable.ajax.reload(null, false);
+        }
+    }
+});
 </script>
 }
