@@ -60,33 +60,6 @@
         </div>
     </div>
 
-    <!-- Filters -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Filter by Action</label>
-                    <select id="actionFilter" class="form-select">
-                        <option value="">All Actions</option>
-                        <option value="BORROW">Borrow Transactions</option>
-                        <option value="RETURN">Return Transactions</option>
-                        <option value="Status Changed">Status Changes</option>
-                        <option value="USER">User Actions</option>
-                        <option value="STUDENT">Student Actions</option>
-                        <option value="EQUIPMENT">Equipment Actions</option>
-                        <option value="LOGIN">Login Events</option>
-                        <option value="lost">Lost Items</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 d-flex align-items-end">
-            <button class="btn btn-primary w-100" onclick="auditTable.ajax.reload()">
-                <i class="bi bi-funnel me-1"></i>Apply Filter
-            </button>
-        </div>
-    </div>
-
     <!-- Audit Log Table -->
     <div class="audit-card">
         <div class="audit-card-header">
@@ -408,10 +381,32 @@
 .badge-action.unit { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); color: white; }
 .badge-action.default { background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%); color: white; }
 
-/* Data Preview */
-.data-preview { font-family: monospace; font-size: 0.75rem; color: #6b7280; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.data-preview.old { color: #ef4444; }
-.data-preview.new { color: #22c55e; }
+/* Data Cell */
+.data-cell {
+    font-size: 0.8rem;
+    line-height: 1.5;
+    max-width: 220px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.data-cell.old {
+    background: rgba(239, 68, 68, 0.06);
+    border-left: 3px solid #ef4444;
+}
+
+.data-cell.new {
+    background: rgba(34, 197, 94, 0.06);
+    border-left: 3px solid #22c55e;
+}
+
+.data-cell .data-key {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
 
 /* View Button */
 .btn-view-audit {
@@ -492,10 +487,44 @@
 
 .audit-data-body pre {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     white-space: pre-wrap;
-    word-break: break-all;
+    word-break: break-word;
     color: var(--text-dark);
+    font-family: inherit;
+}
+
+/* JSON Formatting */
+.json-row {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.json-row:last-child {
+    border-bottom: none;
+}
+
+.json-key {
+    font-weight: 600;
+    color: var(--primary-red);
+    font-size: 0.8rem;
+}
+
+.json-value, .json-string {
+    color: #059669;
+}
+
+.json-number {
+    color: #2563eb;
+}
+
+.json-bool {
+    color: #7c3aed;
+}
+
+.json-null {
+    color: #9ca3af;
+    font-style: italic;
 }
 
 /* Responsive */
@@ -581,13 +610,13 @@ function initAuditTable() {
             { 
                 data: 'oldData',
                 render: function(data) {
-                    return '<span class="data-preview old" title="' + escapeHtml(data || '-') + '">' + truncate(data, 30) + '</span>';
+                    return '<div class="data-cell old">' + formatDataPreview(data) + '</div>';
                 }
             },
             { 
                 data: 'newData',
                 render: function(data) {
-                    return '<span class="data-preview new" title="' + escapeHtml(data || '-') + '">' + truncate(data, 30) + '</span>';
+                    return '<div class="data-cell new">' + formatDataPreview(data) + '</div>';
                 }
             },
             {
@@ -625,6 +654,48 @@ function getActionClass(action) {
 function truncate(str, len) {
     if (!str) return '-';
     return str.length > len ? str.substring(0, len) + '...' : str;
+}
+
+function formatDataPreview(data) {
+    if (!data || data === '-' || data === 'null') return '<span class="text-muted">-</span>';
+    
+    try {
+        var obj = JSON.parse(data);
+        var keys = Object.keys(obj);
+        if (keys.length === 0) return '<span class="text-muted">-</span>';
+        
+        // Show first 2-3 key-value pairs in a clean format
+        var preview = [];
+        var maxItems = Math.min(keys.length, 2);
+        for (var i = 0; i < maxItems; i++) {
+            var key = keys[i];
+            var val = obj[key];
+            if (val !== null && val !== undefined && val !== '') {
+                var displayKey = formatKeyName(key);
+                var displayVal = typeof val === 'object' ? JSON.stringify(val) : String(val);
+                if (displayVal.length > 20) displayVal = displayVal.substring(0, 20) + '...';
+                preview.push('<span class="data-key">' + displayKey + ':</span> ' + escapeHtml(displayVal));
+            }
+        }
+        if (keys.length > maxItems) {
+            preview.push('<span class="text-muted">+' + (keys.length - maxItems) + ' more</span>');
+        }
+        return preview.length > 0 ? preview.join('<br>') : '<span class="text-muted">-</span>';
+    } catch (e) {
+        // Not JSON, show truncated string
+        return escapeHtml(truncate(data, 40));
+    }
+}
+
+function formatKeyName(key) {
+    // Convert camelCase or snake_case to readable format
+    return key
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/_/g, ' ')
+        .replace(/^\s/, '')
+        .split(' ')
+        .map(function(w) { return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase(); })
+        .join(' ');
 }
 
 function escapeHtml(str) {
@@ -671,14 +742,20 @@ function setupFilterHandlers() {
         showToast('Filters cleared', 'info');
     });
     
-    // View details
+    // View details - use .attr() instead of .data() to get raw strings (jQuery auto-parses JSON in .data())
     $(document).on('click', '.btn-view-audit', function() {
-        var data = $(this).data();
-        $('#detailTimestamp').text(data.timestamp);
-        $('#detailUser').text(data.user);
-        $('#detailAction').html('<span class="badge-action ' + getActionClass(data.action) + '">' + data.action + '</span>');
-        $('#detailOldData').text(formatJson(data.old));
-        $('#detailNewData').text(formatJson(data.new));
+        var $btn = $(this);
+        var timestamp = $btn.attr('data-timestamp');
+        var user = $btn.attr('data-user');
+        var action = $btn.attr('data-action');
+        var oldData = $btn.attr('data-old');
+        var newData = $btn.attr('data-new');
+        
+        $('#detailTimestamp').text(timestamp || '-');
+        $('#detailUser').text(user || '-');
+        $('#detailAction').html('<span class="badge-action ' + getActionClass(action) + '">' + (action || '-') + '</span>');
+        $('#detailOldData').html(formatJson(oldData));
+        $('#detailNewData').html(formatJson(newData));
         new bootstrap.Modal('#detailModal').show();
     });
 }
@@ -687,10 +764,45 @@ function formatJson(str) {
     if (!str || str === '-') return '-';
     try {
         var obj = JSON.parse(str);
-        return JSON.stringify(obj, null, 2);
+        return formatJsonHtml(obj);
     } catch (e) {
-        return str;
+        return escapeHtml(str);
     }
+}
+
+function formatJsonHtml(obj, indent) {
+    indent = indent || 0;
+    var html = '';
+    var padding = '  '.repeat(indent);
+    
+    if (typeof obj !== 'object' || obj === null) {
+        return '<span class="json-value">' + escapeHtml(String(obj)) + '</span>';
+    }
+    
+    var keys = Object.keys(obj);
+    keys.forEach(function(key, idx) {
+        var val = obj[key];
+        var displayKey = formatKeyName(key);
+        
+        html += '<div class="json-row">';
+        html += '<span class="json-key">' + displayKey + ':</span> ';
+        
+        if (typeof val === 'object' && val !== null) {
+            html += '<span class="json-value">' + escapeHtml(JSON.stringify(val)) + '</span>';
+        } else if (val === null || val === undefined) {
+            html += '<span class="json-null">null</span>';
+        } else if (typeof val === 'boolean') {
+            html += '<span class="json-bool">' + val + '</span>';
+        } else if (typeof val === 'number') {
+            html += '<span class="json-number">' + val + '</span>';
+        } else {
+            html += '<span class="json-string">' + escapeHtml(String(val)) + '</span>';
+        }
+        
+        html += '</div>';
+    });
+    
+    return html || '<span class="text-muted">No data</span>';
 }
 
 function setupModalCleanup() {

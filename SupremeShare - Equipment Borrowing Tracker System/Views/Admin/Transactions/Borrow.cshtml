@@ -222,45 +222,55 @@
                             <span><i class="bi bi-box-seam me-2"></i>Borrowing Information</span>
                         </div>
 
-                        <!-- Equipment Selection -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-4">
-                                <label>Equipment Category <span class="text-danger">*</span></label>
-                                <select id="equipmentCategory">
-                                    <option value="">Select Category</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label>Equipment <span class="text-danger">*</span></label>
-                                <select id="equipmentSelect" disabled>
-                                    <option value="">Select Equipment</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label>Serial No. <span class="text-danger">*</span></label>
-                                <select id="serialNoSelect" name="UnitId" disabled>
-                                    <option value="">Select Serial No.</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-4">
-                                <label>Due Date <span class="text-danger">*</span></label>
-                                <input type="datetime-local" name="DueDate" id="dueDate" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label>Quick Due Date</label>
-                                <div class="quick-date-btns">
-                                    <button type="button" class="btn-quick" data-days="1">1 Day</button>
-                                    <button type="button" class="btn-quick" data-days="3">3 Days</button>
-                                    <button type="button" class="btn-quick" data-days="7">1 Week</button>
+                        <!-- Equipment Selection - Modern Styled -->
+                        <div class="equipment-selection-card">
+                            <div class="equipment-selection-grid">
+                                <div class="equipment-field">
+                                    <label class="equipment-label">Equipment Category <span class="text-danger">*</span></label>
+                                    <div class="select-wrapper">
+                                        <select id="equipmentCategory" class="equipment-select">
+                                            <option value="">Select Category</option>
+                                        </select>
+                                        <i class="bi bi-chevron-down select-icon"></i>
+                                    </div>
+                                </div>
+                                <div class="equipment-field">
+                                    <label class="equipment-label">Equipment <span class="text-danger">*</span></label>
+                                    <div class="select-wrapper">
+                                        <select id="equipmentSelect" class="equipment-select" disabled>
+                                            <option value="">Select Equipment</option>
+                                        </select>
+                                        <i class="bi bi-chevron-down select-icon"></i>
+                                    </div>
+                                </div>
+                                <div class="equipment-field">
+                                    <label class="equipment-label">Serial No. <span class="text-danger">*</span></label>
+                                    <div class="select-wrapper">
+                                        <select id="serialNoSelect" name="UnitId" class="equipment-select" disabled>
+                                            <option value="">Select Serial No.</option>
+                                        </select>
+                                        <i class="bi bi-chevron-down select-icon"></i>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button type="button" id="btnAddItem" class="btn btn-primary-red w-100" disabled>
-                                    <i class="bi bi-plus-circle me-1"></i>Add to List
-                                </button>
+                            <div class="equipment-selection-grid mt-3">
+                                <div class="equipment-field">
+                                    <label class="equipment-label">Due Date <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" name="DueDate" id="dueDate" class="equipment-input" required>
+                                </div>
+                                <div class="equipment-field">
+                                    <label class="equipment-label">Quick Due Date</label>
+                                    <div class="quick-date-btns">
+                                        <button type="button" class="btn-quick" data-days="1">1 Day</button>
+                                        <button type="button" class="btn-quick" data-days="3">3 Days</button>
+                                        <button type="button" class="btn-quick" data-days="7">1 Week</button>
+                                    </div>
+                                </div>
+                                <div class="equipment-field d-flex align-items-end">
+                                    <button type="button" id="btnAddItem" class="btn btn-add-item w-100" disabled>
+                                        <i class="bi bi-plus-circle me-1"></i>Add to List
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -272,17 +282,13 @@
                                         <th>Equipment Category</th>
                                         <th>Equipment</th>
                                         <th>Serial No.</th>
-                                        <th>Current Status</th>
                                         <th>Due Date</th>
-                                        <th>Date Returned</th>
-                                        <th>Return Condition</th>
-                                        <th>Last Updated</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr class="empty-row">
-                                        <td colspan="9" class="text-center py-4">
+                                        <td colspan="5" class="text-center py-4">
                                             <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
                                             <p class="text-muted mb-0 mt-2">No items added yet</p>
                                         </td>
@@ -371,11 +377,7 @@
                                         <th>Equipment Category</th>
                                         <th>Equipment</th>
                                         <th>Serial No.</th>
-                                        <th>Current Status</th>
                                         <th>Due Date</th>
-                                        <th>Date Returned</th>
-                                        <th>Return Condition</th>
-                                        <th>Last Updated</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -529,26 +531,27 @@
         <div class="modal-content success-modal-content">
             <div class="modal-body text-center py-5">
                 <div class="success-icon-wrapper">
-                    <i class="bi bi-check-circle-fill success-icon"></i>
+                    <i class="bi bi-check-circle-fill"></i>
                 </div>
-                <h4 class="success-title mt-4">Transaction Successful!</h4>
-                <p class="success-subtitle text-muted">The borrowing transaction has been processed.</p>
+                <h4 class="success-title mt-4">Submitted Successfully!</h4>
+                <p class="success-subtitle text-muted mb-4">The borrowing transaction has been processed.</p>
                 
                 <div class="transaction-code-box">
-                    <label class="code-label">Transaction Code</label>
+                    <span class="code-label">Transaction Code</span>
                     <div class="code-display">
                         <span id="successTransactionCode" class="code-value">-</span>
-                        <button type="button" class="btn btn-copy-code" id="btnCopyCode" title="Copy to clipboard">
+                        <button type="button" class="btn-copy-code" id="btnCopyCode" title="Copy to clipboard">
                             <i class="bi bi-clipboard"></i>
                         </button>
                     </div>
+                    <small class="text-muted mt-2 d-block">Click the button to copy the code</small>
                 </div>
-                
+
                 <div class="success-actions mt-4">
-                    <button type="button" class="btn btn-outline-primary btn-action-success" id="btnSendEmail">
+                    <button type="button" class="btn btn-send-email" id="btnSendEmail">
                         <i class="bi bi-envelope me-2"></i>Send via Email
                     </button>
-                    <button type="button" class="btn btn-primary-red btn-action-success" id="btnDone">
+                    <button type="button" class="btn btn-primary-red" id="btnDone" data-bs-dismiss="modal">
                         <i class="bi bi-check-lg me-2"></i>Done
                     </button>
                 </div>
@@ -1076,26 +1079,184 @@
     padding: 0 16px;
 }
 
+/* Equipment Selection Card */
+.equipment-selection-card {
+    background: linear-gradient(135deg, #fafafa 0%, #fff 100%);
+    border: 1px solid rgba(139, 0, 0, 0.12);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.equipment-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.equipment-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.equipment-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Modern Select Wrapper */
+.select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.equipment-select {
+    width: 100%;
+    padding: 12px 40px 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #374151;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.equipment-select:hover:not(:disabled) {
+    border-color: var(--primary-red);
+}
+
+.equipment-select:focus {
+    outline: none;
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.1);
+}
+
+.equipment-select:disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+    border-color: #e5e7eb;
+}
+
+.select-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    font-size: 0.85rem;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.select-wrapper:hover .select-icon {
+    color: var(--primary-red);
+}
+
+.equipment-select:disabled + .select-icon {
+    color: #d1d5db;
+}
+
+/* Equipment Input (datetime-local) */
+.equipment-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #374151;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.equipment-input:hover {
+    border-color: var(--primary-red);
+}
+
+.equipment-input:focus {
+    outline: none;
+    border-color: var(--primary-red);
+    box-shadow: 0 0 0 4px rgba(139, 0, 0, 0.1);
+}
+
 /* Quick Date Buttons */
 .quick-date-btns {
     display: flex;
-    gap: 6px;
+    gap: 8px;
+    height: 100%;
+    align-items: center;
 }
 
 .btn-quick {
-    padding: 8px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
+    padding: 10px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
     background: white;
     font-size: 0.8rem;
+    font-weight: 600;
+    color: #6b7280;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
 }
 
 .btn-quick:hover {
     background: var(--primary-red);
     color: white;
     border-color: var(--primary-red);
+    transform: translateY(-1px);
+}
+
+.btn-quick:active {
+    transform: translateY(0);
+}
+
+/* Add to List Button */
+.btn-add-item {
+    background: linear-gradient(135deg, var(--primary-red) 0%, #5c0000 100%);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(139, 0, 0, 0.2);
+}
+
+.btn-add-item:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.35);
+    color: white;
+}
+
+.btn-add-item:disabled {
+    background: #d1d5db;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+/* Responsive for Equipment Selection */
+@@media (max-width: 991px) {
+    .equipment-selection-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@@media (max-width: 768px) {
+    .equipment-selection-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-date-btns {
+        flex-wrap: wrap;
+    }
 }
 
 /* Borrower Badge */
@@ -1412,9 +1573,10 @@
 
 /* Success Modal Styles */
 .success-modal-content {
-    border-radius: 20px;
     border: none;
+    border-radius: 16px;
     overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 
 .success-icon-wrapper {
@@ -1426,24 +1588,19 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto;
-    animation: successPulse 0.5s ease-out;
+    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.35);
 }
 
-.success-icon {
+.success-icon-wrapper i {
     font-size: 2.5rem;
     color: white;
-}
-
-@@keyframes successPulse {
-    0% { transform: scale(0); opacity: 0; }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); opacity: 1; }
 }
 
 .success-title {
     font-family: 'Playfair Display', serif;
     font-weight: 700;
     color: var(--text-dark);
+    font-size: 1.5rem;
 }
 
 .success-subtitle {
@@ -1451,21 +1608,22 @@
 }
 
 .transaction-code-box {
-    background: linear-gradient(135deg, #fafafa 0%, #f3f4f6 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
     border: 2px solid rgba(139, 0, 0, 0.15);
     border-radius: 12px;
     padding: 20px;
-    margin: 24px auto;
-    max-width: 320px;
+    margin: 0 auto;
+    max-width: 350px;
 }
 
 .code-label {
     display: block;
     font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-weight: 600;
     color: #6b7280;
-    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
 }
 
 .code-display {
@@ -1473,35 +1631,37 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
+    background: white;
+    border: 2px solid var(--primary-red);
+    border-radius: 8px;
+    padding: 12px 16px;
 }
 
 .code-value {
-    font-family: 'Courier New', monospace;
-    font-size: 1.5rem;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--primary-red);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 }
 
 .btn-copy-code {
-    background: white;
-    border: 2px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 8px 12px;
-    color: #6b7280;
-    transition: all 0.3s ease;
+    background: transparent;
+    border: none;
+    color: var(--primary-red);
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
 .btn-copy-code:hover {
-    background: var(--primary-red);
-    border-color: var(--primary-red);
-    color: white;
+    background: rgba(139, 0, 0, 0.1);
 }
 
 .btn-copy-code.copied {
-    background: #22c55e;
-    border-color: #22c55e;
-    color: white;
+    color: #22c55e;
 }
 
 .success-actions {
@@ -1511,16 +1671,24 @@
     flex-wrap: wrap;
 }
 
-.btn-action-success {
-    padding: 12px 24px;
-    border-radius: 10px;
+.btn-send-email {
+    border: 2px solid var(--primary-red);
+    color: var(--primary-red);
+    padding: 10px 20px;
+    border-radius: 8px;
     font-weight: 600;
     transition: all 0.3s ease;
+    background: transparent;
 }
 
-.btn-action-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.btn-send-email:hover {
+    background: var(--primary-red);
+    color: white;
+}
+
+.btn-send-email:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 </style>
 
@@ -1846,7 +2014,7 @@ function renderItemsTable() {
     
     if (borrowItems.length === 0) {
         tbody.html(`<tr class="empty-row">
-            <td colspan="9" class="text-center py-4">
+            <td colspan="5" class="text-center py-4">
                 <i class="bi bi-inbox text-muted" style="font-size: 2rem;"></i>
                 <p class="text-muted mb-0 mt-2">No items added yet</p>
             </td>
@@ -1860,11 +2028,7 @@ function renderItemsTable() {
             <td>${item.category}</td>
             <td>${item.equipmentName}</td>
             <td><code class="serial-code">${item.serialNo}</code></td>
-            <td><span class="status-badge borrowed">Borrowed</span></td>
             <td>${formatDateShort(item.dueDate)}</td>
-            <td><span class="text-muted">N/A</span></td>
-            <td><span class="text-muted">N/A</span></td>
-            <td>${formatDateShort(item.lastUpdated)}</td>
             <td>
                 <button class="btn btn-sm btn-outline-danger btn-remove-item" onclick="removeItem(${idx})" title="Remove">
                     <i class="bi bi-trash"></i>
@@ -1908,11 +2072,7 @@ function populateSummary() {
             <td>${item.category}</td>
             <td>${item.equipmentName}</td>
             <td><code class="serial-code">${item.serialNo}</code></td>
-            <td><span class="status-badge borrowed">Borrowed</span></td>
             <td>${formatDateShort(item.dueDate)}</td>
-            <td><span class="text-muted">N/A</span></td>
-            <td><span class="text-muted">N/A</span></td>
-            <td>${formatDateShort(item.lastUpdated)}</td>
         </tr>`);
     });
 }
