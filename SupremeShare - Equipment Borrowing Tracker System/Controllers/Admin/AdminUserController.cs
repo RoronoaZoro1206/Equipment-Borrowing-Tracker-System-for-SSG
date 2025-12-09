@@ -482,6 +482,91 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
             }
         }
 
+        // POST: Admin/Users/Activate - Generic activate for any user (from Index page)
+        [HttpPost("Activate")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activate([FromForm] int userId)
+        {
+            try
+            {
+                var user = await _userRepo.GetByIdAsync(userId);
+                if (user == null)
+                    return Json(new { success = false, message = "User not found" });
+
+                if (user.UserStatus)
+                    return Json(new { success = false, message = "User is already active" });
+
+                // Generate secure random password
+                var temporaryPassword = GenerateSecurePassword(12);
+                var hashedPassword = _passwordHasher.HashPassword(temporaryPassword);
+
+                var result = await _userRepo.ActivateUserAsync(userId, hashedPassword);
+                
+                if (result)
+                {
+                    var adminId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    _logger.LogInformation("User activated: {UserId} by admin {AdminId}", userId, adminId);
+                    
+                    await _auditService.LogActionAsync(adminId, "USER_ACTIVATED", 
+                        new { user.UserUsername, OldStatus = "Inactive" }, 
+                        new { user.UserUsername, NewStatus = "Active" });
+                    await _notificationService.NotifyUserUpdated(user.UserUsername, "ACTIVATED");
+                    
+                    return Json(new { success = true, message = "User activated successfully" });
+                }
+
+                return Json(new { success = false, message = "Failed to activate user" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error activating user");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // POST: Admin/Users/Deactivate - Generic deactivate for any user (from Index page)
+        [HttpPost("Deactivate")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Deactivate([FromForm] int userId)
+        {
+            try
+            {
+                var user = await _userRepo.GetByIdAsync(userId);
+                if (user == null)
+                    return Json(new { success = false, message = "User not found" });
+
+                // Prevent deactivating own account
+                var currentUserId = HttpContext.Session.GetInt32("UserId");
+                if (user.UserId == currentUserId)
+                    return Json(new { success = false, message = "Cannot deactivate your own account" });
+
+                if (!user.UserStatus)
+                    return Json(new { success = false, message = "User is already inactive" });
+
+                var result = await _userRepo.DeactivateUserAsync(userId);
+                
+                if (result)
+                {
+                    var adminId = HttpContext.Session.GetInt32("UserId") ?? 0;
+                    _logger.LogInformation("User deactivated: {UserId} by admin {AdminId}", userId, adminId);
+                    
+                    await _auditService.LogActionAsync(adminId, "USER_DEACTIVATED", 
+                        new { user.UserUsername, OldStatus = "Active" }, 
+                        new { user.UserUsername, NewStatus = "Inactive" });
+                    await _notificationService.NotifyUserUpdated(user.UserUsername, "DEACTIVATED");
+                    
+                    return Json(new { success = true, message = "User deactivated successfully" });
+                }
+
+                return Json(new { success = false, message = "Failed to deactivate user" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deactivating user");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         #endregion
 
         #region Existing Methods (Update, ResetPassword, ToggleStatus, Delete)

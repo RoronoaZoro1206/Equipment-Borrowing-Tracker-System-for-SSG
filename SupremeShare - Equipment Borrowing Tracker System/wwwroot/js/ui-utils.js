@@ -23,7 +23,7 @@ const Toast = {
         }).showToast();
     },
 
-    error: (message, duration = 4000) => {
+    error: (message, duration = 2500) => {
         Toastify({
             text: message,
             duration: duration,
@@ -212,7 +212,10 @@ const Result = {
             html: message,
             icon: "success",
             confirmButtonColor: "#8B0000",
-            confirmButtonText: "OK"
+            confirmButtonText: "OK",
+            customClass: {
+                popup: 'swal2-maroon-theme'
+            }
         });
     },
 
@@ -221,8 +224,11 @@ const Result = {
             title: title,
             html: message,
             icon: "error",
-            confirmButtonColor: "#dc3545",
-            confirmButtonText: "OK"
+            confirmButtonColor: "#8B0000",
+            confirmButtonText: "OK",
+            customClass: {
+                popup: 'swal2-maroon-theme'
+            }
         });
     },
 

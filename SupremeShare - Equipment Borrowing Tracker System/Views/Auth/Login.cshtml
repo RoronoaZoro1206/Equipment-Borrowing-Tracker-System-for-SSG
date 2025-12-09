@@ -41,9 +41,18 @@
             <!-- Error Alert -->
             @if (ViewBag.Error != null)
             {
-                <div class="error-alert">
+                <div class="error-alert" id="errorAlert">
                     <i class="bi bi-exclamation-triangle-fill"></i>
-                    <span>@ViewBag.Error</span>
+                    <span id="errorMessage">@ViewBag.Error</span>
+                </div>
+            }
+            
+            <!-- Lockout Countdown (hidden by default) -->
+            @if (ViewBag.LockoutSeconds != null && (int)ViewBag.LockoutSeconds > 0)
+            {
+                <div class="lockout-alert" id="lockoutAlert">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Too many failed attempts. Try again in <strong id="countdownTimer">@ViewBag.LockoutSeconds</strong> seconds.</span>
                 </div>
             }
 
@@ -113,6 +122,46 @@
                 toggleIcon.classList.add('bi-eye');
             }
         }
+
+        // Real-time countdown for lockout
+        (function() {
+            const countdownEl = document.getElementById('countdownTimer');
+            const lockoutAlert = document.getElementById('lockoutAlert');
+            const errorAlert = document.getElementById('errorAlert');
+            const submitBtn = document.querySelector('.btn-signin');
+            const formInputs = document.querySelectorAll('.login-form input');
+            
+            if (countdownEl && lockoutAlert) {
+                let seconds = parseInt(countdownEl.textContent);
+                
+                // Hide the regular error alert if lockout is active
+                if (errorAlert) {
+                    errorAlert.style.display = 'none';
+                }
+                
+                // Disable form during lockout
+                if (submitBtn) submitBtn.disabled = true;
+                formInputs.forEach(input => input.disabled = true);
+                
+                const countdown = setInterval(function() {
+                    seconds--;
+                    countdownEl.textContent = seconds;
+                    
+                    if (seconds <= 0) {
+                        clearInterval(countdown);
+                        lockoutAlert.innerHTML = '<i class="bi bi-check-circle"></i> <span>You can try logging in again.</span>';
+                        lockoutAlert.classList.add('lockout-cleared');
+                        
+                        // Re-enable form
+                        if (submitBtn) submitBtn.disabled = false;
+                        formInputs.forEach(input => input.disabled = false);
+                        
+                        // Focus on username
+                        document.getElementById('username')?.focus();
+                    }
+                }, 1000);
+            }
+        })();
     </script>
 </body>
 </html>

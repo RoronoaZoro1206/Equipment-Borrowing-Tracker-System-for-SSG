@@ -106,43 +106,43 @@
     </div>
 </div>
 
-<!-- Activation Success Modal (shows temporary password) -->
+<!-- Activation Success Modal (shows temporary password) - Maroon Theme -->
 <div class="modal fade" id="activationSuccessModal" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body text-center py-5">
+        <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 20px 60px rgba(139, 0, 0, 0.15);">
+            <div class="modal-body text-center py-5 px-4">
                 <div class="mb-4">
-                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                </div>
-                <h4 class="text-success mb-3">Support Admin Activated Successfully!</h4>
-                
-                <div class="alert alert-danger text-start">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <strong>IMPORTANT:</strong> Save these credentials immediately!
-                    <br><small>The password will only be shown once and cannot be recovered.</small>
-                </div>
-                
-                <div class="card border-primary text-start mb-4">
-                    <div class="card-body">
-                        <p class="mb-2"><i class="bi bi-envelope me-2"></i><strong>Email:</strong> <span id="activatedEmail"></span></p>
-                        <p class="mb-3">
-                            <i class="bi bi-key me-2"></i><strong>Temporary Password:</strong> 
-                            <code id="temporaryPassword" class="bg-danger text-white px-2 py-1 rounded fs-5"></code>
-                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2" onclick="copyPassword()">
-                                <i class="bi bi-clipboard"></i> Copy
-                            </button>
-                        </p>
-                        <hr>
-                        <p class="mb-0"><i class="bi bi-check-circle text-success me-2"></i><strong>Status:</strong> <span class="badge bg-success">Active - Ready to Login</span></p>
+                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #8B0000 0%, #5c0000 100%); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-check-lg text-white" style="font-size: 2.5rem;"></i>
                     </div>
                 </div>
+                <h4 style="color: #8B0000; font-family: 'Playfair Display', serif; font-weight: 700;" class="mb-3">Support Admin Activated Successfully!</h4>
                 
-                <div class="alert alert-info text-start">
-                    <i class="bi bi-lightbulb me-2"></i>
-                    <strong>Note:</strong> The support admin should change this password after first login.
+                <div class="text-start mb-4 p-3" style="background: rgba(139, 0, 0, 0.08); border-left: 4px solid #8B0000; border-radius: 8px;">
+                    <i class="bi bi-exclamation-triangle-fill me-2" style="color: #8B0000;"></i>
+                    <strong style="color: #8B0000;">IMPORTANT:</strong> <span style="color: #374151;">Save these credentials immediately!</span>
+                    <br><small class="text-muted">The password will only be shown once and cannot be recovered.</small>
                 </div>
                 
-                <button type="button" class="btn btn-primary btn-lg" data-bs-dismiss="modal" id="btnSavedPassword">
+                <div class="text-start mb-4 p-3" style="background: #fafafa; border: 1px solid rgba(139, 0, 0, 0.15); border-radius: 12px;">
+                    <p class="mb-2"><i class="bi bi-envelope me-2" style="color: #8B0000;"></i><strong>Email:</strong> <span id="activatedEmail"></span></p>
+                    <p class="mb-3">
+                        <i class="bi bi-key me-2" style="color: #8B0000;"></i><strong>Temporary Password:</strong> 
+                        <code id="temporaryPassword" style="background: linear-gradient(135deg, #8B0000 0%, #5c0000 100%); color: white; padding: 4px 12px; border-radius: 6px; font-size: 1rem;"></code>
+                        <button type="button" class="btn btn-sm ms-2" style="border: 2px solid #8B0000; color: #8B0000; border-radius: 6px;" onclick="copyPassword()">
+                            <i class="bi bi-clipboard"></i> Copy
+                        </button>
+                    </p>
+                    <hr style="border-color: rgba(139, 0, 0, 0.1);">
+                    <p class="mb-0"><i class="bi bi-check-circle me-2" style="color: #8B0000;"></i><strong>Status:</strong> <span class="badge" style="background: linear-gradient(135deg, #8B0000 0%, #5c0000 100%);">Active - Ready to Login</span></p>
+                </div>
+                
+                <div class="text-start mb-4 p-3" style="background: rgba(139, 0, 0, 0.05); border-radius: 8px;">
+                    <i class="bi bi-lightbulb me-2" style="color: #8B0000;"></i>
+                    <strong>Note:</strong> <span class="text-muted">The support admin should change this password after first login.</span>
+                </div>
+                
+                <button type="button" class="btn btn-lg" style="background: linear-gradient(135deg, #8B0000 0%, #5c0000 100%); color: white; border: none; border-radius: 10px; padding: 12px 32px; font-weight: 600; box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);" data-bs-dismiss="modal" id="btnSavedPassword">
                     <i class="bi bi-check-lg me-1"></i>I HAVE SAVED THE PASSWORD
                 </button>
             </div>

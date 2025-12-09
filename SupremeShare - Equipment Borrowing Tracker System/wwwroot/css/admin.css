@@ -1219,37 +1219,159 @@ table.dataTable.dtr-inline.collapsed > tbody > tr > th.dtr-control:before {
     min-width: 250px;
 }
 
-/* SweetAlert2 Customization */
+/* SweetAlert2 Customization - Maroon Theme */
 .swal2-popup {
     font-family: 'Inter', sans-serif;
-    border-radius: 16px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(139, 0, 0, 0.15);
+    border: 1px solid rgba(139, 0, 0, 0.08);
+    padding: 2rem;
 }
 
 .swal2-title {
     font-family: 'Playfair Display', serif;
-    color: var(--text-dark);
+    color: var(--primary-red, #8B0000);
+    font-size: 1.5rem;
+    font-weight: 700;
 }
 
 .swal2-html-container {
-    color: var(--medium-gray);
+    color: var(--text-dark, #1a1a2e);
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
+/* Success Icon - Maroon Theme */
+.swal2-icon.swal2-success {
+    border-color: var(--primary-red, #8B0000) !important;
+    color: var(--primary-red, #8B0000) !important;
+}
+
+.swal2-icon.swal2-success .swal2-success-ring {
+    border-color: rgba(139, 0, 0, 0.3) !important;
+}
+
+.swal2-icon.swal2-success [class^='swal2-success-line'] {
+    background-color: var(--primary-red, #8B0000) !important;
+}
+
+/* Question Icon - Maroon Theme */
+.swal2-icon.swal2-question {
+    border-color: var(--primary-red, #8B0000) !important;
+    color: var(--primary-red, #8B0000) !important;
+}
+
+/* Warning Icon - Keep Orange but with maroon accent */
+.swal2-icon.swal2-warning {
+    border-color: #f59e0b !important;
+    color: #f59e0b !important;
+}
+
+/* Error Icon */
+.swal2-icon.swal2-error {
+    border-color: #dc2626 !important;
+}
+
+.swal2-icon.swal2-error [class^='swal2-x-mark-line'] {
+    background-color: #dc2626 !important;
+}
+
+/* Confirm Button - Maroon Gradient */
 .swal2-confirm {
-    border-radius: 8px !important;
-    font-weight: 500 !important;
-    padding: 10px 24px !important;
+    background: linear-gradient(135deg, var(--primary-red, #8B0000) 0%, #5c0000 100%) !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    padding: 12px 28px !important;
+    font-size: 0.9rem !important;
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3) !important;
+    transition: all 0.3s ease !important;
 }
 
+.swal2-confirm:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.4) !important;
+}
+
+.swal2-confirm:focus {
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.2) !important;
+}
+
+/* Cancel Button */
 .swal2-cancel {
-    border-radius: 8px !important;
-    font-weight: 500 !important;
-    padding: 10px 24px !important;
+    background: #6b7280 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    padding: 12px 28px !important;
+    font-size: 0.9rem !important;
+    transition: all 0.3s ease !important;
 }
 
+.swal2-cancel:hover {
+    background: #4b5563 !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Deny Button */
 .swal2-deny {
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    padding: 12px 28px !important;
+    font-size: 0.9rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.swal2-deny:hover {
+    transform: translateY(-2px) !important;
+}
+
+/* Input Fields in SweetAlert */
+.swal2-input,
+.swal2-textarea {
+    border: 2px solid #e5e7eb !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    font-size: 0.9rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.swal2-input:focus,
+.swal2-textarea:focus {
+    border-color: var(--primary-red, #8B0000) !important;
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1) !important;
+}
+
+/* Input Label */
+.swal2-input-label {
+    font-weight: 600 !important;
+    color: var(--text-dark, #1a1a2e) !important;
+    margin-bottom: 8px !important;
+}
+
+/* Validation Message */
+.swal2-validation-message {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #dc2626 !important;
     border-radius: 8px !important;
-    font-weight: 500 !important;
-    padding: 10px 24px !important;
+    padding: 10px 16px !important;
+}
+
+/* Close Button */
+.swal2-close {
+    color: var(--primary-red, #8B0000) !important;
+    font-size: 1.5rem !important;
+    transition: all 0.3s ease !important;
+}
+
+.swal2-close:hover {
+    color: #5c0000 !important;
+    transform: rotate(90deg) !important;
+}
+
+/* Timer Progress Bar */
+.swal2-timer-progress-bar {
+    background: linear-gradient(135deg, var(--primary-red, #8B0000) 0%, #5c0000 100%) !important;
 }
 
 /* Enhanced Card Hover Effects */
@@ -2213,7 +2335,11 @@ table thead th:last-child {
 }
 
 .swal2-popup .swal2-html-container {
-    text-align: left;
+    text-align: center;
+}
+
+.swal2-popup .swal2-title {
+    text-align: center;
 }
 
 /* DataTables Enhanced Styling */
