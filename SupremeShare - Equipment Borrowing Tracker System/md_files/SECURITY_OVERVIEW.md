@@ -21,9 +21,11 @@ Security protects your application from hackers who try to:
 | Input Validation | `Data/InputValidator.cs` | Blocks bad data before it reaches the database |
 | Password Hashing | `Data/PasswordHasher.cs` | Protects passwords using BCrypt |
 | Rate Limiting | `Middleware/RateLimitingMiddleware.cs` | Stops brute force attacks |
+| Login Rate Limiting | `Controllers/Auth/AuthController.cs` | 5 attempts max, 20s lockout |
 | Authorization | `Attributes/AuthorizeRoleAttribute.cs` | Controls who can access what |
 | Exception Handling | `Middleware/GlobalExceptionHandlerMiddleware.cs` | Hides error details from hackers |
 | Audit Logging | `Data/AuditService.cs` | Tracks all user actions |
+| Failed Login Logging | `Controllers/Auth/AuthController.cs` | Records failed login attempts |
 | Security Headers | `Middleware/SecurityHeadersMiddleware.cs` | Protects against browser attacks |
 
 ---
@@ -37,20 +39,44 @@ User Request
      ↓
 [Security Headers] → Add protection headers
      ↓
+[Login Rate Limiting] → 5 failed attempts? Lock for 20 seconds!
+     ↓
 [Authorization] → Is user allowed here?
      ↓
-[Input Validation] → Is the data safe?
+[Input Validation] → Is the data safe? SQL injection detected?
      ↓
 [Password Hashing] → Hash passwords before saving
      ↓
 [Database Operation]
      ↓
-[Audit Logging] → Record what happened
+[Audit Logging] → Record what happened (including failed logins)
      ↓
 [Exception Handling] → If error, show safe message
      ↓
 Response to User
 ```
+
+---
+
+## Login Security Settings
+
+| Setting | Value | Description |
+|---------|-------|-------------|
+| Max Failed Attempts | 5 | Lock account after 5 wrong passwords |
+| Lockout Duration | 20 seconds | Time before retry allowed |
+| SQL Injection Detection | Yes | Logs suspicious login patterns |
+
+---
+
+## Audit Log Action Types
+
+| Action | Description | Logged Data |
+|--------|-------------|-------------|
+| `LOGIN` | Successful login | Username, IP |
+| `LOGOUT` | User logout | Username, IP |
+| `LOGIN_FAILED` | Failed login attempt | Username, IP, Reason, Attempt # |
+| `LOGIN_FAILED_SQL_INJECTION` | SQL injection detected | Username pattern, IP, Details |
+| `LOGIN_BLOCKED_RATE_LIMIT` | IP blocked after max attempts | IP, Details |
 
 ---
 

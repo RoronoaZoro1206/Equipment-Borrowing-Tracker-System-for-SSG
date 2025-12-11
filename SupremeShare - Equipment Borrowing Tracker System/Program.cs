@@ -83,6 +83,7 @@ builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 // Register SignalR Services
 // ===========================================
 builder.Services.AddScoped<IDashboardNotificationService, DashboardNotificationService>();
+builder.Services.AddScoped<IDashboardDataService, DashboardDataService>();
 
 // ===========================================
 // Register Email Service
