@@ -331,11 +331,13 @@ namespace SupremeShare___Equipment_Borrowing_Tracker_System.Controllers.Admin
                     GROUP BY s.student_college
                     ORDER BY borrower_count DESC";
 
-                // Equipment per Category
+                // Equipment per Category - Fixed: Count actual units, not equipment types
                 var categoryQuery = @"
-                    SELECT equipment_category, COUNT(*) as unit_count
-                    FROM equipment
-                    GROUP BY equipment_category
+                    SELECT e.equipment_category, COUNT(eu.eunit_id) as unit_count
+                    FROM equipment e
+                    LEFT JOIN equipment_unit eu ON e.equipment_id = eu.equipment_id
+                    WHERE e.equipment_category IS NOT NULL AND e.equipment_category != ''
+                    GROUP BY e.equipment_category
                     ORDER BY unit_count DESC";
 
                 // Good vs Damaged

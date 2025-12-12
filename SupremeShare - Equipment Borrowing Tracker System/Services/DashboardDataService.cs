@@ -319,11 +319,13 @@ public class DashboardDataService : IDashboardDataService
 
     private async Task<IEnumerable<LabelValuePair>> GetCategoryDataAsync()
     {
+        // Fixed: Count actual equipment UNITS per category, not just equipment types
         const string query = @"
-            SELECT equipment_category, COUNT(*) as unit_count
-            FROM equipment
-            WHERE equipment_category IS NOT NULL AND equipment_category != ''
-            GROUP BY equipment_category
+            SELECT e.equipment_category, COUNT(eu.eunit_id) as unit_count
+            FROM equipment e
+            LEFT JOIN equipment_unit eu ON e.equipment_id = eu.equipment_id
+            WHERE e.equipment_category IS NOT NULL AND e.equipment_category != ''
+            GROUP BY e.equipment_category
             ORDER BY unit_count DESC
             LIMIT 10";
 
